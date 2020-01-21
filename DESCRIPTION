@@ -16,3 +16,5 @@ Imports:
     stats
 Suggests: 
     testthat
+URL: https://github.com/MattPM/dsb
+BugReports: https://github.com/MattPM/dsb/issues
