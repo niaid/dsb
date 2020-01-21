@@ -75,7 +75,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         isotype.control.name.vec = isotypes)
 ```
 
-# visualize distributions of CD4 and CD8
+## visualize distributions of CD4 and CD8
 
 plot the DSB normalized CITEseq data.
 
@@ -84,7 +84,7 @@ are the unmodified normalized
 counts**
 
 ``` r
-# plot this and avoid plotting by adding a density gradient on the points <-  this is helpful when there are many thousands of cells. 
+# add a density gradient on the points () this is helpful when there are many thousands of cells )
 # this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/
 get_density = function(x, y, ...) {
   dens <- MASS::kde2d(x, y, ...)
@@ -97,32 +97,31 @@ get_density = function(x, y, ...) {
 library(ggplot2)
 data.plot = normalized_matrix %>% t %>%
   as.data.frame() %>% 
-  dplyr::select(CD4_PROT, CD8_PROT) 
+  dplyr::select(CD4_PROT, CD8_PROT, CD3_PROT, CD19_PROT) 
 data.plot = data.plot %>%   dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
 
 # plot with and without density gradient
 p1 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT, color = density)) +
-  geom_point(size = 0.4) +
+  geom_point(size = 0.4) + theme_bw() +
   geom_vline(xintercept = 0, color = "red", linetype = 2) + 
   geom_hline(yintercept = 0, color = "red", linetype = 2) + 
   viridis::scale_color_viridis(option = "B") +  
   scale_shape_identity() 
-p2 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT)) +
-  geom_point(size = 0.4) +
+p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD3_PROT, color = density)) +
+  geom_point(size = 0.4) + theme_bw() +
   geom_vline(xintercept = 0, color = "red", linetype = 2) + 
-  geom_hline(yintercept = 0, color = "red", linetype = 2) 
+  geom_hline(yintercept = 0, color = "red", linetype = 2) + 
+  viridis::scale_color_viridis(option = "B") +  
+  scale_shape_identity() 
 
 cowplot::plot_grid(p1,p2)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
-The plots above show the actual protein distributions. There is no
-artificial jitter added to points.
+## How do I get the empty droplets?
 
-\#How do I get the empty droplets?
-
-there are a number of ways to get the empty drops. If you are using cell
+There are a number of ways to get the empty drops. If you are using cell
 hashing, when you demultiplex the cells, you get a vector of empty or
 Negative droplets.
 
@@ -165,14 +164,12 @@ singlet_object = SetAssayData(object = singlet_object, slot = "CITE", new.data =
 In reality you might want to confirm the cells called as “Negative” have
 low RNA / gene content to be certain there are no contaminating cells.
 
-Also it is not necessary but we reccomend demultiplexing with teh raw
-output from cellranger rather than the processed output because the raw
+Also it is not necessary but we reccomend hash demultiplexing with the
+raw output from cellranger rather than the processed output
 (i.e. outs/raw\_feature\_bc\_matrix) will have more empty droplets from
 which the HTODemux function will be able to estimate the negative
-population = it is not required but in general these functions perform
-better with more negative droplets. This will also have the advantage of
-creating more droplets to use as built protein background controls in
-the DSB function.
+distribution. This will also have the benefit of creating more droplets
+to use as built protein background controls in the DSB function.
 
 ## example workflow Seurat version 2
 
@@ -204,15 +201,16 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = pos_adt_matrix,
 singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_matrix)
 ```
 
-## Get empty drops if you’re not sample multiplexing
+## How to get empty drops without cell hashing or sample demultiplexing
 
 you can simply get a vector of negative droplets from the cells you
-would remove. There are also more robust ways to detect empty droplets
+would remove. There robust ways to estimate which cells are empty
+droplets:
 <https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
 
-here is a crude way to get some likely empty droplets assuming
+Below is a quick method to get outlier empty droplets assuming
 seurat\_object is a object with most cells (i.e. any cell expressing at
-least a gene)
+least a gene).
 
 ``` r
 # get the nUMI from a seurat version 3 object 
@@ -224,13 +222,16 @@ mu_umi = mean(umi)
 sd_umi = sd(umi)
 
 # calculate a threshold for calling a cell negative 
-sub_threshold = mu_umi - (2*sd_umi)
+sub_threshold = mu_umi - (5*sd_umi)
 
 
 
 Idents(seurat_object) = "nUMI"
 
 
-# this negative cell object can be used to define the negative background following the examples above. 
+# gdefine the negative cell object
 neg = subset(seurat_object, accept.high = sub_threshold)
 ```
+
+This negative cell object can be used to define the negative background
+following the examples above.
