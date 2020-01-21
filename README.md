@@ -79,7 +79,7 @@ plot raw points (overplotted) and points with labeled density
 distributions (similar to
 flow)
 
-``` rfig
+``` r
 # plot this and avoid plotting by adding a density gradient like a flowjo plot
 # this nice density function is from here: https://slowkow.com/notes/ggplot2-color-by-density/
 get_density = function(x, y, ...) {
@@ -111,31 +111,28 @@ p2 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT)) +
 cowplot::plot_grid(p1,p2)
 ```
 
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
 The plots above show the actual protein distributions. There is no
 artificial jitter added to points.
 
-## How do I get the empty droplets?
+\#How do I get the empty droplets?
 
 there are a number of ways to get the empty drops. If you are using cell
 hashing, when you demultiplex the cells, you get a vector of empty or
-Negative
-droplets.
+Negative droplets.
 
-# HTODemux function in Seurat:
-
+HTODemux function in Seurat:
 <https://satijalab.org/seurat/v3.1/hashing_vignette.html>
 
-# deMULTIplex function from Multiseq (this is now also implemented in Seurat).
+deMULTIplex function from Multiseq (this is now also implemented in
+Seurat). <https://github.com/chris-mcginnis-ucsf/MULTI-seq>
 
-<https://github.com/chris-mcginnis-ucsf/MULTI-seq>
-
-# If you’re not multiplexing
-
-you can simply get a vector of negative droplets from the cells you
-would remove.
+If you’re not multiplexing you can simply get a vector of negative
+droplets from the cells you would remove.
 <https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
 
-# Here is a simple example workflow with a Seurat Version 3 object
+## Simple example workflow (Seurat Version 3)
 
 ``` r
 
@@ -173,7 +170,7 @@ better with more negative droplets. This will also have the advantage of
 creating more droplets to use as built protein background controls in
 the DSB function.
 
-# Here is an example workflow with a Seurat Version 2 object
+## example workflow Seurat version 2
 
 ``` r
 
