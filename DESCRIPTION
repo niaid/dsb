@@ -1,0 +1,18 @@
+Package: dsb
+Type: Package
+Title: Normalize CITEseq Data
+Version: 0.1.0
+Author: Matthew Mulè, Andrew Martins and John Tsang 
+Maintainer: <mattmule@gmail.com>
+Description: see biorxiv preprint DOI:Here we developed a method specifically for normalizing CITEseq data,accounting for protein-specific background noise caused by unbound antibody captured and sequenced in droplets as well as correcting for the technical component of variation in protein library size. We account for these sources of experimental noisewith the empty droplets containing background antibody reads and by defining a covariate of non-staining proteins and isotype control antibodies respectively.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.0.1
+Imports: 
+    magrittr,
+    limma,
+    mclust,
+    stats
+Suggests: 
+    testthat
