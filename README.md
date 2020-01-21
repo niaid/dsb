@@ -98,20 +98,25 @@ library(ggplot2)
 data.plot = normalized_matrix %>% t %>%
   as.data.frame() %>% 
   dplyr::select(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) 
-data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
 
-# plot with and without density gradient
+
+
+data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
 p1 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() +
+  geom_point(size = 0.4) + theme_bw() + ggtitle("small example dataset") +
   geom_vline(xintercept = 0, color = "red", linetype = 2) + 
   geom_hline(yintercept = 0, color = "red", linetype = 2) + 
+  theme(axis.text = element_text(face = "bold",size = 12)) +
   viridis::scale_color_viridis(option = "B") +  
   scale_shape_identity() 
+
+
 data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD19_PROT, data.plot$CD27_PROT, n = 100)) 
 p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD27_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() +
+  geom_point(size = 0.4) + theme_bw() + 
   geom_vline(xintercept = 0, color = "red", linetype = 2) + 
   geom_hline(yintercept = 0, color = "red", linetype = 2) + 
+  theme(axis.text = element_text(face = "bold",size = 12)) +
   viridis::scale_color_viridis(option = "B") +  
   scale_shape_identity() 
 
