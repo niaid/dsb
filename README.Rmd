@@ -13,6 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 # dsb
+## An R package for normalizing and denoising CITEseq data
 
 <!-- badges: start -->
 <!-- badges: end -->
@@ -71,10 +72,12 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
 
 
 # visualize distributions of CD4 and CD8 
-plot raw points (overplotted) and points with labeled density distributions (similar to flow)
+plot the DSB normalized CITEseq data. 
+
+**Note, there is NO jitter added to these points for visualization these are the unmodified normalized counts**
 ```{r, fig.height=4.5, fig.width=8.5}
-# plot this and avoid plotting by adding a density gradient like a flowjo plot
-# this nice density function is from here: https://slowkow.com/notes/ggplot2-color-by-density/
+# plot this and avoid plotting by adding a density gradient on the points <-  this is helpful when there are many thousands of cells. 
+# this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/
 get_density = function(x, y, ...) {
   dens <- MASS::kde2d(x, y, ...)
   ix <- findInterval(x, dens$x)
