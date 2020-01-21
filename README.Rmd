@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 ## An R package for normalizing and denoising CITEseq data
 
 <!-- badges: start -->
+[![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
 <!-- badges: end -->
 
 This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and Andrew Martins. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in this paper [](https://)
@@ -71,7 +72,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
 ```
 
 
-## visualize distributions of CD4 and CD8 
+## visualize protein distributions after normalization 
 plot the DSB normalized CITEseq data. 
 
 **Note, there is NO jitter added to these points for visualization these are the unmodified normalized counts**
