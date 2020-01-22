@@ -1,122 +1,102 @@
 ---
-output: github_document
+title: "dsb_normalizing_CITEseq_data"
+output: rmarkdown::html_vignette
+author: MPM
+vignette: >
+  %\VignetteIndexEntry{normalizing CITEseq data with the DSB package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+Detailed usage of the DSB package for normalizing CITEseq data 
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
+  comment = "#>"
 )
 ```
-# dsb
-## An R package for normalizing and denoising CITEseq data
-
-<!-- badges: start -->
-[![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
-<!-- badges: end -->
-
-This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and Andrew Martins. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in this paper [](https://)
-
-In [the biorxiv preprint](https://biorxiv.org), comparing unstained control cells and empty droplets we found the major contribotor to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a "built in" noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop). 
-
-In addition we define a per-cell denoising covariate to account for the technical component of library size differences between cells which removes spurious cluster formation derived from globally dimcells clustering together. 
-
-## installation 
-
-You can install the released version of dsb in your R session with the command below 
 
 ```{r}
-# this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
-require(devtools)
-#devtools::install_github(repo = 'MattPM/dsb')
-
-```
-
-
-## quickstart
-
-
-```{r example}
-# load package and normalize the example raw data 
 library(dsb)
+suppressMessages(library(dplyr))
+suppressMessages(library(magrittr))
+```
 
 
-# normalize
-normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                        empty_drop_matrix = empty_drop_citeseq_mtx)
+## required format of input data
+
+```{r}
+class(cells_citeseq_mtx)
+cells_citeseq_mtx[27:37,1:2]
+```
+
+
+You can see above that the input data is a matrix with cells as columns. The non normalized the protein assay of a Seurat object or Single Cell Experiment object is often a sparse matrix. You can easily convert it into a matrix
+
+```{r, eval = FALSE}
+# 
+r_matrix = as.matrix(sparse_matrix)
+```
+
+
+Empty drops are formatted the same way. This is a direct measurement of experimental noise that we correct for with the dsb normalization method. 
+```{r}
+
+empty_drop_citeseq_mtx[27:37,1:2]
 
 ```
 
 
-## The full version (recommended)
-By default dsb defines the per cell denoising covariate by fitting a gaussian mixture model to the log + 10 counts of each cell and defining the noise ocvariates the mean. We reccomend including the counts from isotype controls in each cell in the denoising covariates. 
-
+## Get a vector of isotype control proteins 
 ```{r}
+# protein names in the example data
+rownames(cells_citeseq_mtx)
 
-# get the empty cells from demultiplexing with 
+# the isotype controls are index 67 - 70 
+isotypes = rownames(cells_citeseq_mtx)[67:70]
+isotypes 
+
+```
+
+## Full usage 
+This will take about 8 seconds on a laptop.
+```{r setup}
 
 
-# define a vector of the isotype controls in the data 
-isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT","MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
-
+# the isotypes were defined above 
+# isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT","MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
 normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         empty_drop_matrix = empty_drop_citeseq_mtx,
                                         use.isotype.control = TRUE,
                                         isotype.control.name.vec = isotypes)
-
+# examine the normalized values. 
+normalized_matrix[27:37,1:2]
 
 ```
 
 
-## visualize protein distributions after normalization 
-plot the DSB normalized CITEseq data. 
+## plot protieins on biaxial gates
 
-**Note, there is NO jitter added to these points for visualization these are the unmodified normalized counts**
-```{r, fig.height=4.5, fig.width=8.2}
-# add a density gradient on the points () this is helpful when there are many thousands of cells )
-# this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/
-get_density = function(x, y, ...) {
-  dens <- MASS::kde2d(x, y, ...)
-  ix <- findInterval(x, dens$x)
-  iy <- findInterval(y, dens$y)
-  ii <- cbind(ix, iy)
-  return(dens$z[ii])
-}
+```{r}
 
-library(ggplot2)
+# to plot the data in ggplot we need to make the proteins the variables (columns)
 data.plot = normalized_matrix %>% t %>%
   as.data.frame() %>% 
   dplyr::select(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) 
 
-
-
-data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
-p1 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() + ggtitle("small example dataset") +
-  geom_vline(xintercept = 0, color = "red", linetype = 2) + 
-  geom_hline(yintercept = 0, color = "red", linetype = 2) + 
-  theme(axis.text = element_text(face = "bold",size = 12)) +
-  viridis::scale_color_viridis(option = "B") +  
-  scale_shape_identity() 
-
-
-data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD19_PROT, data.plot$CD27_PROT, n = 100)) 
-p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD27_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() + 
-  geom_vline(xintercept = 0, color = "red", linetype = 2) + 
-  geom_hline(yintercept = 0, color = "red", linetype = 2) + 
-  theme(axis.text = element_text(face = "bold",size = 12)) +
-  viridis::scale_color_viridis(option = "B") +  
-  scale_shape_identity() 
-
-cowplot::plot_grid(p1,p2)
+library(ggplot2)
+ggplot(data.plot, aes(x = CD4_PROT, y = CD8_PROT)) +
+  geom_point(size = 0.2) + 
+  geom_density_2d(color = "black") +
+  theme_bw()
 
 ```
 
+By using the distribution of negative droplets to rescale the counts, directly accounting for experimentally measured noise, as well as using the per cell denoising covariate defined as the mean of the background counts per cell, this reduces noise that negatively influences custering results causing spurious clusters to form (see the preprint)
+
+
+## Integration with Seurat (also see package readme)
 
 
 ## How do I get the empty droplets?

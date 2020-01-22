@@ -15,6 +15,9 @@ Imports:
     mclust,
     stats
 Suggests: 
-    testthat
+    testthat,
+    knitr,
+    rmarkdown
 URL: https://github.com/MattPM/dsb
 BugReports: https://github.com/MattPM/dsb/issues
+VignetteBuilder: knitr
