@@ -19,11 +19,13 @@ knitr::opts_chunk$set(
 [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
 <!-- badges: end -->
 
-This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and Andrew Martins. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in this paper [](https://)
+This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and Andrew Martins. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in [this paper](https://doi.org/10.1038/s41591-020-0769-8)
 
-In [the biorxiv preprint](https://biorxiv.org), comparing unstained control cells and empty droplets we found the major contribotor to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a "built in" noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop). 
+In [the biorxiv preprint](https://biorxiv.org), by comparing unstained control cells and empty droplets we found the major contribution to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a "built in" noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop). 
 
-In addition we define a per-cell denoising covariate to account for the technical component of library size differences between cells which removes spurious cluster formation derived from globally dimcells clustering together. 
+We also found that the counts of isotype controls and those of ‘negative’ markers for each cell are significantly correlated, suggesting that their covariation likely reflects cell-to-cell differences due to technical factors such as non-specific antibody binding and droplet-to-droplet differences in capture efficiency of the DNA tags.
+
+We thus developed the DSB package specifically for normalizing CITE-seq protein expression data. DSB stands for Denoised and Scaled by Background (DSB) and it corrects for 1) protein-specific background noise as reflected by empty droplets, 2) the technical cell-to-cell variation as reflected by the latent noise component described above. DSB normalization improves separation between positive and negative populations for each protein, centers the negative-staining population at zero, and can improve interpretation of protein expression-based clustering. 
 
 ## installation 
 
@@ -32,13 +34,12 @@ You can install the released version of dsb in your R session with the command b
 ```{r}
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
 require(devtools)
-#devtools::install_github(repo = 'MattPM/dsb')
+devtools::install_github(repo = 'MattPM/dsb')
 
 ```
 
 
 ## quickstart
-
 
 ```{r example}
 # load package and normalize the example raw data 
@@ -53,6 +54,9 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
 
 
 ## The full version (recommended)
+
+**This is a quick summary Please see the detailed workflow vignette**
+
 By default dsb defines the per cell denoising covariate by fitting a gaussian mixture model to the log + 10 counts of each cell and defining the noise ocvariates the mean. We reccomend including the counts from isotype controls in each cell in the denoising covariates. 
 
 ```{r}
@@ -121,6 +125,8 @@ cowplot::plot_grid(p1,p2)
 
 ## How do I get the empty droplets?
 
+**This is covered more extensively in the detailed workflow vignette**
+
 There are a number of ways to get the empty drops. If you are using cell hashing, when you demultiplex the cells, you get a vector of empty or Negative droplets. 
 
 HTODemux function in Seurat:
@@ -146,8 +152,8 @@ singlet_object = subset(seurat_object, idents = "Singlet")
 
 
 # non sparse CITEseq data actually store better in a regular materix so the as.matrix() call is not memory intensive.
-neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'raw.data') %>% as.matrix()
-positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'raw.data') %>% as.matrix()
+neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'counts') %>% as.matrix()
+positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'counts') %>% as.matrix()
 
 
 # normalize the data with dsb
@@ -167,7 +173,7 @@ singlet_object = SetAssayData(object = singlet_object, slot = "CITE", new.data =
 
 As an additional QC step one can confirm the cells called as "Negative" have low RNA / gene content to be certain there are no contaminating cells. 
 
-Also it is not necessary but we reccomend hash demultiplexing with the raw output from cellranger rather than the processed output (i.e. outs/raw_feature_bc_matrix) will have more empty droplets from which the HTODemux function will be able to estimate the negative distribution. This will also have the benefit of creating more droplets to use as built protein background controls in the DSB function. 
+We reccomend hash demultiplexing with the raw output from cellranger rather than the processed output (i.e. outs/raw_feature_bc_matrix). this file will have more empty droplets from which the HTODemux function will be able to estimate the negative distribution. This will also have the benefit of creating more droplets to use as built protein background controls in the DSB function. 
  
 ## example workflow Seurat version 2
 
@@ -208,24 +214,29 @@ https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y
 
 Below is a quick method to get outlier empty droplets assuming seurat_object is a object with most cells (i.e. any cell expressing at least a gene). 
 
+
+Get the nUMI from a seurat version 3 object 
 ```{r, eval=FALSE}
 # get the nUMI from a seurat version 3 object 
 umi = seurat_object$nUMI
+```
 
-#  Get the nUMI from a Seurat version 2 objec 
+Get the nUMI from a Seurat version 2 object
+```{r}
+#  Get the nUMI from a Seurat version 2 object
 umi = seurat_object@meta.data %>% select("nUMI")
+```
+
+
+```{r}
 mu_umi = mean(umi)
 sd_umi = sd(umi)
 
 # calculate a threshold for calling a cell negative 
 sub_threshold = mu_umi - (5*sd_umi)
 
-
-
+# define the negative cell object
 Idents(seurat_object) = "nUMI"
-
-
-# gdefine the negative cell object
 neg = subset(seurat_object, accept.high = sub_threshold)
 
 
@@ -233,4 +244,4 @@ neg = subset(seurat_object, accept.high = sub_threshold)
 
 This negative cell object can be used to define the negative background following the examples above. 
 
-
+**Please see the detailed workflow vignette for a full workflow and more details**

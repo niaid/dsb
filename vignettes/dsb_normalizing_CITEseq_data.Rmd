@@ -17,14 +17,129 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+## installation 
+
+You can install the released version of dsb in your R session with the command below 
+
 ```{r}
-library(dsb)
-suppressMessages(library(dplyr))
-suppressMessages(library(magrittr))
+# this is analagous to install.packages("package"), you have the package "devtools"  to install a package from a github repository like this one. 
+require(devtools)
+devtools::install_github(repo = 'MattPM/dsb')
+
 ```
 
 
-## required format of input data
+**Workflow for usage with Seurat version 3**
+This is a simple but comprehensive example of loading the output from CITEseq-count, reading in the output from Cellranger (mRNA), merging all the assays together, demultiplexing hashing data to get negative droplets, adding the negative droplets, using the negative droplets to normalize with the DSBNormalizeProtein function, and adding those normalized counts back to an object containing normalized singlets. 
+
+**Many thanks to Can Liu for testing the DSB package and helping assemble this vignette** 
+
+## Load packages used in this script 
+```{r}
+library(dsb)
+library(Seurat)
+library(dplyr)
+library(magrittr)
+```
+
+**Read the output from CITE-seq-count and raw_bc_matrix from cellranger**
+
+It is highly recommended that you load the raw_feature_bc_matrix from cellranger, *not* the filtered_bc_matrix. It is not clear whether the cellranger filtering will accomodate doublets in a superloading (i.e. hashing or multiseq) experiment. More importantly, demultiplexing functions such as HTODemux estimate the background distribution for each cell a k medioids clustering method using k = 1 + n HTO in order to find the negative cells which are then used to establish a threshold for positivity of each HTO. Without sufficient negative droplets (i.e. if you use the filtered_bc_matrix) there may not be enough negative droplets to estimate the background causing the function to not converge. The empty droplets are also crucial for the DSB notmalization step so having more empty droplets makes the protein background estimation more robust. 
+
+
+
+```{R, eval=FALSE}
+## Part 1 read in CITE-seq-count output 
+# Run CITEeq count with expect cells set higher than your actual expected loading 
+# e.g. if expect 25K cells, set expect cells to 40K 
+# refer to the CITEseq count documentation page https://hoohm.github.io/CITE-seq-Count/
+
+# read in HTO data (output from citeseq count)
+hto_data = Read10X('citeseq_count/HTO_umi_40k/', gene.column=1)
+
+
+# read in ADT data (output from citeseq count)
+adt_data = Read10X('citeseq_count/ADT_umi_40k/', gene.column=1)
+
+
+# read in mRNA data (output from 10x cellranger)
+rna_data = Read10X(data.dir = "cellranger_count/raw_feature_bc_matrix/")
+
+
+# get joint barcodes, subset RNA, HTO, ADT remove "unmapped" row in ADT and HTO assay (if using CITEseq count)
+joint.bcs = Reduce("intersect", list(colnames(rna_data), colnames(hto_data), colnames(adt_data)))
+rna_data = rna_data[, joint.bcs]
+hto_data = as.matrix(hto_data[-nrow(hto_data), joint.bcs])
+adt_data = as.matrix(adt_data[-nrow(adt_data), joint.bcs])
+```
+
+
+**Create a Seurat object and normalize**
+
+we now have 3 separate matrices, one for mRNA , protein and hashing data. Since this was a multiplesing experiment , we also have doublets, singlets and negative (empty) droplets. Here we demultiplex with the HTODemux function to get singlet, doublet and negative annotations for each cell. We then assign the protein data from the negative (empty) droplets and the actual cells (singlets) to variables, and use them in the DSBNormalizeProtein function. 
+
+If not using a sample demultiplexing method, we could create a seurat object with a very low threshold for number of genes per cell (i.e. 1), then use a dedicated package that estimates empty droplets (EmptyDrops) or use a threshold, e.g. all droplets with 0-40 genes detected are called as "empty" and are used to estimate the background (this could also be done with a statistical threshold; see the main readme page for the DSB package). 
+
+For more information vignettes on demultiplexing:
+https://satijalab.org/seurat/v3.1/hashing_vignette.html
+https://github.com/chris-mcginnis-ucsf/MULTI-seq
+
+
+```{r, eval=FALSE}
+
+# create Seurat object using Seurat version 3
+SeuratObject = CreateSeuratObject(counts = rna_data, project = "my_project")
+SeuratObject[["HTO"]] = CreateAssayObject(counts = hto_data)
+SeuratObject[["ADT"]] = CreateAssayObject(counts = adt_data)
+
+
+# HTO demultiplex -- get the empty droplets from HTO demultiplex
+SeuratObject = NormalizeData(SeuratObject, assay = "HTO", normalization.method = "CLR")
+SeuratObject = HTODemux(SeuratObject, assay = "HTO", positive.quantile = 0.99)
+table(SeuratObject$HTO_classification.global)
+
+
+# empty droplets from HTO demultiplex as idents = "Negative"
+Idents(SeuratObject) = "HTO_classification.global"
+NegativeObject = subset(SeuratObject, idents = "Negative")
+SNG_SeuratObject = subset(SeuratObject, idents = "Singlet")
+
+
+# before normalizing make sure the negative droplets from hashing are true negatives. 
+# many ways to do this. Here is a simple heuristic:
+NegativeObject = subset(NegativeObject, subset = nFeature_RNA < 40)
+
+
+# get the empty droplet matrix and singlet matrix
+neg_adt_matrix = GetAssayData(NegativeObject, assay = "ADT", slot = 'counts') %>% as.matrix()
+positive_adt_matrix = GetAssayData(SNG_SeuratObject, assay = "ADT", slot = 'counts') %>% as.matrix()
+
+
+# normalize the data with dsb normalization 
+isotypes = c("isotype_control_1_PROT", "isotype_control_2_PROT", "isotype_control_3_PROT", "isotype_control_4_PROT")
+normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = positive_adt_matrix,
+                                        empty_drop_matrix = neg_adt_matrix, 
+                                        use.isotype.control = TRUE, 
+                                        isotype.control.name.vec = isotypes)
+
+
+# add normalized data back to the object (the singlets defined above as "object")
+SNG_SeuratObject = SetAssayData(object = SNG_SeuratObject, assay = "ADT", new.data = normalized_matrix)
+
+
+# proceed with downstream analysis. 
+#saveRDS(SNG_SeuratObject, file = "my_project_normalized.rds")
+
+
+
+```
+
+
+
+## Additional information using the example data: 
+
+Here is the format of the required input data. 
 
 ```{r}
 class(cells_citeseq_mtx)
@@ -48,21 +163,21 @@ empty_drop_citeseq_mtx[27:37,1:2]
 ```
 
 
-## Get a vector of isotype control proteins 
+## How to get a vector of isotype control proteins 
 ```{r}
 # protein names in the example data
 rownames(cells_citeseq_mtx)
 
-# the isotype controls are index 67 - 70 
+# the isotype controls are index 67 - 70 in this experiment. 
 isotypes = rownames(cells_citeseq_mtx)[67:70]
 isotypes 
 
 ```
 
 ## Full usage 
-This will take about 8 seconds on a laptop.
-```{r setup}
+This takes about 8 seconds on a laptop. The method scales well to increased cell numbers (a few minutes to normalize a 50,000 cell dataset) with the slowest part of the script being the per-cell mixture model using the mclust package. 
 
+```{r setup}
 
 # the isotypes were defined above 
 # isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT","MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
@@ -81,7 +196,8 @@ normalized_matrix[27:37,1:2]
 ```{r}
 
 # to plot the data in ggplot we need to make the proteins the variables (columns)
-data.plot = normalized_matrix %>% t %>%
+data.plot = normalized_matrix %>% 
+  t %>%
   as.data.frame() %>% 
   dplyr::select(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) 
 
@@ -93,15 +209,13 @@ ggplot(data.plot, aes(x = CD4_PROT, y = CD8_PROT)) +
 
 ```
 
-By using the distribution of negative droplets to rescale the counts, directly accounting for experimentally measured noise, as well as using the per cell denoising covariate defined as the mean of the background counts per cell, this reduces noise that negatively influences custering results causing spurious clusters to form (see the preprint)
 
 
 ## Integration with Seurat (also see package readme)
 
-
 ## How do I get the empty droplets?
 
-There are a number of ways to get the empty drops. If you are using cell hashing, when you demultiplex the cells, you get a vector of empty or Negative droplets. 
+There are a number of ways to get the empty drops. If you are using cell hashing, when you demultiplex the cells, you get a vector of empty or Negative droplets; see the workflow above. 
 
 HTODemux function in Seurat:
 https://satijalab.org/seurat/v3.1/hashing_vignette.html
@@ -126,8 +240,8 @@ singlet_object = subset(seurat_object, idents = "Singlet")
 
 
 # non sparse CITEseq data actually store better in a regular materix so the as.matrix() call is not memory intensive.
-neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'raw.data') %>% as.matrix()
-positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'raw.data') %>% as.matrix()
+neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'counts') %>% as.matrix()
+positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'counts') %>% as.matrix()
 
 
 # normalize the data with dsb
@@ -186,6 +300,14 @@ singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_ma
 you can simply get a vector of negative droplets from the cells you would remove. There robust ways to estimate which cells are empty droplets: 
 https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y
 
+Again, if using 10X and cellranger it is important to not filter out all of the empty droplets. 
+
+
+There are 2 parameters you can tune to increase the number of cells recoverd per lane. 
+https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/using/count
+--expect-cells	(optional) Expected number of recovered cells. Default: 3,000 cells.
+--force-cells	(optional) Force pipeline to use this number of cells, bypassing the cell detection algorithm. Use this if the number of cells estimated by Cell Ranger is not consistent with the barcode rank plot.
+
 Below is a quick method to get outlier empty droplets assuming seurat_object is a object with most cells (i.e. any cell expressing at least a gene). 
 
 ```{r, eval=FALSE}
@@ -199,13 +321,9 @@ sd_umi = sd(umi)
 
 # calculate a threshold for calling a cell negative 
 sub_threshold = mu_umi - (5*sd_umi)
-
-
-
 Idents(seurat_object) = "nUMI"
 
-
-# gdefine the negative cell object
+# define the negative cell object
 neg = subset(seurat_object, accept.high = sub_threshold)
 
 
