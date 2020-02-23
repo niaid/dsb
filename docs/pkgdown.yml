@@ -1,0 +1,6 @@
+pandoc: 2.3.1
+pkgdown: 1.4.1
+pkgdown_sha: ~
+articles:
+  dsb_normalizing_CITEseq_data: dsb_normalizing_CITEseq_data.html
+
