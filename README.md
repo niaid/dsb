@@ -7,6 +7,11 @@
 
 # dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
 
+```{r, echo=FALSE, out.width = '100%'}
+knitr::include_graphics("man/figures/logo.png")
+```
+
+
 <!-- badges: start -->
 
 <!-- badges: end -->
