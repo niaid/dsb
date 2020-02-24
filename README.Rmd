@@ -1,8 +1,10 @@
 ---
 output: github_document
 ---
-# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/sticker.png' align="right" height="150" /></a>
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
+# dsb <img src="man/figures/logo.png" align="right" />
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
