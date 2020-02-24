@@ -3,8 +3,6 @@
 
 ## dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
 
-# dsb
-
 ## An R package for normalizing and denoising CITEseq data
 
 <!-- badges: start -->
@@ -17,6 +15,9 @@
 <https://mattpm.github.io/dsb/> for a detailed workflow describing
 reading in proper cellranger output and using the DSB normalizaiton
 method**
+
+[LINK TO FULL
+VIGNETTE](https://mattpm.github.io/dsb/articles/dsb_normalizing_CITEseq_data.html)
 
 This package was developed at [John Tsang’s
 Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè,
@@ -148,10 +149,17 @@ HTODemux function in Seurat:
 deMULTIplex function from Multiseq (this is now also implemented in
 Seurat). <https://github.com/chris-mcginnis-ucsf/MULTI-seq>
 
-If you didn’t run a multiplexing experiment you can simply get a vector
-of negative droplets from the droplets that ould be QCd out of the
-experiment due to very low mRNA counts.
-<https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
+In practice, you would want to confirm that the cells called as
+“negative” indeed have low RNA / gene content to be certain that there
+are no contaminating cells. Also, we recommend hash demultiplexing with
+the *raw* output from cellranger rather than the processed output
+(i.e. outs/raw\_feature\_bc\_matrix). This output contains all barcodes
+and will have more empty droplets from which the HTODemux function will
+be able to estimate the negative distribution. This will also have the
+benefit of creating more empty droplets to use as built-in protein
+background controls in the DSB function. **please see vignettes in the
+“articles” tab at <https://mattpm.github.io/dsb/> for a detailed
+workflow detailing these steps**
 
 ## Simple example workflow (Seurat Version 3)
 
@@ -178,18 +186,6 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = positive_adt_matri
 # now add the normalized dat back to the object (the singlets defined above as "object")
 singlet_object = SetAssayData(object = singlet_object, slot = "CITE", new.data = normalized_matrix)
 ```
-
-In practice, you would want to confirm that the cells called as
-“negative” indeed have low RNA / gene content to be certain that there
-are no contaminating cells. Also, we recommend hash demultiplexing with
-the *raw* output from cellranger rather than the processed output
-(i.e. outs/raw\_feature\_bc\_matrix). This output contains all barcodes
-and will have more empty droplets from which the HTODemux function will
-be able to estimate the negative distribution. This will also have the
-benefit of creating more empty droplets to use as built-in protein
-background controls in the DSB function. **please see vignettes in the
-“articles” tab at <https://mattpm.github.io/dsb/> for a detailed
-workflow detailing these steps**
 
 ## example workflow Seurat version 2
 
@@ -223,8 +219,14 @@ singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_ma
 
 How to get empty droplets without cell hashing or sample demultiplexing?
 
-you can simply get a vector of negative droplets from the cells you
-remove from analysis after reading in the raw counts from cellranger.
+If you didn’t run a multiplexing experiment you can simply get a vector
+of negative droplets from the droplets that ould be QCd out of the
+experiment due to very low mRNA counts as an estimation of droplets that
+contain only ambient loading buffer and no cells. There is also an
+excellent R package for
+this.  
+<https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
+
 **please see vignettes in the “articles” tab at
 <https://mattpm.github.io/dsb/> for a detailed workflow describing
 reading in proper cellranger output** There robust ways to estimate

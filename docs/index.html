@@ -85,43 +85,45 @@
 
       </header><div class="row">
   <div class="contents col-md-9">
-<div id="dsb" class="section level1">
-<div class="page-header"><h1 class="hasAnchor">
+
+<div id="dsb" class="section level2">
+<h2 class="hasAnchor">
 <a href="#dsb" class="anchor"></a>dsb <a href="https://mattpm.github.io/dsb"><img src="reference/figures/logo.png" align="right" height="150"></a>
-</h1></div>
+</h2>
+</div>
 <div id="an-r-package-for-normalizing-and-denoising-citeseq-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#an-r-package-for-normalizing-and-denoising-citeseq-data" class="anchor"></a>An R package for normalizing and denoising CITEseq data</h2>
 <!-- badges: start -->
+<!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
 <!-- badges: end -->
-<p>This package was developed at <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè and Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in <a href="https://biorxiv.org">the biorxiv preprint</a> We utilized the dsb package to normalize CITEseq data reported in this paper <a href="https://"></a></p>
-<p>In <a href="https://biorxiv.org">the biorxiv preprint</a>, comparing unstained control cells and empty droplets we found the major contribotor to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a “built in” noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop).</p>
-<p>In addition we define a per-cell denoising covariate to account for the technical component of library size differences between cells which removes spurious cluster formation derived from globally dimcells clustering together.</p>
+<p><strong>please see vignettes in the “articles” tab at <a href="https://mattpm.github.io/dsb/" class="uri">https://mattpm.github.io/dsb/</a> for a detailed workflow describing reading in proper cellranger output and using the DSB normalizaiton method</strong></p>
+<p><a href="https://mattpm.github.io/dsb/articles/dsb_normalizing_CITEseq_data.html">LINK TO FULL VIGNETTE</a></p>
+<p>This package was developed at <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè, Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. The details of the method can be found in <a href="https://biorxiv.org">the biorxiv preprint</a> We utilized the dsb package to normalize CITEseq data reported in <a href="https://doi.org/10.1038/s41591-020-0769-8">this paper</a>.</p>
+<p>As described in <a href="https://biorxiv.org">the biorxiv preprint</a> comparing unstained control cells and empty droplets we found that a major contributor to background noise in protein expression data is unbound antibodies captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets, which serve as a “built in” noise measurement in droplet capture single cell experiments (e.g. 10X, dropseq, indrop). In addition, we define a per-cell denoising covariate to account for several potential sources of technical differences among single cells – see our preprint for details.</p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>installation</h2>
 <p>You can install the released version of dsb in your R session with the command below</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. </span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span>(devtools)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="co">#&gt; Loading required package: devtools</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="co">#devtools::install_github(repo = 'MattPM/dsb')</span></a></code></pre></div>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="co"># require(devtools)</span></a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="co"># devtools::install_github(repo = 'MattPM/dsb')</span></a></code></pre></div>
 </div>
-<div id="quickstart" class="section level2">
+<div id="quickstart---removing-background-as-captured-by-data-from-empty-droplets" class="section level2">
 <h2 class="hasAnchor">
-<a href="#quickstart" class="anchor"></a>quickstart</h2>
+<a href="#quickstart---removing-background-as-captured-by-data-from-empty-droplets" class="anchor"></a>Quickstart - removing background as captured by data from empty droplets</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co"># load package and normalize the example raw data </span></a>
 <a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="co"># normalize</span></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx)</a></code></pre></div>
+<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co"># normalize</span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx)</a></code></pre></div>
 </div>
-<div id="the-full-version-recommended" class="section level2">
+<div id="the-full-version-recommended-removing-background-as-above-and-correcting-for-per-cell-technical-factor-as-a-covariate" class="section level2">
 <h2 class="hasAnchor">
-<a href="#the-full-version-recommended" class="anchor"></a>The full version (recommended)</h2>
-<p>By default dsb defines the per cell denoising covariate by fitting a gaussian mixture model to the log + 10 counts of each cell and defining the noise ocvariates the mean. We reccomend including the counts from isotype controls in each cell in the denoising covariates.</p>
+<a href="#the-full-version-recommended-removing-background-as-above-and-correcting-for-per-cell-technical-factor-as-a-covariate" class="anchor"></a>The full version (recommended) – removing background as above and correcting for per-cell technical factor as a covariate</h2>
+<p><strong>This is a quick summary Please see the detailed workflow vignette</strong></p>
+<p>By default, dsb defines the per-cell technical covariate by fitting a two-component gaussian mixture model to the log + 10 counts (of all proteins) within each cell and defining the covariate as the mean of the “negative” component. We recommend also to use the counts from the isotype controls in each cell to compute the denoising covariate (defined as the first principal component of the isotype control counts and the “negative” count inferred by the mixture model above.)</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"></a>
 <a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co"># get the empty cells from demultiplexing with </span></a>
 <a class="sourceLine" id="cb3-3" data-line-number="3"></a>
@@ -134,11 +136,11 @@
 <a class="sourceLine" id="cb3-10" data-line-number="10">                                        <span class="dt">use.isotype.control =</span> <span class="ot">TRUE</span>,</a>
 <a class="sourceLine" id="cb3-11" data-line-number="11">                                        <span class="dt">isotype.control.name.vec =</span> isotypes)</a></code></pre></div>
 </div>
-<div id="visualize-distributions-of-cd4-and-cd8" class="section level2">
+<div id="example-visualize-the-distributions-of-cd4-and-cd8" class="section level2">
 <h2 class="hasAnchor">
-<a href="#visualize-distributions-of-cd4-and-cd8" class="anchor"></a>visualize distributions of CD4 and CD8</h2>
+<a href="#example-visualize-the-distributions-of-cd4-and-cd8" class="anchor"></a>Example: Visualize the distributions of CD4 and CD8</h2>
 <p>plot the DSB normalized CITEseq data.</p>
-<p><strong>Note, there is NO jitter added to these points for visualization these are the unmodified normalized counts</strong></p>
+<p><strong>Note, there is NO jitter added to these points for visualization; these are the unmodified normalized counts</strong></p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># add a density gradient on the points () this is helpful when there are many thousands of cells )</span></a>
 <a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co"># this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/</span></a>
 <a class="sourceLine" id="cb4-3" data-line-number="3">get_density =<span class="st"> </span><span class="cf">function</span>(x, y, ...) {</a>
@@ -181,10 +183,11 @@
 <div id="how-do-i-get-the-empty-droplets" class="section level2">
 <h2 class="hasAnchor">
 <a href="#how-do-i-get-the-empty-droplets" class="anchor"></a>How do I get the empty droplets?</h2>
+<p><strong>This is covered more extensively in the detailed workflow vignette</strong></p>
 <p>There are a number of ways to get the empty drops. If you are using cell hashing, when you demultiplex the cells, you get a vector of empty or Negative droplets.</p>
 <p>HTODemux function in Seurat: <a href="https://satijalab.org/seurat/v3.1/hashing_vignette.html" class="uri">https://satijalab.org/seurat/v3.1/hashing_vignette.html</a></p>
 <p>deMULTIplex function from Multiseq (this is now also implemented in Seurat). <a href="https://github.com/chris-mcginnis-ucsf/MULTI-seq" class="uri">https://github.com/chris-mcginnis-ucsf/MULTI-seq</a></p>
-<p>If you’re not multiplexing you can simply get a vector of negative droplets from the cells you would remove. <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y" class="uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y</a></p>
+<p>In practice, you would want to confirm that the cells called as “negative” indeed have low RNA / gene content to be certain that there are no contaminating cells. Also, we recommend hash demultiplexing with the <em>raw</em> output from cellranger rather than the processed output (i.e. outs/raw_feature_bc_matrix). This output contains all barcodes and will have more empty droplets from which the HTODemux function will be able to estimate the negative distribution. This will also have the benefit of creating more empty droplets to use as built-in protein background controls in the DSB function. <strong>please see vignettes in the “articles” tab at <a href="https://mattpm.github.io/dsb/" class="uri">https://mattpm.github.io/dsb/</a> for a detailed workflow detailing these steps</strong></p>
 </div>
 <div id="simple-example-workflow-seurat-version-3" class="section level2">
 <h2 class="hasAnchor">
@@ -198,8 +201,8 @@
 <a class="sourceLine" id="cb5-7" data-line-number="7"></a>
 <a class="sourceLine" id="cb5-8" data-line-number="8"></a>
 <a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co"># non sparse CITEseq data actually store better in a regular materix so the as.matrix() call is not memory intensive.</span></a>
-<a class="sourceLine" id="cb5-10" data-line-number="10">neg_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(neg_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'raw.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb5-11" data-line-number="11">positive_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(singlet_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'raw.data'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb5-10" data-line-number="10">neg_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(neg_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb5-11" data-line-number="11">positive_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(singlet_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
 <a class="sourceLine" id="cb5-12" data-line-number="12"></a>
 <a class="sourceLine" id="cb5-13" data-line-number="13"></a>
 <a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co"># normalize the data with dsb</span></a>
@@ -210,8 +213,6 @@
 <a class="sourceLine" id="cb5-19" data-line-number="19"></a>
 <a class="sourceLine" id="cb5-20" data-line-number="20"><span class="co"># now add the normalized dat back to the object (the singlets defined above as "object")</span></a>
 <a class="sourceLine" id="cb5-21" data-line-number="21">singlet_object =<span class="st"> </span><span class="kw">SetAssayData</span>(<span class="dt">object =</span> singlet_object, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
-<p>In reality you might want to confirm the cells called as “Negative” have low RNA / gene content to be certain there are no contaminating cells.</p>
-<p>Also it is not necessary but we reccomend hash demultiplexing with the raw output from cellranger rather than the processed output (i.e. outs/raw_feature_bc_matrix) will have more empty droplets from which the HTODemux function will be able to estimate the negative distribution. This will also have the benefit of creating more droplets to use as built protein background controls in the DSB function.</p>
 </div>
 <div id="example-workflow-seurat-version-2" class="section level2">
 <h2 class="hasAnchor">
@@ -241,33 +242,29 @@
 <a class="sourceLine" id="cb6-23" data-line-number="23"></a>
 <a class="sourceLine" id="cb6-24" data-line-number="24"><span class="co"># add the assay to the Seurat object </span></a>
 <a class="sourceLine" id="cb6-25" data-line-number="25">singlet =<span class="st"> </span><span class="kw">SetAssayData</span>(<span class="dt">object =</span> singlet, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
-</div>
-<div id="how-to-get-empty-drops-without-cell-hashing-or-sample-demultiplexing" class="section level2">
-<h2 class="hasAnchor">
-<a href="#how-to-get-empty-drops-without-cell-hashing-or-sample-demultiplexing" class="anchor"></a>How to get empty drops without cell hashing or sample demultiplexing</h2>
-<p>you can simply get a vector of negative droplets from the cells you would remove. There robust ways to estimate which cells are empty droplets: <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y" class="uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y</a></p>
+<p>How to get empty droplets without cell hashing or sample demultiplexing?</p>
+<p>If you didn’t run a multiplexing experiment you can simply get a vector of negative droplets from the droplets that ould be QCd out of the experiment due to very low mRNA counts as an estimation of droplets that contain only ambient loading buffer and no cells. There is also an excellent R package for this.<br><a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y" class="uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y</a></p>
+<p><strong>please see vignettes in the “articles” tab at <a href="https://mattpm.github.io/dsb/" class="uri">https://mattpm.github.io/dsb/</a> for a detailed workflow describing reading in proper cellranger output</strong> There robust ways to estimate which cells are empty droplets: <a href="https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y" class="uri">https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y</a></p>
 <p>Below is a quick method to get outlier empty droplets assuming seurat_object is a object with most cells (i.e. any cell expressing at least a gene).</p>
+<p>Get the nUMI from a seurat version 3 object</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="co"># get the nUMI from a seurat version 3 object </span></a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">umi =<span class="st"> </span>seurat_object<span class="op">$</span>nUMI</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="co">#  Get the nUMI from a Seurat version 2 objec </span></a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">umi =<span class="st"> </span>seurat_object<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="st">"nUMI"</span>)</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">mu_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(umi)</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7">sd_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(umi)</a>
-<a class="sourceLine" id="cb7-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb7-9" data-line-number="9"><span class="co"># calculate a threshold for calling a cell negative </span></a>
-<a class="sourceLine" id="cb7-10" data-line-number="10">sub_threshold =<span class="st"> </span>mu_umi <span class="op">-</span><span class="st"> </span>(<span class="dv">5</span><span class="op">*</span>sd_umi)</a>
-<a class="sourceLine" id="cb7-11" data-line-number="11"></a>
-<a class="sourceLine" id="cb7-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb7-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="kw">Idents</span>(seurat_object) =<span class="st"> "nUMI"</span></a>
-<a class="sourceLine" id="cb7-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb7-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb7-17" data-line-number="17"><span class="co"># gdefine the negative cell object</span></a>
-<a class="sourceLine" id="cb7-18" data-line-number="18">neg =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">accept.high =</span> sub_threshold)</a></code></pre></div>
+<a class="sourceLine" id="cb7-2" data-line-number="2">umi =<span class="st"> </span>seurat_object<span class="op">$</span>nUMI</a></code></pre></div>
+<p>Get the nUMI from a Seurat version 2 object</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co">#  Get the nUMI from a Seurat version 2 object</span></a>
+<a class="sourceLine" id="cb8-2" data-line-number="2">umi =<span class="st"> </span>seurat_object<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="st">"nUMI"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1">mu_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(umi)</a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">sd_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(umi)</a>
+<a class="sourceLine" id="cb9-3" data-line-number="3"></a>
+<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="co"># calculate a threshold for calling a cell negative </span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">sub_threshold =<span class="st"> </span>mu_umi <span class="op">-</span><span class="st"> </span>(<span class="dv">5</span><span class="op">*</span>sd_umi)</a>
+<a class="sourceLine" id="cb9-6" data-line-number="6"></a>
+<a class="sourceLine" id="cb9-7" data-line-number="7"><span class="co"># define the negative cell object</span></a>
+<a class="sourceLine" id="cb9-8" data-line-number="8"><span class="kw">Idents</span>(seurat_object) =<span class="st"> "nUMI"</span></a>
+<a class="sourceLine" id="cb9-9" data-line-number="9">neg =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">accept.high =</span> sub_threshold)</a></code></pre></div>
 <p>This negative cell object can be used to define the negative background following the examples above.</p>
+<p><strong>Please see the detailed workflow vignette for a full workflow and more details</strong></p>
 </div>
-</div>
+
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
