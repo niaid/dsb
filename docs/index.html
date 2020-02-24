@@ -94,7 +94,7 @@
 <a href="#an-r-package-for-normalizing-and-denoising-citeseq-data" class="anchor"></a>An R package for normalizing and denoising CITEseq data</h2>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>This package was developed at <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè and Andrew Martins. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in <a href="https://biorxiv.org">the biorxiv preprint</a> We utilized the dsb package to normalize CITEseq data reported in this paper <a href="https://"></a></p>
+<p>This package was developed at <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè and Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in <a href="https://biorxiv.org">the biorxiv preprint</a> We utilized the dsb package to normalize CITEseq data reported in this paper <a href="https://"></a></p>
 <p>In <a href="https://biorxiv.org">the biorxiv preprint</a>, comparing unstained control cells and empty droplets we found the major contribotor to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a “built in” noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop).</p>
 <p>In addition we define a per-cell denoising covariate to account for the technical component of library size differences between cells which removes spurious cluster formation derived from globally dimcells clustering together.</p>
 </div>

@@ -20,12 +20,16 @@ knitr::opts_chunk$set(
 
 ## installation 
 
-You can install the released version of dsb in your R session with the command below 
+You can install the release version of dsb in your R session with the command below 
 
 ```{r}
 # this is analagous to install.packages("package"), you have the package "devtools"  to install a package from a github repository like this one. 
-require(devtools)
-suppressMessages(devtools::install_github(repo = 'MattPM/dsb'))
+
+
+
+# this is the command you would use to install the package: 
+# require(devtools)
+# devtools::install_github(repo = 'MattPM/dsb')
 
 ```
 
