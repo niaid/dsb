@@ -1,27 +1,25 @@
 ---
 output: github_document
 ---
-
+# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/sticker.png' align="right" height="150" /></a>
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/",
+  fig.path = "man/figures/README-",
   out.width = "100%"
 )
 ```
 # dsb
 ## An R package for normalizing and denoising CITEseq data
 
-# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
-
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
 <!-- badges: end -->
 
-This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in [this paper](https://doi.org/10.1038/s41591-020-0769-8)
+This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè,  Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. Technical discussion of how the method works can be found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb package to normalize CITEseq data reported in [this paper](https://doi.org/10.1038/s41591-020-0769-8)
 
 In [the biorxiv preprint](https://biorxiv.org), by comparing unstained control cells and empty droplets we found the major contribution to background noise in CITEseq data is unbound antibody captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets which serve as a "built in" noise measurement in any droplet capture single cell platform (e.g. 10X, dropseq, indrop). 
 
@@ -224,13 +222,13 @@ umi = seurat_object$nUMI
 ```
 
 Get the nUMI from a Seurat version 2 object
-```{r}
+```{r, eval=FALSE}
 #  Get the nUMI from a Seurat version 2 object
 umi = seurat_object@meta.data %>% select("nUMI")
 ```
 
 
-```{r}
+```{r,  eval=FALSE}
 mu_umi = mean(umi)
 sd_umi = sd(umi)
 
