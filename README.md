@@ -10,7 +10,7 @@
 
 This package was developed at [John Tsang’s
 Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè and
-Andrew Martins. The package implements our normalization and denoising
+Andrew Martins and John Tsang. The package implements our normalization and denoising
 method for CITEseq data. Technical discussion of how the method works
 can be found in [the biorxiv preprint](https://biorxiv.org) We utilized
 the dsb package to normalize CITEseq data reported in this paper
