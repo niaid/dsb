@@ -2,3 +2,13 @@
 
 language: R
 cache: packages
+
+
+os:
+  - linux
+  - osx
+
+r:
+  - 3.4
+  - 3.5
+  - release

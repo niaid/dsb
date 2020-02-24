@@ -13,7 +13,8 @@ Imports:
     magrittr,
     limma,
     mclust,
-    stats
+    stats,
+    biocViews
 Suggests: 
     testthat,
     knitr,

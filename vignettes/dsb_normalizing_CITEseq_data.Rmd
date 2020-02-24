@@ -25,7 +25,7 @@ You can install the released version of dsb in your R session with the command b
 ```{r}
 # this is analagous to install.packages("package"), you have the package "devtools"  to install a package from a github repository like this one. 
 require(devtools)
-devtools::install_github(repo = 'MattPM/dsb')
+suppressMessages(devtools::install_github(repo = 'MattPM/dsb'))
 
 ```
 
@@ -37,10 +37,10 @@ This is a simple but comprehensive example of loading the output from CITEseq-co
 
 ## Load packages used in this script 
 ```{r}
-library(dsb)
-library(Seurat)
-library(dplyr)
-library(magrittr)
+suppressMessages(library(dsb))
+suppressMessages(library(Seurat))
+suppressMessages(library(dplyr))
+suppressMessages(library(magrittr))
 ```
 
 **Read the output from CITE-seq-count and raw_bc_matrix from cellranger**
