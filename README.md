@@ -5,6 +5,7 @@
 
 ## An R package for normalizing and denoising CITEseq data
 
+# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
 
 <!-- badges: start -->
 
