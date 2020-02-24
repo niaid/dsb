@@ -17,6 +17,11 @@ knitr::opts_chunk$set(
 # dsb
 ## An R package for normalizing and denoising CITEseq data
 
+
+```{r, echo=FALSE, out.width = '100%'}
+knitr::include_graphics("man/figures/logo.png")
+```
+
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
 <!-- badges: end -->
