@@ -3,4 +3,7 @@ pkgdown: 1.4.1
 pkgdown_sha: ~
 articles:
   dsb_normalizing_CITEseq_data: dsb_normalizing_CITEseq_data.html
+urls:
+  reference: https://mattpm.github.io/dsb//reference
+  article: https://mattpm.github.io/dsb//articles
 

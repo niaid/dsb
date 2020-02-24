@@ -1,15 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# dsb
-
-## An R package for normalizing and denoising CITEseq data
-
 # dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
-
-```{r, echo=FALSE, out.width = '100%'}
-knitr::include_graphics("man/figures/logo.png")
-```
+## An R package for normalizing and denoising CITEseq data
 
 
 <!-- badges: start -->

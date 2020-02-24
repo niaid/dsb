@@ -3,8 +3,8 @@ output: github_document
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
-# dsb <img src="man/figures/logo.png" align="right" />
+## dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
+
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -17,10 +17,6 @@ knitr::opts_chunk$set(
 # dsb
 ## An R package for normalizing and denoising CITEseq data
 
-
-```{r, echo=FALSE, out.width = '100%'}
-knitr::include_graphics("man/figures/logo.png")
-```
 
 <!-- badges: start -->
 [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb)
