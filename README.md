@@ -23,19 +23,21 @@ This package was developed at [John Tsang’s
 Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè,
 Andrew Martins and John Tsang. The package implements our normalization
 and denoising method for CITEseq data. The details of the method can be
-found in [the biorxiv preprint](https://biorxiv.org) We utilized the dsb
-package to normalize CITEseq data reported in [this
+found in [the biorxiv
+preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf)
+We utilized the dsb package to normalize CITEseq data reported in [this
 paper](https://doi.org/10.1038/s41591-020-0769-8).
 
-As described in [the biorxiv preprint](https://biorxiv.org) comparing
-unstained control cells and empty droplets we found that a major
-contributor to background noise in protein expression data is unbound
-antibodies captured and sequenced in droplets. DSB corrects for this
-background by leveraging empty droplets, which serve as a “built in”
-noise measurement in droplet capture single cell experiments (e.g. 10X,
-dropseq, indrop). In addition, we define a per-cell denoising covariate
-to account for several potential sources of technical differences among
-single cells – see our preprint for details.
+As described in [the biorxiv
+preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf)
+comparing unstained control cells and empty droplets we found that a
+major contributor to background noise in protein expression data is
+unbound antibodies captured and sequenced in droplets. DSB corrects for
+this background by leveraging empty droplets, which serve as a “built
+in” noise measurement in droplet capture single cell experiments
+(e.g. 10X, dropseq, indrop). In addition, we define a per-cell
+denoising covariate to account for several potential sources of
+technical differences among single cells – see our preprint for details.
 
 ## installation
 
