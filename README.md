@@ -19,6 +19,13 @@ method**
 [LINK TO FULL
 VIGNETTE](https://mattpm.github.io/dsb/articles/dsb_normalizing_CITEseq_data.html)
 
+**For more intuition on how to define background droplets, see
+<https://github.com/MattPM/dsb/issues/9> **
+
+**DSB was used in this informative preprint on optomizing CITE-seq
+experiments:
+<https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1>**
+
 This package was developed at [John Tsang’s
 Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè,
 Andrew Martins and John Tsang. The package implements our normalization
@@ -47,11 +54,88 @@ below
 
 ``` r
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
-# require(devtools)
-# devtools::install_github(repo = 'MattPM/dsb')
+require(devtools)
+devtools::install_github(repo = 'MattPM/dsb')
 ```
 
-## Quickstart - removing background as captured by data from empty droplets
+## Quickstart vignette - Loading / processing raw 10X data PBMC 5k data and normalizing with the DSB package
+
+This experiment was run on a single 10X lane and there is no Cell
+hashing data.
+
+Data download:
+<https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3>.
+
+this was done with Seurat version 2, the same logic follows for Version
+3. See here for more vignettes on using Seurat V3:
+<https://satijalab.org/seurat/>
+
+``` r
+'%ni%' = Negate('%in%')
+library(Seurat)
+library(tidyverse)
+library(dsb)
+
+# Read data 
+raw = Read10X("data/10x_data/raw_feature_bc_matrix/")
+s = CreateSeuratObject(raw.data = raw, min.cells = 10, min.genes = 5)
+
+# these data have Protein and RNA in the same sparse matix; split protein and rna data into separate matrix 
+prot = s@raw.data[grep(rownames(s@raw.data), pattern = "TotalSeq"), ]
+rna = s@raw.data[rownames(s@raw.data)[rownames(s@raw.data) %ni% rownames(prot)], ]
+
+# make new object with separate assay
+s = CreateSeuratObject(raw.data = rna)
+
+# define thresholds for neg cells -- see https://github.com/MattPM/dsb/issues/9 for intuition
+ggplot(s@meta.data, aes(x = log10(nUMI + 1))) + geom_density() 
+
+# add log10UMI to metadata
+md = s@meta.data %>%
+  rownames_to_column("bc") %>%
+  mutate(log10umi = log10(nUMI)) %>% select(bc, log10umi) %>% column_to_rownames("bc")
+s = AddMetaData(s,metadata = md)
+
+# define negative drops based on thresholding from 
+neg_drops = WhichCells(s, subset.name =  "log10umi", accept.high = 1.5)
+
+# create the empty_drop_matrix used to normalize
+neg_prot = prot[ , neg_drops ] %>% as.matrix()
+
+# Define the cell containing droplets
+positive_cells = WhichCells(s, subset.name =  "log10umi", accept.low = 2.5, accept.high = 4.6)
+positive_prot = prot[ , positive_cells] %>% as.matrix()
+
+# Normalize protein data with DSB normalization 
+isotypes = rownames(pos_prot)[30:32]
+
+mtx = DSBNormalizeProtein(cell_protein_matrix = pos_prot,
+                          empty_drop_matrix = neg_prot,
+                          denoise.counts = TRUE,
+                          use.isotype.control = TRUE, 
+                          isotype.control.name.vec = isotypes)
+
+# add protein data to the Seurat object. 
+s1 = s %>% SubsetData(cells.use = colnames(mtx), subset.raw = TRUE)
+pos_prot = pos_prot[ ,s1@cell.names]
+s1 = SetAssayData(s1, assay.type = "CITE", slot = "raw.data", new.data = pos_prot)
+s1 = SetAssayData(s1, assay.type = "CITE", slot = "data", new.data = mtx)
+
+# This object is ready for downstream analysis. Arbitrary thresholds used here for outlier removal. 
+s1 = SubsetData(s1, subset.name = "nGene", accept.low = 300, accept.high = 2000, subset.raw = TRUE)
+```
+
+If there were no isotype controls in the example above, the call would
+have been:
+
+``` r
+mtx = DSBNormalizeProtein(cell_protein_matrix = pos_prot,
+                          empty_drop_matrix = neg_prot,
+                          denoise.counts = TRUE,
+                          use.isotype.control = FALSE)
+```
+
+## Quickstart 2 using example data; removing background as captured by data from empty droplets
 
 ``` r
 # load package and normalize the example raw data 
@@ -61,9 +145,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         empty_drop_matrix = empty_drop_citeseq_mtx)
 ```
 
-## The full version (recommended) – removing background as above and correcting for per-cell technical factor as a covariate
-
-**This is a quick summary Please see the detailed workflow vignette**
+## Quickstart 3 using example data; – removing background and correcting for per-cell technical factor as a covariate
 
 By default, dsb defines the per-cell technical covariate by fitting a
 two-component gaussian mixture model to the log + 10 counts (of all
@@ -75,11 +157,9 @@ and the “negative” count inferred by the mixture model above.)
 
 ``` r
 
-# get the empty cells from demultiplexing with 
-
-
 # define a vector of the isotype controls in the data 
-isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT","MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
+isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT",
+             "MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
 
 normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         empty_drop_matrix = empty_drop_citeseq_mtx,
@@ -87,9 +167,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         isotype.control.name.vec = isotypes)
 ```
 
-## Example: Visualize the distributions of CD4 and CD8
-
-plot the DSB normalized CITEseq data.
+## Visualization on example data: distributions of CD4 and CD8 DSB normalized CITEseq data.
 
 **Note, there is NO jitter added to these points for visualization;
 these are the unmodified normalized
@@ -111,39 +189,35 @@ data.plot = normalized_matrix %>% t %>%
   as.data.frame() %>% 
   dplyr::select(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) 
 
+density_attr = list(
+  geom_vline(xintercept = 0, color = "red", linetype = 2), 
+  geom_hline(yintercept = 0, color = "red", linetype = 2), 
+  theme(axis.text = element_text(face = "bold",size = 12)) , 
+  viridis::scale_color_viridis(option = "B"), 
+  scale_shape_identity(), 
+  theme_bw() 
+)
 
 
 data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
 p1 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() + ggtitle("small example dataset") +
-  geom_vline(xintercept = 0, color = "red", linetype = 2) + 
-  geom_hline(yintercept = 0, color = "red", linetype = 2) + 
-  theme(axis.text = element_text(face = "bold",size = 12)) +
-  viridis::scale_color_viridis(option = "B") +  
-  scale_shape_identity() 
-
+  geom_point(size = 0.5) + density_attr +  ggtitle("small example dataset")
 
 data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD19_PROT, data.plot$CD27_PROT, n = 100)) 
 p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD27_PROT, color = density)) +
-  geom_point(size = 0.4) + theme_bw() + 
-  geom_vline(xintercept = 0, color = "red", linetype = 2) + 
-  geom_hline(yintercept = 0, color = "red", linetype = 2) + 
-  theme(axis.text = element_text(face = "bold",size = 12)) +
-  viridis::scale_color_viridis(option = "B") +  
-  scale_shape_identity() 
+  geom_point(size = 0.5) + density_attr + ggtitle("small example dataset")
 
 cowplot::plot_grid(p1,p2)
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
 
 ## How do I get the empty droplets?
 
-**This is covered more extensively in the detailed workflow vignette**
-
-There are a number of ways to get the empty drops. If you are using cell
-hashing, when you demultiplex the cells, you get a vector of empty or
-Negative droplets.
+If you don’t have hashing data, you can define the negative drops as
+shown above in the vignette using 10X data. If you have hashing data,
+demultiplexing functions define a “negative” cell population which can
+be used to define background.
 
 HTODemux function in Seurat:
 <https://satijalab.org/seurat/v3.1/hashing_vignette.html>
@@ -159,11 +233,15 @@ the *raw* output from cellranger rather than the processed output
 and will have more empty droplets from which the HTODemux function will
 be able to estimate the negative distribution. This will also have the
 benefit of creating more empty droplets to use as built-in protein
-background controls in the DSB function. **please see vignettes in the
-“articles” tab at <https://mattpm.github.io/dsb/> for a detailed
-workflow detailing these steps**
+background controls in the DSB function.
 
-## Simple example workflow (Seurat Version 3)
+**see 10x data vignette discussed above and shown here
+<https://github.com/MattPM/dsb/issues/9> ** **please see vignettes in
+the “articles” tab at <https://mattpm.github.io/dsb/> for a detailed
+workflow detailing these
+steps**
+
+## Simple example workflow (Seurat Version 3) for experiments with Hashing data
 
 ``` r
 
@@ -189,7 +267,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = positive_adt_matri
 singlet_object = SetAssayData(object = singlet_object, slot = "CITE", new.data = normalized_matrix)
 ```
 
-## example workflow Seurat version 2
+## Simple example workflow Seurat version 2 for experiments with hashing data
 
 ``` r
 
@@ -221,23 +299,14 @@ singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_ma
 
 How to get empty droplets without cell hashing or sample demultiplexing?
 
-If you didn’t run a multiplexing experiment you can simply get a vector
-of negative droplets from the droplets that ould be QCd out of the
-experiment due to very low mRNA counts as an estimation of droplets that
-contain only ambient loading buffer and no cells. There is also an
-excellent R package for
-this.  
-<https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
-
 **please see vignettes in the “articles” tab at
 <https://mattpm.github.io/dsb/> for a detailed workflow describing
-reading in proper cellranger output** There robust ways to estimate
-which cells are empty droplets:
-<https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y>
+reading in proper cellranger output**
 
-Below is a quick method to get outlier empty droplets assuming
-seurat\_object is a object with most cells (i.e. any cell expressing at
-least a gene).
+Below is a quick and dirty heuristic to get outlier empty droplets
+assuming seurat\_object is a object with most cells (i.e. any cell
+expressing at least a gene). In reality you would want to inspect
+distributions of the droplets.
 
 Get the nUMI from a seurat version 3 object
 
@@ -267,6 +336,3 @@ neg = subset(seurat_object, accept.high = sub_threshold)
 
 This negative cell object can be used to define the negative background
 following the examples above.
-
-**Please see the detailed workflow vignette for a full workflow and more
-details**
