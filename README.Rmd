@@ -84,7 +84,7 @@ md = s@meta.data %>%
 s = AddMetaData(s,metadata = md)
 
 # define negative drops based on thresholding from 
-neg_drops = WhichCells(s, subset.name =  "log10umi", accept.high = 1.5)
+neg_drops = WhichCells(s, subset.name =  "log10umi", accept.low = 1.5 accept.high = 2.49)
 
 # create the empty_drop_matrix used to normalize
 neg_prot = prot[ , neg_drops ] %>% as.matrix()
