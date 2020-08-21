@@ -1,0 +1,16 @@
+citHeader("To cite dsb in publications use:")
+
+citEntry(
+  entry    = "",
+  title    = {Normalizing and denoising protein expression data from droplet-based single cell profiling},
+  author   = ,
+  journal  = {biorxiv},
+  year     = {2020},
+  volume   = ,
+  number   = ,
+  pages    = ,
+  url      = {https://doi.org/10.1101/2020.02.24.963603},
+  textVersion = paste(
+
+  )
+)
