@@ -8,7 +8,7 @@ Description: see biorxiv preprint DOI:Here we developed a method specifically fo
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.0.1
+RoxygenNote: 7.1.0
 biocViews:
 Imports: 
     magrittr,

@@ -16,12 +16,6 @@
 reading in proper cellranger output and using the DSB normalizaiton
 method**
 
-[LINK TO FULL
-VIGNETTE](https://mattpm.github.io/dsb/articles/dsb_normalizing_CITEseq_data.html)
-
-**For more intuition on how to define background droplets, see
-<https://github.com/MattPM/dsb/issues/9> **
-
 **DSB was used in this informative preprint on optomizing CITE-seq
 experiments:
 <https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1>**
@@ -56,74 +50,137 @@ below
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
 require(devtools)
 devtools::install_github(repo = 'MattPM/dsb')
+
+# load dsb like any other R package 
+library(dsb)
 ```
 
-## Quickstart vignette - Loading / processing raw 10X data PBMC 5k data and normalizing with the DSB package
-
-This experiment was run on a single 10X lane and there is no Cell
-hashing data.
-
-Data download:
-<https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3>.
-
-this was done with Seurat version 2, the same logic follows for Version
-3. See here for more vignettes on using Seurat V3:
-<https://satijalab.org/seurat/>
+# Run DSB on example data
 
 ``` r
-'%ni%' = Negate('%in%')
-library(Seurat)
-library(tidyverse)
-library(dsb)
-
-# Read data 
-raw = Read10X("data/10x_data/raw_feature_bc_matrix/")
-s = CreateSeuratObject(raw.data = raw, min.cells = 10, min.genes = 5)
-
-# these data have Protein and RNA in the same sparse matix; split protein and rna data into separate matrix 
-prot = s@raw.data[grep(rownames(s@raw.data), pattern = "TotalSeq"), ]
-rna = s@raw.data[rownames(s@raw.data)[rownames(s@raw.data) %ni% rownames(prot)], ]
-
-# make new object with separate assay
-s = CreateSeuratObject(raw.data = rna)
-
-# define thresholds for neg cells -- see https://github.com/MattPM/dsb/issues/9 for intuition
-ggplot(s@meta.data, aes(x = log10(nUMI + 1))) + geom_density() 
-
-# add log10UMI to metadata
-md = s@meta.data %>%
-  rownames_to_column("bc") %>%
-  mutate(log10umi = log10(nUMI)) %>% select(bc, log10umi) %>% column_to_rownames("bc")
-s = AddMetaData(s,metadata = md)
-
-# define negative drops based on thresholding from 
-neg_drops = WhichCells(s, subset.name =  "log10umi", accept.low = 1.5 accept.high = 2.49)
-
-# create the empty_drop_matrix used to normalize
-neg_prot = prot[ , neg_drops ] %>% as.matrix()
-
-# Define the cell containing droplets
-positive_cells = WhichCells(s, subset.name =  "log10umi", accept.low = 2.5, accept.high = 4.6)
-positive_prot = prot[ , positive_cells] %>% as.matrix()
-
-# Normalize protein data with DSB normalization 
-isotypes = rownames(pos_prot)[30:32]
-
-mtx = DSBNormalizeProtein(cell_protein_matrix = pos_prot,
-                          empty_drop_matrix = neg_prot,
-                          denoise.counts = TRUE,
-                          use.isotype.control = TRUE, 
-                          isotype.control.name.vec = isotypes)
-
-# add protein data to the Seurat object. 
-s1 = s %>% SubsetData(cells.use = colnames(mtx), subset.raw = TRUE)
-pos_prot = pos_prot[ ,s1@cell.names]
-s1 = SetAssayData(s1, assay.type = "CITE", slot = "raw.data", new.data = pos_prot)
-s1 = SetAssayData(s1, assay.type = "CITE", slot = "data", new.data = mtx)
-
-# This object is ready for downstream analysis. Arbitrary thresholds used here for outlier removal. 
-s1 = SubsetData(s1, subset.name = "nGene", accept.low = 300, accept.high = 2000, subset.raw = TRUE)
+norm_mtx = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx, empty_drop_matrix = empty_drop_citeseq_mtx)
 ```
+
+# Quick start using *RAW* 10X cellranger output
+
+load public 10X CITE-seq data \#\#\# downloaded the *feature /
+cellmatrix raw* file from here:
+<https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3>
+
+``` r
+library(dsb)
+library(Seurat) # version 3 in example provided belo
+library(tidyverse)
+library(magrittr)
+path_to_data = "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"
+raw = Read10X(data.dir = path_to_data)
+
+# create object with Minimal filtering (retain drops with 5 unique mRNAs detected)
+s1 = CreateSeuratObject(counts = raw$`Gene Expression`,  min.cells = 10, min.features = 5)
+
+# add some metadata 
+s1$log10umi = log10(s1$nCount_RNA  + 1) 
+s1$bc = rownames(s1@meta.data)
+
+# define negative and positive drops based on an mRNA threshold to define neg and positive cells (see details below) 
+hist(log10(s1$nCount_RNA  + 1), breaks = 1000)
+neg_drops = s1@meta.data %>% filter(log10umi > 1.5 & log10umi < 2.79) %$% bc
+positive_cells = s1@meta.data %>% filter(log10umi > 2.8 & log10umi < 4.4) %$% bc
+  
+# Subset protein data to create a standard R matrix of protein counts for negative droplets and cells 
+neg_prot = raw$`Antibody Capture`[ ,  neg_drops ] %>% as.matrix()
+positive_prot = raw$`Antibody Capture`[ , positive_cells] %>% as.matrix()
+
+# run DSB normalization
+isotypes = rownames(positive_prot)[30:32]
+mtx = DSBNormalizeProtein(cell_protein_matrix = positive_prot,
+                           empty_drop_matrix = neg_prot,
+                           denoise.counts = TRUE, use.isotype.control = TRUE, 
+                           isotype.control.name.vec = isotypes)
+
+## subset the raw data to only iinclude cell containing drops and add protein data 
+s = subset(s1, cells = colnames(mtx))
+s[["CITE"]] = CreateAssayObject(counts = positive_prot)
+s = SetAssayData(s,assay = "CITE", slot = "data",new.data = mtx)
+
+# Done! you can also save the resulting normalized matrix for integration with scanpy etc
+write_delim(mtx, path = paste0(path_to_data, "dsb_norm_matrix.txt"),delim = "\t" )
+```
+
+# Recommended next steps in CITEseq workflow. Protein based clustering and protein based based cluster annotation
+
+This is the same process followed in our paper
+<https://www.nature.com/articles/s41591-020-0769-8>
+
+DSB normalized vlaues provide a straightforward comparable value for
+each protein in each cluster. They are the denoised log number of
+standard deviations from the background.
+
+``` r
+
+# Get dsb normalized protein data without isotype controls for clustering
+s_dsb = s@assays$CITE@data
+s_dsb = s_dsb[1:29, ]
+
+# defint euclidean distance matrix and cluster 
+p_dist = dist(t(s_dsb))
+p_dist = as.matrix(p_dist)
+s[["p_dist"]] <- FindNeighbors(p_dist)$snn
+s = FindClusters(s, resolution = 0.6, graph.name = "p_dist")
+
+# Plot clusters by average protein expression for annotation 
+
+adt_data = cbind(as.data.frame(t(s@assays$CITE@data)), s@meta.data)
+prots = rownames(s@assays$CITE@data)
+adt_plot = adt_data %>% 
+    group_by(seurat_clusters) %>% 
+    summarize_at(.vars = prots, .funs = mean) %>% 
+    column_to_rownames("seurat_clusters") %>% 
+    t %>% 
+    as.data.frame
+
+pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), fontsize_row = 8)
+```
+
+![](images/cluster_average_dsb.png)
+
+# More information: How were background drops defined in the quick example above?
+
+First apply some minimal (RNA based in this case) filtering to retain
+noise / empty droplets for DSB. Below the cells that should be used for
+background in this experiment are shown in a histogram of the droplets
+passing a minimal filtering step.
+
+``` r
+
+path_to_data = "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"
+raw = Read10X(data.dir = path_to_data)
+
+# create object with Minimal filtering (retain drops with 5 unique mRNAs detected)
+s1 = CreateSeuratObject(counts = raw$`Gene Expression`,  min.cells = 10, min.features = 5)
+
+# define number of total drops (>130K) after minimal filtering
+ndrop = dim(s1@meta.data)[1]
+
+# Plot
+hist_attr = list(  theme_bw() , theme(text = element_text(size = 8)) , geom_density(fill = "#3e8ede") )
+p1 = ggplot(s1@meta.data, aes(x = log10(nCount_RNA + 1 ) )) +
+  hist_attr + 
+  ggtitle(paste0( " raw_feature_bc_matrix: ", ndrop, " droplets")) + 
+  geom_vline(xintercept = c(2.8, 1.4 ),   linetype = "dashed") + 
+  annotate("text", x = 1, y=1.5, label = " region 1: \n void of data ") + 
+  annotate("text", x = 2, y=2, label = " region 2: \n background drops \n define 'empty_drop_matrix' \n with these drops ") + 
+  annotate("text", x = 4, y=2, label = " region 3: \n cell containing droplets \n zomed in on next plot") 
+
+
+p2 = ggplot(s1@meta.data %>% filter(log10(nCount_RNA + 1) > 2.8), aes(x = log10(nCount_RNA + 1 ) )) +
+  hist_attr + 
+  ggtitle(paste0(" drops containing cells "))  
+p3 = cowplot::plot_grid( p1 , p2 ) 
+p3
+```
+
+![](images/drop_distribition.png)
 
 If there were no isotype controls in the example above, the call would
 have been:
@@ -210,7 +267,7 @@ p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD27_PROT, color = density)) +
 cowplot::plot_grid(p1,p2)
 ```
 
-<img src="man/figures/README-unnamed-chunk-6-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ## How do I get the empty droplets?
 
@@ -296,43 +353,3 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = pos_adt_matrix,
 # add the assay to the Seurat object 
 singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_matrix)
 ```
-
-How to get empty droplets without cell hashing or sample demultiplexing?
-
-**please see vignettes in the “articles” tab at
-<https://mattpm.github.io/dsb/> for a detailed workflow describing
-reading in proper cellranger output**
-
-Below is a quick and dirty heuristic to get outlier empty droplets
-assuming seurat\_object is a object with most cells (i.e. any cell
-expressing at least a gene). In reality you would want to inspect
-distributions of the droplets.
-
-Get the nUMI from a seurat version 3 object
-
-``` r
-# get the nUMI from a seurat version 3 object 
-umi = seurat_object$nUMI
-```
-
-Get the nUMI from a Seurat version 2 object
-
-``` r
-#  Get the nUMI from a Seurat version 2 object
-umi = seurat_object@meta.data %>% select("nUMI")
-```
-
-``` r
-mu_umi = mean(umi)
-sd_umi = sd(umi)
-
-# calculate a threshold for calling a cell negative 
-sub_threshold = mu_umi - (5*sd_umi)
-
-# define the negative cell object
-Idents(seurat_object) = "nUMI"
-neg = subset(seurat_object, accept.high = sub_threshold)
-```
-
-This negative cell object can be used to define the negative background
-following the examples above.
