@@ -250,7 +250,8 @@ p4 = ggplot(data.plot, aes(CD16_PROT, y = CD11c_PROT)) +
   theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
   geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
 
-cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
+p5 = cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
+p5
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
