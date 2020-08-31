@@ -3,7 +3,7 @@ output: github_document
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-## dsb <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
+# dsb : an R package for normalizing and denoising CITEseq protein data <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -13,8 +13,6 @@ knitr::opts_chunk$set(
   out.width = "100%"
 )
 ```
-
-## An R package for normalizing and denoising CITEseq data
 
 <!-- badges: start -->
 <!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
