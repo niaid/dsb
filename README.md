@@ -99,7 +99,7 @@ s = SetAssayData(s,assay = "CITE", slot = "data",new.data = mtx)
 write_delim(mtx, path = paste0(path_to_data, "dsb_norm_matrix.txt"),delim = "\t" )
 ```
 
-# Recommended next steps in CITEseq workflow. Protein based clustering and protein based based cluster annotation
+# Recommended next steps in CITEseq workflow: Protein based clustering + visualization for cluster annotation
 
 This is the same process followed in our paper
 <https://www.nature.com/articles/s41591-020-0769-8>
@@ -221,7 +221,7 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         empty_drop_matrix = empty_drop_citeseq_mtx)
 ```
 
-## Visualization on example data: distributions of CD4 and CD8 DSB normalized CITEseq data.
+## Visualization of protein distributions on package example data.
 
 **Note, there is NO jitter added to these points for visualization;
 these are the unmodified normalized counts**
@@ -229,27 +229,22 @@ these are the unmodified normalized counts**
 ``` r
 
 library(ggplot2)
-data.plot = normalized_matrix %>% t %>%
+data.plot = normalized_matrix %>% 
+  t %>%
   as.data.frame() %>% 
   dplyr::select(CD4_PROT, CD3_PROT, CD8_PROT, CD27_PROT, CD19_PROT, CD16_PROT, CD11c_PROT, CD45RO_PROT, CD45RA_PROT) 
 
+mg_layer = list(theme_bw(), 
+                geom_point(size = 0.5, shape = 16, alpha = 0.5) ,  
+                geom_density2d(size = 0.3, color = "red") ,
+                geom_vline(xintercept = 0) ,
+                geom_hline(yintercept = 0) , 
+                ggtitle("DSB normalized (example data)"))
 
-p1 = ggplot(data.plot, aes(x = CD19_PROT, y = CD3_PROT)) +
-  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
-  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
-
-p2 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT)) +
-  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
-  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
-
-p3 = ggplot(data.plot, aes(CD45RO_PROT, y = CD3_PROT)) +
-  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
-  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
-
-p4 = ggplot(data.plot, aes(CD16_PROT, y = CD11c_PROT)) +
-  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
-  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
-
+p1 = ggplot(data.plot, aes(x = CD19_PROT, y = CD3_PROT)) + mg_layer
+p2 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT)) + mg_layer
+p3 = ggplot(data.plot, aes(CD45RO_PROT, y = CD3_PROT)) + mg_layer
+p4 = ggplot(data.plot, aes(CD16_PROT, y = CD11c_PROT)) + mg_layer
 p5 = cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
 p5
 ```
