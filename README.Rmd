@@ -22,38 +22,28 @@ knitr::opts_chunk$set(
 <!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
 <!-- badges: end -->
 
-**please see vignettes in the "articles" tab at https://mattpm.github.io/dsb/ for a detailed workflow describing reading in proper cellranger output and using the DSB normalizaiton method**
+**check out more vignettes on the [dsb package site](https://mattpm.github.io/dsb/)**
 
-**DSB was used in this informative preprint on optomizing CITE-seq experiments:  https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1**
+**DSB was recently used in [this informative preprint on optomizing CITE-seq experiments](https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1)**
 
-This package was developed at [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè,  Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. The details of the method can be found in [the biorxiv preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf) We utilized the dsb package to normalize CITEseq data reported in [this paper](https://doi.org/10.1038/s41591-020-0769-8). 
+dsb is a lightweight R package and is the first dedicated method for normalizing and denoising protein expression data from CITE-seq experiments. The method was developed in [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè, Andrew Martins and John Tsang. Details of the method can be found in [the biorxiv preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf). We utilized the dsb package to normalize CITEseq data reported in [our Nature Medicine paper on baseline immune states](https://doi.org/10.1038/s41591-020-0769-8). 
 
-As described in [the biorxiv preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf) comparing unstained control cells and empty droplets we found that a major contributor to background noise in protein expression data is unbound antibodies captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets, which serve as a “built in” noise measurement in droplet capture single cell experiments (e.g. 10X, dropseq, indrop). In addition, we define a per-cell denoising covariate to account for several potential sources of technical differences among single cells – see our preprint for details. 
+As described in [preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf) in experiments comparing unstained control cells and empty droplets we found a major contributor to background noise in CITE-seq protein data is unbound antibodies encapsulated and sequenced in droplets. DSB corrects for this background by leveraging empty droplets, which serve as a “built in” noise measurement in all droplet capture single cell experiments. In an optional recommended step we define and regress out for each cell the primary latent noise component of that cell's protein library to account for several potential sources of technical differences among single cells – see our preprint for details. 
 
-## installation 
-
-You can install the released version of dsb in your R session with the command below 
+## Installation 
 
 ```{r, eval = FALSE}
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
-require(devtools)
-devtools::install_github(repo = 'MattPM/dsb')
-
-# load dsb like any other R package 
+require(devtools); devtools::install_github(repo = 'MattPM/dsb')
 library(dsb)
-```
 
-
-# Run DSB on example data 
-```{r, eval = FALSE}
+# quick example - RUN dsb on package example data 
 norm_mtx = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx, empty_drop_matrix = empty_drop_citeseq_mtx)
 ```
 
+# Quick start using *RAW* 10X cellranger output  
 
-# Quick start using *RAW* 10X cellranger output
-
-load public 10X CITE-seq data 
-### downloaded the *feature / cellmatrix raw* file from here: https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3 
+load RAW (not filtered!) **feature / cellmatrix raw** public 10X CITE-seq data from here:   https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3 
 
 ```{r, eval = FALSE}
 library(dsb)
@@ -93,7 +83,6 @@ s = SetAssayData(s,assay = "CITE", slot = "data",new.data = mtx)
 
 # Done! you can also save the resulting normalized matrix for integration with scanpy etc
 write_delim(mtx, path = paste0(path_to_data, "dsb_norm_matrix.txt"),delim = "\t" )
-
 
 ```
 

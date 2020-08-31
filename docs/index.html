@@ -97,151 +97,191 @@
 <!-- badges: start -->
 <!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
 <!-- badges: end -->
-<p><strong>please see vignettes in the “articles” tab at <a href="https://mattpm.github.io/dsb/" class="uri">https://mattpm.github.io/dsb/</a> for a detailed workflow describing reading in proper cellranger output and using the DSB normalizaiton method</strong></p>
-<p><a href="https://mattpm.github.io/dsb/articles/dsb_normalizing_CITEseq_data.html">LINK TO FULL VIGNETTE</a></p>
-<p><strong>For more intuition on how to define background droplets, see <a href="https://github.com/MattPM/dsb/issues/9" class="uri">https://github.com/MattPM/dsb/issues/9</a> </strong></p>
-<p><strong>DSB was used in this informative preprint on optomizing CITE-seq experiments: <a href="https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1" class="uri">https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1</a></strong></p>
-<p>This package was developed at <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè, Andrew Martins and John Tsang. The package implements our normalization and denoising method for CITEseq data. The details of the method can be found in <a href="https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf">the biorxiv preprint</a> We utilized the dsb package to normalize CITEseq data reported in <a href="https://doi.org/10.1038/s41591-020-0769-8">this paper</a>.</p>
-<p>As described in <a href="https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf">the biorxiv preprint</a> comparing unstained control cells and empty droplets we found that a major contributor to background noise in protein expression data is unbound antibodies captured and sequenced in droplets. DSB corrects for this background by leveraging empty droplets, which serve as a “built in” noise measurement in droplet capture single cell experiments (e.g. 10X, dropseq, indrop). In addition, we define a per-cell denoising covariate to account for several potential sources of technical differences among single cells – see our preprint for details.</p>
+<p><strong>check out more vignettes on the <a href="https://mattpm.github.io/dsb/">dsb package site</a></strong></p>
+<p><strong>DSB was recently used in <a href="https://www.biorxiv.org/content/10.1101/2020.06.15.153080v1">this informative preprint on optomizing CITE-seq experiments</a></strong></p>
+<p>dsb is a lightweight R package and is the first dedicated method for normalizing and denoising protein expression data from CITE-seq experiments. The method was developed in <a href="https://www.niaid.nih.gov/research/john-tsang-phd">John Tsang’s Lab</a> by Matt Mulè, Andrew Martins and John Tsang. Details of the method can be found in <a href="https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf">the biorxiv preprint</a>. We utilized the dsb package to normalize CITEseq data reported in <a href="https://doi.org/10.1038/s41591-020-0769-8">our Nature Medicine paper on baseline immune states</a>.</p>
+<p>As described in <a href="https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf">preprint</a> in experiments comparing unstained control cells and empty droplets we found a major contributor to background noise in CITE-seq protein data is unbound antibodies encapsulated and sequenced in droplets. DSB corrects for this background by leveraging empty droplets, which serve as a “built in” noise measurement in all droplet capture single cell experiments. In an optional recommended step we define and regress out for each cell the primary latent noise component of that cell’s protein library to account for several potential sources of technical differences among single cells – see our preprint for details.</p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
-<a href="#installation" class="anchor"></a>installation</h2>
-<p>You can install the released version of dsb in your R session with the command below</p>
+<a href="#installation" class="anchor"></a>Installation</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co"># this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. </span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span>(devtools)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/reexports.html">install_github</a></span>(<span class="dt">repo =</span> <span class="st">'MattPM/dsb'</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">require</a></span>(devtools); devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/reexports.html">install_github</a></span>(<span class="dt">repo =</span> <span class="st">'MattPM/dsb'</span>)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co"># quick example - RUN dsb on package example data </span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6">norm_mtx =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx, <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx)</a></code></pre></div>
 </div>
-<div id="quickstart-vignette---loading-processing-raw-10x-data-pbmc-5k-data-and-normalizing-with-the-dsb-package" class="section level2">
-<h2 class="hasAnchor">
-<a href="#quickstart-vignette---loading-processing-raw-10x-data-pbmc-5k-data-and-normalizing-with-the-dsb-package" class="anchor"></a>Quickstart vignette - Loading / processing raw 10X data PBMC 5k data and normalizing with the DSB package</h2>
-<p>This experiment was run on a single 10X lane and there is no Cell hashing data.</p>
-<p>Data download: <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3" class="uri">https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3</a>.</p>
-<p>this was done with Seurat version 2, the same logic follows for Version</p>
-<ol>
-<li>See here for more vignettes on using Seurat V3: <a href="https://satijalab.org/seurat/" class="uri">https://satijalab.org/seurat/</a>
-</li>
-</ol>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="st">'%ni%'</span> =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/funprog.html">Negate</a></span>(<span class="st">'%in%'</span>)</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(Seurat)</a>
+<div id="quick-start-using-raw-10x-cellranger-output" class="section level1">
+<div class="page-header"><h1 class="hasAnchor">
+<a href="#quick-start-using-raw-10x-cellranger-output" class="anchor"></a>Quick start using <em>RAW</em> 10X cellranger output</h1></div>
+<p>load RAW (not filtered!) <strong>feature / cellmatrix raw</strong> public 10X CITE-seq data from here: <a href="https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3" class="uri">https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3</a></p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(Seurat) <span class="co"># version 3 in example provided belo</span></a>
 <a class="sourceLine" id="cb2-3" data-line-number="3"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(tidyverse)</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="co"># Read data </span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">raw =<span class="st"> </span><span class="kw">Read10X</span>(<span class="st">"data/10x_data/raw_feature_bc_matrix/"</span>)</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">s =<span class="st"> </span><span class="kw">CreateSeuratObject</span>(<span class="dt">raw.data =</span> raw, <span class="dt">min.cells =</span> <span class="dv">10</span>, <span class="dt">min.genes =</span> <span class="dv">5</span>)</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="co"># these data have Protein and RNA in the same sparse matix; split protein and rna data into separate matrix </span></a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">prot =<span class="st"> </span>s<span class="op">@</span>raw.data[<span class="kw"><a href="https://rdrr.io/r/base/grep.html">grep</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(s<span class="op">@</span>raw.data), <span class="dt">pattern =</span> <span class="st">"TotalSeq"</span>), ]</a>
-<a class="sourceLine" id="cb2-12" data-line-number="12">rna =<span class="st"> </span>s<span class="op">@</span>raw.data[<span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(s<span class="op">@</span>raw.data)[<span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(s<span class="op">@</span>raw.data) <span class="op">%ni%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(prot)], ]</a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="co"># make new object with separate assay</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">s =<span class="st"> </span><span class="kw">CreateSeuratObject</span>(<span class="dt">raw.data =</span> rna)</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co"># define thresholds for neg cells -- see https://github.com/MattPM/dsb/issues/9 for intuition</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18"><span class="kw">ggplot</span>(s<span class="op">@</span>meta.data, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(nUMI <span class="op">+</span><span class="st"> </span><span class="dv">1</span>))) <span class="op">+</span><span class="st"> </span><span class="kw">geom_density</span>() </a>
-<a class="sourceLine" id="cb2-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="co"># add log10UMI to metadata</span></a>
-<a class="sourceLine" id="cb2-21" data-line-number="21">md =<span class="st"> </span>s<span class="op">@</span>meta.data <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"><span class="st">  </span><span class="kw">rownames_to_column</span>(<span class="st">"bc"</span>) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">log10umi =</span> <span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(nUMI)) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(bc, log10umi) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">column_to_rownames</span>(<span class="st">"bc"</span>)</a>
-<a class="sourceLine" id="cb2-24" data-line-number="24">s =<span class="st"> </span><span class="kw">AddMetaData</span>(s,<span class="dt">metadata =</span> md)</a>
-<a class="sourceLine" id="cb2-25" data-line-number="25"></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26"><span class="co"># define negative drops based on thresholding from </span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27">neg_drops =<span class="st"> </span><span class="kw">WhichCells</span>(s, <span class="dt">subset.name =</span>  <span class="st">"log10umi"</span>, <span class="dt">accept.low =</span> <span class="fl">1.5</span> <span class="dt">accept.high =</span> <span class="fl">2.49</span>)</a>
-<a class="sourceLine" id="cb2-28" data-line-number="28"></a>
-<a class="sourceLine" id="cb2-29" data-line-number="29"><span class="co"># create the empty_drop_matrix used to normalize</span></a>
-<a class="sourceLine" id="cb2-30" data-line-number="30">neg_prot =<span class="st"> </span>prot[ , neg_drops ] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb2-31" data-line-number="31"></a>
-<a class="sourceLine" id="cb2-32" data-line-number="32"><span class="co"># Define the cell containing droplets</span></a>
-<a class="sourceLine" id="cb2-33" data-line-number="33">positive_cells =<span class="st"> </span><span class="kw">WhichCells</span>(s, <span class="dt">subset.name =</span>  <span class="st">"log10umi"</span>, <span class="dt">accept.low =</span> <span class="fl">2.5</span>, <span class="dt">accept.high =</span> <span class="fl">4.6</span>)</a>
-<a class="sourceLine" id="cb2-34" data-line-number="34">positive_prot =<span class="st"> </span>prot[ , positive_cells] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(magrittr)</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">path_to_data =<span class="st"> "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"</span></a>
+<a class="sourceLine" id="cb2-6" data-line-number="6">raw =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/Read10X.html">Read10X</a></span>(<span class="dt">data.dir =</span> path_to_data)</a>
+<a class="sourceLine" id="cb2-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb2-8" data-line-number="8"><span class="co"># create object with Minimal filtering (retain drops with 5 unique mRNAs detected)</span></a>
+<a class="sourceLine" id="cb2-9" data-line-number="9">s1 =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/CreateSeuratObject.html">CreateSeuratObject</a></span>(<span class="dt">counts =</span> raw<span class="op">$</span><span class="st">`</span><span class="dt">Gene Expression</span><span class="st">`</span>,  <span class="dt">min.cells =</span> <span class="dv">10</span>, <span class="dt">min.features =</span> <span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb2-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb2-11" data-line-number="11"><span class="co"># add some metadata </span></a>
+<a class="sourceLine" id="cb2-12" data-line-number="12">s1<span class="op">$</span>log10umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(s1<span class="op">$</span>nCount_RNA  <span class="op">+</span><span class="st"> </span><span class="dv">1</span>) </a>
+<a class="sourceLine" id="cb2-13" data-line-number="13">s1<span class="op">$</span>bc =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(s1<span class="op">@</span>meta.data)</a>
+<a class="sourceLine" id="cb2-14" data-line-number="14"></a>
+<a class="sourceLine" id="cb2-15" data-line-number="15"><span class="co"># define negative and positive drops based on an mRNA threshold to define neg and positive cells (see details below) </span></a>
+<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="kw"><a href="https://rdrr.io/r/graphics/hist.html">hist</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(s1<span class="op">$</span>nCount_RNA  <span class="op">+</span><span class="st"> </span><span class="dv">1</span>), <span class="dt">breaks =</span> <span class="dv">1000</span>)</a>
+<a class="sourceLine" id="cb2-17" data-line-number="17">neg_drops =<span class="st"> </span>s1<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(log10umi <span class="op">&gt;</span><span class="st"> </span><span class="fl">1.5</span> <span class="op">&amp;</span><span class="st"> </span>log10umi <span class="op">&lt;</span><span class="st"> </span><span class="fl">2.79</span>) <span class="op">%$%</span><span class="st"> </span>bc</a>
+<a class="sourceLine" id="cb2-18" data-line-number="18">positive_cells =<span class="st"> </span>s1<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(log10umi <span class="op">&gt;</span><span class="st"> </span><span class="fl">2.8</span> <span class="op">&amp;</span><span class="st"> </span>log10umi <span class="op">&lt;</span><span class="st"> </span><span class="fl">4.4</span>) <span class="op">%$%</span><span class="st"> </span>bc</a>
+<a class="sourceLine" id="cb2-19" data-line-number="19">  </a>
+<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="co"># Subset protein data to create a standard R matrix of protein counts for negative droplets and cells </span></a>
+<a class="sourceLine" id="cb2-21" data-line-number="21">neg_prot =<span class="st"> </span>raw<span class="op">$</span><span class="st">`</span><span class="dt">Antibody Capture</span><span class="st">`</span>[ ,  neg_drops ] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb2-22" data-line-number="22">positive_prot =<span class="st"> </span>raw<span class="op">$</span><span class="st">`</span><span class="dt">Antibody Capture</span><span class="st">`</span>[ , positive_cells] <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb2-23" data-line-number="23"></a>
+<a class="sourceLine" id="cb2-24" data-line-number="24"><span class="co"># run DSB normalization</span></a>
+<a class="sourceLine" id="cb2-25" data-line-number="25">isotypes =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(positive_prot)[<span class="dv">30</span><span class="op">:</span><span class="dv">32</span>]</a>
+<a class="sourceLine" id="cb2-26" data-line-number="26">mtx =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> positive_prot,</a>
+<a class="sourceLine" id="cb2-27" data-line-number="27">                           <span class="dt">empty_drop_matrix =</span> neg_prot,</a>
+<a class="sourceLine" id="cb2-28" data-line-number="28">                           <span class="dt">denoise.counts =</span> <span class="ot">TRUE</span>, <span class="dt">use.isotype.control =</span> <span class="ot">TRUE</span>, </a>
+<a class="sourceLine" id="cb2-29" data-line-number="29">                           <span class="dt">isotype.control.name.vec =</span> isotypes)</a>
+<a class="sourceLine" id="cb2-30" data-line-number="30"></a>
+<a class="sourceLine" id="cb2-31" data-line-number="31"><span class="co">## subset the raw data to only iinclude cell containing drops and add protein data </span></a>
+<a class="sourceLine" id="cb2-32" data-line-number="32">s =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(s1, <span class="dt">cells =</span> <span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(mtx))</a>
+<a class="sourceLine" id="cb2-33" data-line-number="33">s[[<span class="st">"CITE"</span>]] =<span class="st"> </span><span class="kw">CreateAssayObject</span>(<span class="dt">counts =</span> positive_prot)</a>
+<a class="sourceLine" id="cb2-34" data-line-number="34">s =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SetAssayData.html">SetAssayData</a></span>(s,<span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">"data"</span>,<span class="dt">new.data =</span> mtx)</a>
 <a class="sourceLine" id="cb2-35" data-line-number="35"></a>
-<a class="sourceLine" id="cb2-36" data-line-number="36"><span class="co"># Normalize protein data with DSB normalization </span></a>
-<a class="sourceLine" id="cb2-37" data-line-number="37">isotypes =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(pos_prot)[<span class="dv">30</span><span class="op">:</span><span class="dv">32</span>]</a>
-<a class="sourceLine" id="cb2-38" data-line-number="38"></a>
-<a class="sourceLine" id="cb2-39" data-line-number="39">mtx =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> pos_prot,</a>
-<a class="sourceLine" id="cb2-40" data-line-number="40">                          <span class="dt">empty_drop_matrix =</span> neg_prot,</a>
-<a class="sourceLine" id="cb2-41" data-line-number="41">                          <span class="dt">denoise.counts =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb2-42" data-line-number="42">                          <span class="dt">use.isotype.control =</span> <span class="ot">TRUE</span>, </a>
-<a class="sourceLine" id="cb2-43" data-line-number="43">                          <span class="dt">isotype.control.name.vec =</span> isotypes)</a>
-<a class="sourceLine" id="cb2-44" data-line-number="44"></a>
-<a class="sourceLine" id="cb2-45" data-line-number="45"><span class="co"># add protein data to the Seurat object. </span></a>
-<a class="sourceLine" id="cb2-46" data-line-number="46">s1 =<span class="st"> </span>s <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">SubsetData</span>(<span class="dt">cells.use =</span> <span class="kw"><a href="https://rdrr.io/r/base/colnames.html">colnames</a></span>(mtx), <span class="dt">subset.raw =</span> <span class="ot">TRUE</span>)</a>
-<a class="sourceLine" id="cb2-47" data-line-number="47">pos_prot =<span class="st"> </span>pos_prot[ ,s1<span class="op">@</span>cell.names]</a>
-<a class="sourceLine" id="cb2-48" data-line-number="48">s1 =<span class="st"> </span><span class="kw">SetAssayData</span>(s1, <span class="dt">assay.type =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">"raw.data"</span>, <span class="dt">new.data =</span> pos_prot)</a>
-<a class="sourceLine" id="cb2-49" data-line-number="49">s1 =<span class="st"> </span><span class="kw">SetAssayData</span>(s1, <span class="dt">assay.type =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">"data"</span>, <span class="dt">new.data =</span> mtx)</a>
-<a class="sourceLine" id="cb2-50" data-line-number="50"></a>
-<a class="sourceLine" id="cb2-51" data-line-number="51"><span class="co"># This object is ready for downstream analysis. Arbitrary thresholds used here for outlier removal. </span></a>
-<a class="sourceLine" id="cb2-52" data-line-number="52">s1 =<span class="st"> </span><span class="kw">SubsetData</span>(s1, <span class="dt">subset.name =</span> <span class="st">"nGene"</span>, <span class="dt">accept.low =</span> <span class="dv">300</span>, <span class="dt">accept.high =</span> <span class="dv">2000</span>, <span class="dt">subset.raw =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<p>If there were no isotype controls in the example above, the call would have been:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">mtx =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> pos_prot,</a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">                          <span class="dt">empty_drop_matrix =</span> neg_prot,</a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">                          <span class="dt">denoise.counts =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">                          <span class="dt">use.isotype.control =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
+<a class="sourceLine" id="cb2-36" data-line-number="36"><span class="co"># Done! you can also save the resulting normalized matrix for integration with scanpy etc</span></a>
+<a class="sourceLine" id="cb2-37" data-line-number="37"><span class="kw">write_delim</span>(mtx, <span class="dt">path =</span> <span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(path_to_data, <span class="st">"dsb_norm_matrix.txt"</span>),<span class="dt">delim =</span> <span class="st">"</span><span class="ch">\t</span><span class="st">"</span> )</a></code></pre></div>
 </div>
+<div id="recommended-next-steps-in-citeseq-workflow--protein-based-clustering-and-protein-based-based-cluster-annotation" class="section level1">
+<h1 class="hasAnchor">
+<a href="#recommended-next-steps-in-citeseq-workflow--protein-based-clustering-and-protein-based-based-cluster-annotation" class="anchor"></a>Recommended next steps in CITEseq workflow. Protein based clustering and protein based based cluster annotation</h1>
+<p>This is the same process followed in our paper <a href="https://www.nature.com/articles/s41591-020-0769-8" class="uri">https://www.nature.com/articles/s41591-020-0769-8</a></p>
+<p>DSB normalized vlaues provide a straightforward comparable value for each protein in each cluster. They are the denoised log number of standard deviations from the background.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"></a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co"># Get dsb normalized protein data without isotype controls for clustering</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3">s_dsb =<span class="st"> </span>s<span class="op">@</span>assays<span class="op">$</span>CITE<span class="op">@</span>data</a>
+<a class="sourceLine" id="cb3-4" data-line-number="4">s_dsb =<span class="st"> </span>s_dsb[<span class="dv">1</span><span class="op">:</span><span class="dv">29</span>, ]</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co"># defint euclidean distance matrix and cluster </span></a>
+<a class="sourceLine" id="cb3-7" data-line-number="7">p_dist =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/dist.html">dist</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/t.html">t</a></span>(s_dsb))</a>
+<a class="sourceLine" id="cb3-8" data-line-number="8">p_dist =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>(p_dist)</a>
+<a class="sourceLine" id="cb3-9" data-line-number="9">s[[<span class="st">"p_dist"</span>]] &lt;-<span class="st"> </span><span class="kw">FindNeighbors</span>(p_dist)<span class="op">$</span>snn</a>
+<a class="sourceLine" id="cb3-10" data-line-number="10">s =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/FindClusters.html">FindClusters</a></span>(s, <span class="dt">resolution =</span> <span class="fl">0.6</span>, <span class="dt">graph.name =</span> <span class="st">"p_dist"</span>)</a>
+<a class="sourceLine" id="cb3-11" data-line-number="11"></a>
+<a class="sourceLine" id="cb3-12" data-line-number="12"><span class="co"># Plot clusters by average protein expression for annotation </span></a>
+<a class="sourceLine" id="cb3-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb3-14" data-line-number="14">adt_data =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/t.html">t</a></span>(s<span class="op">@</span>assays<span class="op">$</span>CITE<span class="op">@</span>data)), s<span class="op">@</span>meta.data)</a>
+<a class="sourceLine" id="cb3-15" data-line-number="15">prots =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/colnames.html">rownames</a></span>(s<span class="op">@</span>assays<span class="op">$</span>CITE<span class="op">@</span>data)</a>
+<a class="sourceLine" id="cb3-16" data-line-number="16">adt_plot =<span class="st"> </span>adt_data <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-17" data-line-number="17"><span class="st">    </span><span class="kw">group_by</span>(seurat_clusters) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-18" data-line-number="18"><span class="st">    </span><span class="kw">summarize_at</span>(<span class="dt">.vars =</span> prots, <span class="dt">.funs =</span> mean) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-19" data-line-number="19"><span class="st">    </span><span class="kw">column_to_rownames</span>(<span class="st">"seurat_clusters"</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-20" data-line-number="20"><span class="st">    </span>t <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb3-21" data-line-number="21"><span class="st">    </span>as.data.frame</a>
+<a class="sourceLine" id="cb3-22" data-line-number="22"></a>
+<a class="sourceLine" id="cb3-23" data-line-number="23">pheatmap<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/pheatmap/man/pheatmap.html">pheatmap</a></span>(adt_plot, <span class="dt">color =</span> viridis<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/viridis/man/reexports.html">viridis</a></span>(<span class="dv">25</span>, <span class="dt">option =</span> <span class="st">"B"</span>), <span class="dt">fontsize_row =</span> <span class="dv">8</span>)</a></code></pre></div>
+<p><img src="images/cluster_average_dsb.png"></p>
+</div>
+<div id="more-information-how-were-background-drops-defined-in-the-quick-example-above" class="section level1">
+<h1 class="hasAnchor">
+<a href="#more-information-how-were-background-drops-defined-in-the-quick-example-above" class="anchor"></a>More information: How were background drops defined in the quick example above?</h1>
+<p>First apply some minimal (RNA based in this case) filtering to retain noise / empty droplets for DSB. Below the cells that should be used for background in this experiment are shown in a histogram of the droplets passing a minimal filtering step.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"></a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">path_to_data =<span class="st"> "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"</span></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3">raw =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/Read10X.html">Read10X</a></span>(<span class="dt">data.dir =</span> path_to_data)</a>
+<a class="sourceLine" id="cb4-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="co"># create object with Minimal filtering (retain drops with 5 unique mRNAs detected)</span></a>
+<a class="sourceLine" id="cb4-6" data-line-number="6">s1 =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/CreateSeuratObject.html">CreateSeuratObject</a></span>(<span class="dt">counts =</span> raw<span class="op">$</span><span class="st">`</span><span class="dt">Gene Expression</span><span class="st">`</span>,  <span class="dt">min.cells =</span> <span class="dv">10</span>, <span class="dt">min.features =</span> <span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb4-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb4-8" data-line-number="8"><span class="co"># define number of total drops (&gt;130K) after minimal filtering</span></a>
+<a class="sourceLine" id="cb4-9" data-line-number="9">ndrop =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/dim.html">dim</a></span>(s1<span class="op">@</span>meta.data)[<span class="dv">1</span>]</a>
+<a class="sourceLine" id="cb4-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co"># Plot</span></a>
+<a class="sourceLine" id="cb4-12" data-line-number="12">hist_attr =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(  <span class="kw">theme_bw</span>() , <span class="kw">theme</span>(<span class="dt">text =</span> <span class="kw">element_text</span>(<span class="dt">size =</span> <span class="dv">8</span>)) , <span class="kw">geom_density</span>(<span class="dt">fill =</span> <span class="st">"#3e8ede"</span>) )</a>
+<a class="sourceLine" id="cb4-13" data-line-number="13">p1 =<span class="st"> </span><span class="kw">ggplot</span>(s1<span class="op">@</span>meta.data, <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(nCount_RNA <span class="op">+</span><span class="st"> </span><span class="dv">1</span> ) )) <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="st">  </span>hist_attr <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-15" data-line-number="15"><span class="st">  </span><span class="kw">ggtitle</span>(<span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>( <span class="st">" raw_feature_bc_matrix: "</span>, ndrop, <span class="st">" droplets"</span>)) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="st">  </span><span class="kw">geom_vline</span>(<span class="dt">xintercept =</span> <span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="fl">2.8</span>, <span class="fl">1.4</span> ),   <span class="dt">linetype =</span> <span class="st">"dashed"</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-17" data-line-number="17"><span class="st">  </span><span class="kw">annotate</span>(<span class="st">"text"</span>, <span class="dt">x =</span> <span class="dv">1</span>, <span class="dt">y=</span><span class="fl">1.5</span>, <span class="dt">label =</span> <span class="st">" region 1: </span><span class="ch">\n</span><span class="st"> void of data "</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="st">  </span><span class="kw">annotate</span>(<span class="st">"text"</span>, <span class="dt">x =</span> <span class="dv">2</span>, <span class="dt">y=</span><span class="dv">2</span>, <span class="dt">label =</span> <span class="st">" region 2: </span><span class="ch">\n</span><span class="st"> background drops </span><span class="ch">\n</span><span class="st"> define 'empty_drop_matrix' </span><span class="ch">\n</span><span class="st"> with these drops "</span>) <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="st">  </span><span class="kw">annotate</span>(<span class="st">"text"</span>, <span class="dt">x =</span> <span class="dv">4</span>, <span class="dt">y=</span><span class="dv">2</span>, <span class="dt">label =</span> <span class="st">" region 3: </span><span class="ch">\n</span><span class="st"> cell containing droplets </span><span class="ch">\n</span><span class="st"> zomed in on next plot"</span>) </a>
+<a class="sourceLine" id="cb4-20" data-line-number="20"></a>
+<a class="sourceLine" id="cb4-21" data-line-number="21"></a>
+<a class="sourceLine" id="cb4-22" data-line-number="22">p2 =<span class="st"> </span><span class="kw">ggplot</span>(s1<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(nCount_RNA <span class="op">+</span><span class="st"> </span><span class="dv">1</span>) <span class="op">&gt;</span><span class="st"> </span><span class="fl">2.8</span>), <span class="kw">aes</span>(<span class="dt">x =</span> <span class="kw"><a href="https://rdrr.io/r/base/Log.html">log10</a></span>(nCount_RNA <span class="op">+</span><span class="st"> </span><span class="dv">1</span> ) )) <span class="op">+</span></a>
+<a class="sourceLine" id="cb4-23" data-line-number="23"><span class="st">  </span>hist_attr <span class="op">+</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb4-24" data-line-number="24"><span class="st">  </span><span class="kw">ggtitle</span>(<span class="kw"><a href="https://rdrr.io/r/base/paste.html">paste0</a></span>(<span class="st">" drops containing cells "</span>))  </a>
+<a class="sourceLine" id="cb4-25" data-line-number="25">p3 =<span class="st"> </span>cowplot<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>( p1 , p2 ) </a>
+<a class="sourceLine" id="cb4-26" data-line-number="26">p3</a></code></pre></div>
+<p><img src="images/drop_distribition.png"></p>
+<p>If there were no isotype controls in the example above, the call would have been:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">mtx =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> pos_prot,</a>
+<a class="sourceLine" id="cb5-2" data-line-number="2">                          <span class="dt">empty_drop_matrix =</span> neg_prot,</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">                          <span class="dt">denoise.counts =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">                          <span class="dt">use.isotype.control =</span> <span class="ot">FALSE</span>)</a></code></pre></div>
 <div id="quickstart-2-using-example-data-removing-background-as-captured-by-data-from-empty-droplets" class="section level2">
 <h2 class="hasAnchor">
 <a href="#quickstart-2-using-example-data-removing-background-as-captured-by-data-from-empty-droplets" class="anchor"></a>Quickstart 2 using example data; removing background as captured by data from empty droplets</h2>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co"># load package and normalize the example raw data </span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co"># normalize</span></a>
-<a class="sourceLine" id="cb4-4" data-line-number="4">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
-<a class="sourceLine" id="cb4-5" data-line-number="5">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="co"># load package and normalize the example raw data </span></a>
+<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(dsb)</a>
+<a class="sourceLine" id="cb6-3" data-line-number="3"><span class="co"># normalize</span></a>
+<a class="sourceLine" id="cb6-4" data-line-number="4">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
+<a class="sourceLine" id="cb6-5" data-line-number="5">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx)</a></code></pre></div>
 </div>
 <div id="quickstart-3-using-example-data-removing-background-and-correcting-for-per-cell-technical-factor-as-a-covariate" class="section level2">
 <h2 class="hasAnchor">
 <a href="#quickstart-3-using-example-data-removing-background-and-correcting-for-per-cell-technical-factor-as-a-covariate" class="anchor"></a>Quickstart 3 using example data; – removing background and correcting for per-cell technical factor as a covariate</h2>
 <p>By default, dsb defines the per-cell technical covariate by fitting a two-component gaussian mixture model to the log + 10 counts (of all proteins) within each cell and defining the covariate as the mean of the “negative” component. We recommend also to use the counts from the isotype controls in each cell to compute the denoising covariate (defined as the first principal component of the isotype control counts and the “negative” count inferred by the mixture model above.)</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"></a>
-<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="co"># define a vector of the isotype controls in the data </span></a>
-<a class="sourceLine" id="cb5-3" data-line-number="3">isotypes =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Mouse IgG2bkIsotype_PROT"</span>, <span class="st">"MouseIgG1kappaisotype_PROT"</span>,</a>
-<a class="sourceLine" id="cb5-4" data-line-number="4">             <span class="st">"MouseIgG2akappaisotype_PROT"</span>, <span class="st">"RatIgG2bkIsotype_PROT"</span>)</a>
-<a class="sourceLine" id="cb5-5" data-line-number="5"></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
-<a class="sourceLine" id="cb5-7" data-line-number="7">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx,</a>
-<a class="sourceLine" id="cb5-8" data-line-number="8">                                        <span class="dt">use.isotype.control =</span> <span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb5-9" data-line-number="9">                                        <span class="dt">isotype.control.name.vec =</span> isotypes)</a></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"></a>
+<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="co"># define a vector of the isotype controls in the data </span></a>
+<a class="sourceLine" id="cb7-3" data-line-number="3">isotypes =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/c.html">c</a></span>(<span class="st">"Mouse IgG2bkIsotype_PROT"</span>, <span class="st">"MouseIgG1kappaisotype_PROT"</span>,</a>
+<a class="sourceLine" id="cb7-4" data-line-number="4">             <span class="st">"MouseIgG2akappaisotype_PROT"</span>, <span class="st">"RatIgG2bkIsotype_PROT"</span>)</a>
+<a class="sourceLine" id="cb7-5" data-line-number="5"></a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> cells_citeseq_mtx,</a>
+<a class="sourceLine" id="cb7-7" data-line-number="7">                                        <span class="dt">empty_drop_matrix =</span> empty_drop_citeseq_mtx,</a>
+<a class="sourceLine" id="cb7-8" data-line-number="8">                                        <span class="dt">use.isotype.control =</span> <span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb7-9" data-line-number="9">                                        <span class="dt">isotype.control.name.vec =</span> isotypes)</a></code></pre></div>
 </div>
 <div id="visualization-on-example-data-distributions-of-cd4-and-cd8-dsb-normalized-citeseq-data-" class="section level2">
 <h2 class="hasAnchor">
 <a href="#visualization-on-example-data-distributions-of-cd4-and-cd8-dsb-normalized-citeseq-data-" class="anchor"></a>Visualization on example data: distributions of CD4 and CD8 DSB normalized CITEseq data.</h2>
 <p><strong>Note, there is NO jitter added to these points for visualization; these are the unmodified normalized counts</strong></p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="co"># add a density gradient on the points () this is helpful when there are many thousands of cells )</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co"># this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/</span></a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">get_density =<span class="st"> </span><span class="cf">function</span>(x, y, ...) {</a>
-<a class="sourceLine" id="cb6-4" data-line-number="4">  dens &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/MASS/man/kde2d.html">kde2d</a></span>(x, y, ...)</a>
-<a class="sourceLine" id="cb6-5" data-line-number="5">  ix &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/findInterval.html">findInterval</a></span>(x, dens<span class="op">$</span>x)</a>
-<a class="sourceLine" id="cb6-6" data-line-number="6">  iy &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/findInterval.html">findInterval</a></span>(y, dens<span class="op">$</span>y)</a>
-<a class="sourceLine" id="cb6-7" data-line-number="7">  ii &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(ix, iy)</a>
-<a class="sourceLine" id="cb6-8" data-line-number="8">  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(dens<span class="op">$</span>z[ii])</a>
-<a class="sourceLine" id="cb6-9" data-line-number="9">}</a>
-<a class="sourceLine" id="cb6-10" data-line-number="10"></a>
-<a class="sourceLine" id="cb6-11" data-line-number="11"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ggplot2)</a>
-<a class="sourceLine" id="cb6-12" data-line-number="12">data.plot =<span class="st"> </span>normalized_matrix <span class="op">%&gt;%</span><span class="st"> </span>t <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-13" data-line-number="13"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb6-14" data-line-number="14"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) </a>
-<a class="sourceLine" id="cb6-15" data-line-number="15"></a>
-<a class="sourceLine" id="cb6-16" data-line-number="16">density_attr =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(</a>
-<a class="sourceLine" id="cb6-17" data-line-number="17">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="dt">xintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">"red"</span>, <span class="dt">linetype =</span> <span class="dv">2</span>), </a>
-<a class="sourceLine" id="cb6-18" data-line-number="18">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">"red"</span>, <span class="dt">linetype =</span> <span class="dv">2</span>), </a>
-<a class="sourceLine" id="cb6-19" data-line-number="19">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span>(<span class="dt">axis.text =</span> <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span>(<span class="dt">face =</span> <span class="st">"bold"</span>,<span class="dt">size =</span> <span class="dv">12</span>)) , </a>
-<a class="sourceLine" id="cb6-20" data-line-number="20">  viridis<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_color_viridis</a></span>(<span class="dt">option =</span> <span class="st">"B"</span>), </a>
-<a class="sourceLine" id="cb6-21" data-line-number="21">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/scale_identity.html">scale_shape_identity</a></span>(), </a>
-<a class="sourceLine" id="cb6-22" data-line-number="22">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() </a>
-<a class="sourceLine" id="cb6-23" data-line-number="23">)</a>
-<a class="sourceLine" id="cb6-24" data-line-number="24"></a>
-<a class="sourceLine" id="cb6-25" data-line-number="25"></a>
-<a class="sourceLine" id="cb6-26" data-line-number="26">data.plot =<span class="st"> </span>data.plot <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">density =</span> <span class="kw">get_density</span>(data.plot<span class="op">$</span>CD4_PROT, data.plot<span class="op">$</span>CD8_PROT, <span class="dt">n =</span> <span class="dv">100</span>)) </a>
-<a class="sourceLine" id="cb6-27" data-line-number="27">p1 =<span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(data.plot, <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> CD8_PROT, <span class="dt">y =</span> CD4_PROT, <span class="dt">color =</span> density)) <span class="op">+</span></a>
-<a class="sourceLine" id="cb6-28" data-line-number="28"><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>(<span class="dt">size =</span> <span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>density_attr <span class="op">+</span><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"small example dataset"</span>)</a>
-<a class="sourceLine" id="cb6-29" data-line-number="29"></a>
-<a class="sourceLine" id="cb6-30" data-line-number="30">data.plot =<span class="st"> </span>data.plot <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">density =</span> <span class="kw">get_density</span>(data.plot<span class="op">$</span>CD19_PROT, data.plot<span class="op">$</span>CD27_PROT, <span class="dt">n =</span> <span class="dv">100</span>)) </a>
-<a class="sourceLine" id="cb6-31" data-line-number="31">p2 =<span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(data.plot, <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> CD19_PROT, <span class="dt">y =</span> CD27_PROT, <span class="dt">color =</span> density)) <span class="op">+</span></a>
-<a class="sourceLine" id="cb6-32" data-line-number="32"><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>(<span class="dt">size =</span> <span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>density_attr <span class="op">+</span><span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"small example dataset"</span>)</a>
-<a class="sourceLine" id="cb6-33" data-line-number="33"></a>
-<a class="sourceLine" id="cb6-34" data-line-number="34">cowplot<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>(p1,p2)</a></code></pre></div>
-<p><img src="reference/figures/README-unnamed-chunk-6-1.png" width="100%"></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="co"># add a density gradient on the points () this is helpful when there are many thousands of cells )</span></a>
+<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="co"># this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/</span></a>
+<a class="sourceLine" id="cb8-3" data-line-number="3">get_density =<span class="st"> </span><span class="cf">function</span>(x, y, ...) {</a>
+<a class="sourceLine" id="cb8-4" data-line-number="4">  dens &lt;-<span class="st"> </span>MASS<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/MASS/man/kde2d.html">kde2d</a></span>(x, y, ...)</a>
+<a class="sourceLine" id="cb8-5" data-line-number="5">  ix &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/findInterval.html">findInterval</a></span>(x, dens<span class="op">$</span>x)</a>
+<a class="sourceLine" id="cb8-6" data-line-number="6">  iy &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/findInterval.html">findInterval</a></span>(y, dens<span class="op">$</span>y)</a>
+<a class="sourceLine" id="cb8-7" data-line-number="7">  ii &lt;-<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/cbind.html">cbind</a></span>(ix, iy)</a>
+<a class="sourceLine" id="cb8-8" data-line-number="8">  <span class="kw"><a href="https://rdrr.io/r/base/function.html">return</a></span>(dens<span class="op">$</span>z[ii])</a>
+<a class="sourceLine" id="cb8-9" data-line-number="9">}</a>
+<a class="sourceLine" id="cb8-10" data-line-number="10"></a>
+<a class="sourceLine" id="cb8-11" data-line-number="11"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ggplot2)</a>
+<a class="sourceLine" id="cb8-12" data-line-number="12">data.plot =<span class="st"> </span>normalized_matrix <span class="op">%&gt;%</span><span class="st"> </span>t <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb8-13" data-line-number="13"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/r/base/as.data.frame.html">as.data.frame</a></span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb8-14" data-line-number="14"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) </a>
+<a class="sourceLine" id="cb8-15" data-line-number="15"></a>
+<a class="sourceLine" id="cb8-16" data-line-number="16">density_attr =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/list.html">list</a></span>(</a>
+<a class="sourceLine" id="cb8-17" data-line-number="17">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_vline</a></span>(<span class="dt">xintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">"red"</span>, <span class="dt">linetype =</span> <span class="dv">2</span>), </a>
+<a class="sourceLine" id="cb8-18" data-line-number="18">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html">geom_hline</a></span>(<span class="dt">yintercept =</span> <span class="dv">0</span>, <span class="dt">color =</span> <span class="st">"red"</span>, <span class="dt">linetype =</span> <span class="dv">2</span>), </a>
+<a class="sourceLine" id="cb8-19" data-line-number="19">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/theme.html">theme</a></span>(<span class="dt">axis.text =</span> <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/element.html">element_text</a></span>(<span class="dt">face =</span> <span class="st">"bold"</span>,<span class="dt">size =</span> <span class="dv">12</span>)) , </a>
+<a class="sourceLine" id="cb8-20" data-line-number="20">  viridis<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/viridis/man/scale_viridis.html">scale_color_viridis</a></span>(<span class="dt">option =</span> <span class="st">"B"</span>), </a>
+<a class="sourceLine" id="cb8-21" data-line-number="21">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/scale_identity.html">scale_shape_identity</a></span>(), </a>
+<a class="sourceLine" id="cb8-22" data-line-number="22">  <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html">theme_bw</a></span>() </a>
+<a class="sourceLine" id="cb8-23" data-line-number="23">)</a>
+<a class="sourceLine" id="cb8-24" data-line-number="24"></a>
+<a class="sourceLine" id="cb8-25" data-line-number="25"></a>
+<a class="sourceLine" id="cb8-26" data-line-number="26">data.plot =<span class="st"> </span>data.plot <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">density =</span> <span class="kw">get_density</span>(data.plot<span class="op">$</span>CD4_PROT, data.plot<span class="op">$</span>CD8_PROT, <span class="dt">n =</span> <span class="dv">100</span>)) </a>
+<a class="sourceLine" id="cb8-27" data-line-number="27">p1 =<span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(data.plot, <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> CD8_PROT, <span class="dt">y =</span> CD4_PROT, <span class="dt">color =</span> density)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb8-28" data-line-number="28"><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>(<span class="dt">size =</span> <span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>density_attr <span class="op">+</span><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"small example dataset"</span>)</a>
+<a class="sourceLine" id="cb8-29" data-line-number="29"></a>
+<a class="sourceLine" id="cb8-30" data-line-number="30">data.plot =<span class="st"> </span>data.plot <span class="op">%&gt;%</span><span class="st"> </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(<span class="dt">density =</span> <span class="kw">get_density</span>(data.plot<span class="op">$</span>CD19_PROT, data.plot<span class="op">$</span>CD27_PROT, <span class="dt">n =</span> <span class="dv">100</span>)) </a>
+<a class="sourceLine" id="cb8-31" data-line-number="31">p2 =<span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html">ggplot</a></span>(data.plot, <span class="kw"><a href="https://ggplot2.tidyverse.org/reference/aes.html">aes</a></span>(<span class="dt">x =</span> CD19_PROT, <span class="dt">y =</span> CD27_PROT, <span class="dt">color =</span> density)) <span class="op">+</span></a>
+<a class="sourceLine" id="cb8-32" data-line-number="32"><span class="st">  </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html">geom_point</a></span>(<span class="dt">size =</span> <span class="fl">0.5</span>) <span class="op">+</span><span class="st"> </span>density_attr <span class="op">+</span><span class="st"> </span><span class="kw"><a href="https://ggplot2.tidyverse.org/reference/labs.html">ggtitle</a></span>(<span class="st">"small example dataset"</span>)</a>
+<a class="sourceLine" id="cb8-33" data-line-number="33"></a>
+<a class="sourceLine" id="cb8-34" data-line-number="34">cowplot<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/cowplot/man/plot_grid.html">plot_grid</a></span>(p1,p2)</a></code></pre></div>
+<p><img src="reference/figures/README-unnamed-chunk-8-1.png" width="100%"></p>
 </div>
 <div id="how-do-i-get-the-empty-droplets" class="section level2">
 <h2 class="hasAnchor">
@@ -255,75 +295,57 @@
 <div id="simple-example-workflow-seurat-version-3-for-experiments-with-hashing-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simple-example-workflow-seurat-version-3-for-experiments-with-hashing-data" class="anchor"></a>Simple example workflow (Seurat Version 3) for experiments with Hashing data</h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"></a>
-<a class="sourceLine" id="cb7-2" data-line-number="2"><span class="co"># get the ADT counts using Seurat version 3 </span></a>
-<a class="sourceLine" id="cb7-3" data-line-number="3">seurat_object =<span class="st"> </span><span class="kw">HTODemux</span>(seurat_object, <span class="dt">assay =</span> <span class="st">"HTO"</span>, <span class="dt">positive.quantile =</span> <span class="fl">0.99</span>)</a>
-<a class="sourceLine" id="cb7-4" data-line-number="4"><span class="kw">Idents</span>(seurat_object) =<span class="st"> "HTO_classification.global"</span></a>
-<a class="sourceLine" id="cb7-5" data-line-number="5">neg_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">idents =</span> <span class="st">"Negative"</span>)</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">singlet_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">idents =</span> <span class="st">"Singlet"</span>)</a>
-<a class="sourceLine" id="cb7-7" data-line-number="7"></a>
-<a class="sourceLine" id="cb7-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb7-9" data-line-number="9"><span class="co"># non sparse CITEseq data actually store better in a regular materix so the as.matrix() call is not memory intensive.</span></a>
-<a class="sourceLine" id="cb7-10" data-line-number="10">neg_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(neg_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb7-11" data-line-number="11">positive_adt_matrix =<span class="st"> </span><span class="kw">GetAssayData</span>(singlet_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb7-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb7-13" data-line-number="13"></a>
-<a class="sourceLine" id="cb7-14" data-line-number="14"><span class="co"># normalize the data with dsb</span></a>
-<a class="sourceLine" id="cb7-15" data-line-number="15"><span class="co"># make sure you've run devtools::install_github(repo = 'MattPM/dsb')</span></a>
-<a class="sourceLine" id="cb7-16" data-line-number="16">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> positive_adt_matrix,</a>
-<a class="sourceLine" id="cb7-17" data-line-number="17">                                        <span class="dt">empty_drop_matrix =</span> neg_adt_matrix)</a>
-<a class="sourceLine" id="cb7-18" data-line-number="18"></a>
-<a class="sourceLine" id="cb7-19" data-line-number="19"></a>
-<a class="sourceLine" id="cb7-20" data-line-number="20"><span class="co"># now add the normalized dat back to the object (the singlets defined above as "object")</span></a>
-<a class="sourceLine" id="cb7-21" data-line-number="21">singlet_object =<span class="st"> </span><span class="kw">SetAssayData</span>(<span class="dt">object =</span> singlet_object, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2"><span class="co"># get the ADT counts using Seurat version 3 </span></a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">seurat_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/HTODemux.html">HTODemux</a></span>(seurat_object, <span class="dt">assay =</span> <span class="st">"HTO"</span>, <span class="dt">positive.quantile =</span> <span class="fl">0.99</span>)</a>
+<a class="sourceLine" id="cb9-4" data-line-number="4"><span class="kw">Idents</span>(seurat_object) =<span class="st"> "HTO_classification.global"</span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5">neg_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">idents =</span> <span class="st">"Negative"</span>)</a>
+<a class="sourceLine" id="cb9-6" data-line-number="6">singlet_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">idents =</span> <span class="st">"Singlet"</span>)</a>
+<a class="sourceLine" id="cb9-7" data-line-number="7"></a>
+<a class="sourceLine" id="cb9-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb9-9" data-line-number="9"><span class="co"># non sparse CITEseq data actually store better in a regular materix so the as.matrix() call is not memory intensive.</span></a>
+<a class="sourceLine" id="cb9-10" data-line-number="10">neg_adt_matrix =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/GetAssayData.html">GetAssayData</a></span>(neg_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb9-11" data-line-number="11">positive_adt_matrix =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/GetAssayData.html">GetAssayData</a></span>(singlet_object, <span class="dt">assay =</span> <span class="st">"CITE"</span>, <span class="dt">slot =</span> <span class="st">'counts'</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb9-12" data-line-number="12"></a>
+<a class="sourceLine" id="cb9-13" data-line-number="13"></a>
+<a class="sourceLine" id="cb9-14" data-line-number="14"><span class="co"># normalize the data with dsb</span></a>
+<a class="sourceLine" id="cb9-15" data-line-number="15"><span class="co"># make sure you've run devtools::install_github(repo = 'MattPM/dsb')</span></a>
+<a class="sourceLine" id="cb9-16" data-line-number="16">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> positive_adt_matrix,</a>
+<a class="sourceLine" id="cb9-17" data-line-number="17">                                        <span class="dt">empty_drop_matrix =</span> neg_adt_matrix)</a>
+<a class="sourceLine" id="cb9-18" data-line-number="18"></a>
+<a class="sourceLine" id="cb9-19" data-line-number="19"></a>
+<a class="sourceLine" id="cb9-20" data-line-number="20"><span class="co"># now add the normalized dat back to the object (the singlets defined above as "object")</span></a>
+<a class="sourceLine" id="cb9-21" data-line-number="21">singlet_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SetAssayData.html">SetAssayData</a></span>(<span class="dt">object =</span> singlet_object, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
 </div>
 <div id="simple-example-workflow-seurat-version-2-for-experiments-with-hashing-data" class="section level2">
 <h2 class="hasAnchor">
 <a href="#simple-example-workflow-seurat-version-2-for-experiments-with-hashing-data" class="anchor"></a>Simple example workflow Seurat version 2 for experiments with hashing data</h2>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"></a>
-<a class="sourceLine" id="cb8-2" data-line-number="2"><span class="co"># get the ADT counts using Seurat version 3 </span></a>
-<a class="sourceLine" id="cb8-3" data-line-number="3">seurat_object =<span class="st"> </span><span class="kw">HTODemux</span>(seurat_object, <span class="dt">assay =</span> <span class="st">"HTO"</span>, <span class="dt">positive.quantile =</span> <span class="fl">0.99</span>)</a>
-<a class="sourceLine" id="cb8-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb8-5" data-line-number="5">neg =<span class="st"> </span>seurat_object <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-6" data-line-number="6"><span class="st">  </span><span class="kw">SetAllIdent</span>(<span class="dt">id =</span> <span class="st">"hto_classification_global"</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-7" data-line-number="7"><span class="st">  </span><span class="kw">SubsetData</span>(<span class="dt">ident.use =</span> <span class="st">"Negative"</span>) </a>
-<a class="sourceLine" id="cb8-8" data-line-number="8"></a>
-<a class="sourceLine" id="cb8-9" data-line-number="9">singlet =<span class="st"> </span>seurat_object <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb8-10" data-line-number="10"><span class="st">  </span><span class="kw">SetAllIdent</span>(<span class="dt">id =</span> <span class="st">"hto_classification_global"</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb8-11" data-line-number="11"><span class="st">  </span><span class="kw">SubsetData</span>(<span class="dt">ident.use =</span> <span class="st">"Singlet"</span>) </a>
-<a class="sourceLine" id="cb8-12" data-line-number="12"></a>
-<a class="sourceLine" id="cb8-13" data-line-number="13"><span class="co"># get negative and positive ADT data </span></a>
-<a class="sourceLine" id="cb8-14" data-line-number="14">neg_adt_matrix =<span class="st"> </span>neg<span class="op">@</span>assay<span class="op">$</span>CITE<span class="op">@</span>raw.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb8-15" data-line-number="15">pos_adt_matrix =<span class="st"> </span>singlet<span class="op">@</span>assay<span class="op">$</span>CITE<span class="op">@</span>raw.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
-<a class="sourceLine" id="cb8-16" data-line-number="16"></a>
-<a class="sourceLine" id="cb8-17" data-line-number="17"></a>
-<a class="sourceLine" id="cb8-18" data-line-number="18"><span class="co"># normalize the data with dsb</span></a>
-<a class="sourceLine" id="cb8-19" data-line-number="19"><span class="co"># make sure you've run devtools::install_github(repo = 'MattPM/dsb')</span></a>
-<a class="sourceLine" id="cb8-20" data-line-number="20">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> pos_adt_matrix,</a>
-<a class="sourceLine" id="cb8-21" data-line-number="21">                                        <span class="dt">empty_drop_matrix =</span> neg_adt_matrix)</a>
-<a class="sourceLine" id="cb8-22" data-line-number="22"></a>
-<a class="sourceLine" id="cb8-23" data-line-number="23"></a>
-<a class="sourceLine" id="cb8-24" data-line-number="24"><span class="co"># add the assay to the Seurat object </span></a>
-<a class="sourceLine" id="cb8-25" data-line-number="25">singlet =<span class="st"> </span><span class="kw">SetAssayData</span>(<span class="dt">object =</span> singlet, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
-<p>How to get empty droplets without cell hashing or sample demultiplexing?</p>
-<p><strong>please see vignettes in the “articles” tab at <a href="https://mattpm.github.io/dsb/" class="uri">https://mattpm.github.io/dsb/</a> for a detailed workflow describing reading in proper cellranger output</strong></p>
-<p>Below is a quick and dirty heuristic to get outlier empty droplets assuming seurat_object is a object with most cells (i.e. any cell expressing at least a gene). In reality you would want to inspect distributions of the droplets.</p>
-<p>Get the nUMI from a seurat version 3 object</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="co"># get the nUMI from a seurat version 3 object </span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">umi =<span class="st"> </span>seurat_object<span class="op">$</span>nUMI</a></code></pre></div>
-<p>Get the nUMI from a Seurat version 2 object</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="co">#  Get the nUMI from a Seurat version 2 object</span></a>
-<a class="sourceLine" id="cb10-2" data-line-number="2">umi =<span class="st"> </span>seurat_object<span class="op">@</span>meta.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(<span class="st">"nUMI"</span>)</a></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" data-line-number="1">mu_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/mean.html">mean</a></span>(umi)</a>
-<a class="sourceLine" id="cb11-2" data-line-number="2">sd_umi =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/stats/sd.html">sd</a></span>(umi)</a>
-<a class="sourceLine" id="cb11-3" data-line-number="3"></a>
-<a class="sourceLine" id="cb11-4" data-line-number="4"><span class="co"># calculate a threshold for calling a cell negative </span></a>
-<a class="sourceLine" id="cb11-5" data-line-number="5">sub_threshold =<span class="st"> </span>mu_umi <span class="op">-</span><span class="st"> </span>(<span class="dv">5</span><span class="op">*</span>sd_umi)</a>
-<a class="sourceLine" id="cb11-6" data-line-number="6"></a>
-<a class="sourceLine" id="cb11-7" data-line-number="7"><span class="co"># define the negative cell object</span></a>
-<a class="sourceLine" id="cb11-8" data-line-number="8"><span class="kw">Idents</span>(seurat_object) =<span class="st"> "nUMI"</span></a>
-<a class="sourceLine" id="cb11-9" data-line-number="9">neg =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/subset.html">subset</a></span>(seurat_object, <span class="dt">accept.high =</span> sub_threshold)</a></code></pre></div>
-<p>This negative cell object can be used to define the negative background following the examples above.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" data-line-number="1"></a>
+<a class="sourceLine" id="cb10-2" data-line-number="2"><span class="co"># get the ADT counts using Seurat version 3 </span></a>
+<a class="sourceLine" id="cb10-3" data-line-number="3">seurat_object =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/HTODemux.html">HTODemux</a></span>(seurat_object, <span class="dt">assay =</span> <span class="st">"HTO"</span>, <span class="dt">positive.quantile =</span> <span class="fl">0.99</span>)</a>
+<a class="sourceLine" id="cb10-4" data-line-number="4"></a>
+<a class="sourceLine" id="cb10-5" data-line-number="5">neg =<span class="st"> </span>seurat_object <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-6" data-line-number="6"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SetAllIdent.html">SetAllIdent</a></span>(<span class="dt">id =</span> <span class="st">"hto_classification_global"</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb10-7" data-line-number="7"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SubsetData.html">SubsetData</a></span>(<span class="dt">ident.use =</span> <span class="st">"Negative"</span>) </a>
+<a class="sourceLine" id="cb10-8" data-line-number="8"></a>
+<a class="sourceLine" id="cb10-9" data-line-number="9">singlet =<span class="st"> </span>seurat_object <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb10-10" data-line-number="10"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SetAllIdent.html">SetAllIdent</a></span>(<span class="dt">id =</span> <span class="st">"hto_classification_global"</span>) <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb10-11" data-line-number="11"><span class="st">  </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SubsetData.html">SubsetData</a></span>(<span class="dt">ident.use =</span> <span class="st">"Singlet"</span>) </a>
+<a class="sourceLine" id="cb10-12" data-line-number="12"></a>
+<a class="sourceLine" id="cb10-13" data-line-number="13"><span class="co"># get negative and positive ADT data </span></a>
+<a class="sourceLine" id="cb10-14" data-line-number="14">neg_adt_matrix =<span class="st"> </span>neg<span class="op">@</span>assay<span class="op">$</span>CITE<span class="op">@</span>raw.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb10-15" data-line-number="15">pos_adt_matrix =<span class="st"> </span>singlet<span class="op">@</span>assay<span class="op">$</span>CITE<span class="op">@</span>raw.data <span class="op">%&gt;%</span><span class="st"> </span><span class="kw"><a href="https://rdrr.io/r/base/matrix.html">as.matrix</a></span>()</a>
+<a class="sourceLine" id="cb10-16" data-line-number="16"></a>
+<a class="sourceLine" id="cb10-17" data-line-number="17"></a>
+<a class="sourceLine" id="cb10-18" data-line-number="18"><span class="co"># normalize the data with dsb</span></a>
+<a class="sourceLine" id="cb10-19" data-line-number="19"><span class="co"># make sure you've run devtools::install_github(repo = 'MattPM/dsb')</span></a>
+<a class="sourceLine" id="cb10-20" data-line-number="20">normalized_matrix =<span class="st"> </span><span class="kw"><a href="reference/DSBNormalizeProtein.html">DSBNormalizeProtein</a></span>(<span class="dt">cell_protein_matrix =</span> pos_adt_matrix,</a>
+<a class="sourceLine" id="cb10-21" data-line-number="21">                                        <span class="dt">empty_drop_matrix =</span> neg_adt_matrix)</a>
+<a class="sourceLine" id="cb10-22" data-line-number="22"></a>
+<a class="sourceLine" id="cb10-23" data-line-number="23"></a>
+<a class="sourceLine" id="cb10-24" data-line-number="24"><span class="co"># add the assay to the Seurat object </span></a>
+<a class="sourceLine" id="cb10-25" data-line-number="25">singlet =<span class="st"> </span><span class="kw"><a href="https://rdrr.io/pkg/Seurat/man/SetAssayData.html">SetAssayData</a></span>(<span class="dt">object =</span> singlet, <span class="dt">slot =</span> <span class="st">"CITE"</span>, <span class="dt">new.data =</span> normalized_matrix)</a></code></pre></div>
+</div>
 </div>
 
   </div>
