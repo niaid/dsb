@@ -174,27 +174,23 @@ p3
 
 ![](images/drop_distribition.png)
 
-If there were no isotype controls in the example above, the call would
-have been:
+## Quickstart 2 removing background and correcting for per-cell technical factor without isotype controls
+
+By default, dsb defines the per-cell technical covariate by fitting a
+two-component gaussian mixture model to the log + 10 counts (of all
+proteins) within each cell and defining the covariate as the mean of the
+“negative” component. If one does not include isotype controls in a
+CITE-seq panel, one can still denoise with the per cell gaussian mixture
+model background
+mean.
 
 ``` r
-mtx = DSBNormalizeProtein(cell_protein_matrix = pos_prot,
-                          empty_drop_matrix = neg_prot,
-                          denoise.counts = TRUE,
-                          use.isotype.control = FALSE)
-```
-
-## Quickstart 2 using example data; removing background as captured by data from empty droplets
-
-``` r
-# load package and normalize the example raw data 
-library(dsb)
-# normalize
 normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                        empty_drop_matrix = empty_drop_citeseq_mtx)
+                                        empty_drop_matrix = empty_drop_citeseq_mtx,
+                                        use.isotype.control = FALSE) 
 ```
 
-## Quickstart 3 using example data; – removing background and correcting for per-cell technical factor as a covariate
+## Quickstart 3 removing background and correcting for per-cell technical factor with isotype controls and background mean
 
 By default, dsb defines the per-cell technical covariate by fitting a
 two-component gaussian mixture model to the log + 10 counts (of all
@@ -205,7 +201,6 @@ isotype controls in each cell to compute the denoising covariate
 and the “negative” count inferred by the mixture model above.)
 
 ``` r
-
 # define a vector of the isotype controls in the data 
 isotypes = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT",
              "MouseIgG2akappaisotype_PROT", "RatIgG2bkIsotype_PROT")
@@ -216,47 +211,46 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                         isotype.control.name.vec = isotypes)
 ```
 
+## Quickstart 4 using example data; removing background as captured by data from empty droplets without count denoising
+
+``` r
+# load package and normalize the example raw data 
+library(dsb)
+# normalize
+normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
+                                        empty_drop_matrix = empty_drop_citeseq_mtx)
+```
+
 ## Visualization on example data: distributions of CD4 and CD8 DSB normalized CITEseq data.
 
 **Note, there is NO jitter added to these points for visualization;
-these are the unmodified normalized
-counts**
+these are the unmodified normalized counts**
 
 ``` r
-# add a density gradient on the points () this is helpful when there are many thousands of cells )
-# this density function is from this blog post: https://slowkow.com/notes/ggplot2-color-by-density/
-get_density = function(x, y, ...) {
-  dens <- MASS::kde2d(x, y, ...)
-  ix <- findInterval(x, dens$x)
-  iy <- findInterval(y, dens$y)
-  ii <- cbind(ix, iy)
-  return(dens$z[ii])
-}
 
 library(ggplot2)
 data.plot = normalized_matrix %>% t %>%
   as.data.frame() %>% 
-  dplyr::select(CD4_PROT, CD8_PROT, CD27_PROT, CD19_PROT) 
-
-density_attr = list(
-  geom_vline(xintercept = 0, color = "red", linetype = 2), 
-  geom_hline(yintercept = 0, color = "red", linetype = 2), 
-  theme(axis.text = element_text(face = "bold",size = 12)) , 
-  viridis::scale_color_viridis(option = "B"), 
-  scale_shape_identity(), 
-  theme_bw() 
-)
+  dplyr::select(CD4_PROT, CD3_PROT, CD8_PROT, CD27_PROT, CD19_PROT, CD16_PROT, CD11c_PROT, CD45RO_PROT, CD45RA_PROT) 
 
 
-data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD4_PROT, data.plot$CD8_PROT, n = 100)) 
-p1 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT, color = density)) +
-  geom_point(size = 0.5) + density_attr +  ggtitle("small example dataset")
+p1 = ggplot(data.plot, aes(x = CD19_PROT, y = CD3_PROT)) +
+  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
+  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
 
-data.plot = data.plot %>% dplyr::mutate(density = get_density(data.plot$CD19_PROT, data.plot$CD27_PROT, n = 100)) 
-p2 = ggplot(data.plot, aes(x = CD19_PROT, y = CD27_PROT, color = density)) +
-  geom_point(size = 0.5) + density_attr + ggtitle("small example dataset")
+p2 = ggplot(data.plot, aes(x = CD8_PROT, y = CD4_PROT)) +
+  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
+  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
 
-cowplot::plot_grid(p1,p2)
+p3 = ggplot(data.plot, aes(CD45RO_PROT, y = CD3_PROT)) +
+  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
+  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
+
+p4 = ggplot(data.plot, aes(CD16_PROT, y = CD11c_PROT)) +
+  theme_bw() + geom_vline(xintercept = 0) + geom_hline(yintercept = 0) +
+  geom_point(size = 0.5, shape = 16, alpha = 0.5) + geom_density2d(size = 0.3, color = "red") +  ggtitle("DSB normalized (example data)")
+
+cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
 ```
 
 <img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
