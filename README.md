@@ -42,7 +42,7 @@ details.
 
 ## Installation
 
-\#![heat](/images/vignette_file.png)
+<!-- #![heat](/images/vignette_file.png) -->
 
 ``` r
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
@@ -87,7 +87,7 @@ rna = raw$`Gene Expression`
 # calculate metadata 
 mtgene = grep(pattern = "^MT-", rownames(rna), value = TRUE)
 pctmt = Matrix::colSums(rna[mtgene, ])/Matrix::colSums(rna)
-log10umi = log10((rna))
+log10umi = log10(Matrix::colSums(rna))
 log10umiprot = log10(Matrix::colSums(prot))
 nGene = Matrix::colSums(rna > 0)
 
@@ -160,7 +160,7 @@ s[["p_dist"]] = FindNeighbors(p_dist)$snn
 s = FindClusters(s, resolution = 0.5, graph.name = "p_dist")
 ```
 
-# annotate clusters via average protein expression
+# annotate clusters via average and single cell protein expression
 
 DSB normalized vlaues provide a straightforward comparable value for
 each protein in each cluster. They are the log number of standard
@@ -182,91 +182,102 @@ pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"),
                    fontsize_row = 8, border_color = NA, width = 5, height = 5 )
 ```
 
-![vignette\_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png'/></a>
+
+### One can also calculate UMAP embeddings and visualize protein-based clusters in UMAP space to visualize the interpretable scale on which DSB places single cell protein expression levels. Note it is also possible to calculate UMAP embeddings directly with Seurat, Scater etc. below we use the python umap package called through reticulate
+
+``` r
+library(reticulate); use_virtualenv("r-reticulate")
+library(umap)
+
+# set umap config
+config = umap.defaults
+config$n_neighbors = 40
+config$min_dist = 0.4
+
+# run umap
+ump = umap(t(s2_adt3), config = config)
+umap_res = ump$layout %>% as.data.frame() 
+colnames(umap_res) = c("UMAP_1", "UMAP_2")
+
+# save results dataframe 
+df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
+
+# visualize (code at end of document )
+```
+
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_umap.png'/></a>
 
 ``` r
 
-# create 
+## Note
 
-# Get dsb normalized protein data without isotype controls for clustering
-s_dsb = s@assays$CITE@data
-s_dsb = s_dsb[1:29, ]
+# if link breaks on niaid migration replace: 
+# <a href='https://mattpm.github.io/dsb'><img src='man/figures/vignette_file.png'/></a>
+# with: 
+#![vignette_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)
 
-# defint euclidean distance matrix and cluster 
-p_dist = dist(t(s_dsb))
-p_dist = as.matrix(p_dist)
-s[["p_dist"]] <- FindNeighbors(p_dist)$snn
-s = FindClusters(s, resolution = 0.6, graph.name = "p_dist")
-
-# Plot clusters by average protein expression for annotation 
-
-adt_data = cbind(as.data.frame(t(s@assays$CITE@data)), s@meta.data)
-prots = rownames(s@assays$CITE@data)
-adt_plot = adt_data %>% 
-    group_by(seurat_clusters) %>% 
-    summarize_at(.vars = prots, .funs = mean) %>% 
-    column_to_rownames("seurat_clusters") %>% 
-    t %>% 
-    as.data.frame
-
-pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), fontsize_row = 8)
+### MPM 
 ```
-
-![](images/cluster_average_dsb.png)
 
 # More information: How were background drops defined in the quick example above?
 
-First apply some minimal (RNA based in this case) filtering to retain
-noise / empty droplets for DSB. Below the cells that should be used for
-background in this experiment are shown in a histogram of the droplets
-passing a minimal filtering step.
+The raw cell ranger output that we loaded contained all possible barcode
+sequences based on the 10x genomics Version 3 chemistry - a vast
+majority have little to no data, the second largest major peak of ~
+50,000 droplets centered around 2 in log 10 space were used to define
+the background. In the code above, we defined empty drop background with
+an additional step to remove potential very low quality cells from the
+is background distribution with an RNA based filter. Droplets with
+ambient RNA dn protein mus have \< 80 unique mRNAs (wehreas cels must
+have a minimum of 200) these are not hard thresholds and can be
+calculated with quantile statistics inherent to each dataset depending
+on tissue profield or assay chemistry used.
+
+The full protein library size
+distribution:
 
 ``` r
-
-path_to_data = "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"
-raw = Read10X(data.dir = path_to_data)
-
-# create object with Minimal filtering (retain drops with 5 unique mRNAs detected)
-s1 = CreateSeuratObject(counts = raw$`Gene Expression`,  min.cells = 10, min.features = 5)
-
-# define number of total drops (>130K) after minimal filtering
-ndrop = dim(s1@meta.data)[1]
-
-# Plot
-hist_attr = list(  theme_bw() , theme(text = element_text(size = 8)) , geom_density(fill = "#3e8ede") )
-p1 = ggplot(s1@meta.data, aes(x = log10(nCount_RNA + 1 ) )) +
-  hist_attr + 
-  ggtitle(paste0( " raw_feature_bc_matrix: ", ndrop, " droplets")) + 
-  geom_vline(xintercept = c(2.8, 1.4 ),   linetype = "dashed") + 
-  annotate("text", x = 1, y=1.5, label = " region 1: \n void of data ") + 
-  annotate("text", x = 2, y=2, label = " region 2: \n background drops \n define 'empty_drop_matrix' \n with these drops ") + 
-  annotate("text", x = 4, y=2, label = " region 3: \n cell containing droplets \n zomed in on next plot") 
-
-
-p2 = ggplot(s1@meta.data %>% filter(log10(nCount_RNA + 1) > 2.8), aes(x = log10(nCount_RNA + 1 ) )) +
-  hist_attr + 
-  ggtitle(paste0(" drops containing cells "))  
-p3 = cowplot::plot_grid( p1 , p2 ) 
-p3
+hist(log10(Matrix::colSums(rna))[log10(Matrix::colSums(rna)) > 0],breaks = 50,
+     main = "6,794,880 droplets protein library size distribution ")
 ```
 
-![](images/drop_distribition.png)
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/full_lib.png'/></a>
 
-## Quickstart 2 removing background and correcting for per-cell technical factor without isotype controls
+Only 5,000 cells are expected to be recovered from this experiment =
+these represent a tiny fraction of the total droplets- the peak around 2
+is the major background distribution and the cells are are in the
+population barely visible in this histogram \> 3.
 
-By default, dsb defines the per-cell technical covariate by fitting a
-two-component gaussian mixture model to the log + 10 counts (of all
-proteins) within each cell and defining the covariate as the mean of the
-“negative” component. If one does not include isotype controls in a
-CITE-seq panel, one can still denoise with the per cell gaussian mixture
-model background
-mean.
+The library size distribution of cells and empty droplets after QC
+(these steps were used above to define negative an pisitve droplets
+shown for reference) are shown below with the number of each population
+shown = this gives a sense of the umber of barcodes represtignig
+droplete with ambient protein , \> 50,000 vs cells ~ 3800 in line with
+what we expect from the experiment loading and QC.
 
 ``` r
-normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                        empty_drop_matrix = empty_drop_citeseq_mtx,
-                                        use.isotype.control = FALSE) 
+neg_drops2 = md %>%
+  rownames_to_column("bc") %>% 
+  filter(log10umiprot < 2.5 & log10umiprot > 1.4)  %>% 
+  filter(nGene < 80) # %$% bc
+neg_drops2 = neg_drops2$bc
+neg_prot2 = prot[ , neg_drops2] %>%  as.matrix()
+
+# define a vector of cell-containing droplet barcodes based on protein library size and mRNA content 
+positive_cells = md %>%
+  rownames_to_column("bc") %>% 
+  filter(log10umiprot > min_cell_logprotumi) %>% 
+  filter(nGene < 3000 & nGene > 200) %>% 
+  filter(pctmt < 0.2) # %$% bc
+positive_cells = positive_cells$bc
+cells_prot = prot[ , positive_cells] %>% as.matrix()
 ```
+
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png'/></a>
+
+(code used to create plot above shown at the end of this markdown for
+reference)
 
 ## Quickstart 3 removing background and correcting for per-cell technical factor with isotype controls and background mean
 
@@ -327,7 +338,7 @@ p5 = cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
 p5
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
 
 ## How do I get the empty droplets?
 
@@ -412,6 +423,73 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = pos_adt_matrix,
 
 # add the assay to the Seurat object 
 singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_matrix)
+```
+
+# Reference
+
+## Code used to create library size distribution of the droplets included in DSB normalization shown in quickstart section
+
+``` r
+
+plot_layer = list(theme_bw() , 
+                  ggsci::scale_fill_d3(), ggsci::scale_color_d3() ,
+                  geom_histogram(aes(y=..count..), alpha=0.5, bins = 50,position="identity"),
+                  geom_density(alpha = 0.5), 
+                  ylab("Number of Drops"),  xlab("log10 protein library size"), 
+                  theme(axis.title.x = element_text(size = 14)),
+                  theme(plot.title = element_text(face = "bold",size = 14)),
+                  theme(legend.position = c(0.8, 0.7), legend.margin = margin(0,0,0,0))
+)
+pv = md %>% rownames_to_column("bc") %>% filter(bc %in% colnames(pos_prot)) %>% mutate(class = "cell_containing")
+nv = md %>% rownames_to_column("bc") %>% filter(bc %in% colnames(neg_prot2)) %>% mutate(class = "background")
+ddf = rbind(pv, nv)
+p = ggplot(ddf, aes(x = log10umiprot, fill = class, color = class )) +
+  ggtitle(paste0(
+    project_title, " Threshold 2 \n", 
+    "theoretical max barcodes = ", bcmax, "\n", 
+    "cell containing drops after QC = ", ncol(pos_prot), "\n",
+    "negative droplets = ", ncol(neg_prot2)
+  )) + plot_layer
+xtop = axis_canvas(p, axis = "x") + geom_density(data = ddf, aes(x = log10umiprot, fill = class)) + ggsci::scale_fill_d3(alpha = 0.5)
+p2 = insert_xaxis_grob(p, xtop, grid::unit(.4, "null"), position = "top")
+p3 = ggdraw(p2)
+```
+
+## code used for UMAP visualization
+
+``` r
+
+index1 = colnames(df_dsb)[13]; index2 = colnames(df_dsb)[ncol(df_dsb)]
+dsb = df_dsb %>% gather(prot, DSB, index1:index2)
+
+# cluster umap plots 
+centers = df_dsb %>% dplyr::group_by(clusters) %>% 
+  summarize(UMAP_1 = median(UMAP_1), UMAP_2 = median(UMAP_2))
+p = ggplot(dsb, aes(x = UMAP_1, y = UMAP_2)) + 
+  theme_minimal() + 
+  geom_point(mapping = aes(color = clusters),  shape = 16, alpha = 0.3, show.legend = FALSE) + 
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggrepel::geom_text_repel(data = centers, box.padding = 0.5,  mapping = aes(label = clusters, size = 2.3, fontface = "bold"), show.legend = FALSE) 
+# ggsave(p, filename = paste0(figpath, project_title, "clusters.png"), width = 3.3, height = 3.4)
+
+
+
+prot_plot = c("CD19_TotalSeqB", "CD3_TotalSeqB", "CD14_TotalSeqB",  "CD4_TotalSeqB" , "CD56_TotalSeqB", "CD8a_TotalSeqB")
+plotsub = dsb %>% filter(DSB > -5) %>% filter(DSB < 40) 
+plotsub_spread = plotsub %>% spread(prot, DSB, drop = TRUE)
+plotsub_spread =  na.omit(plotsub_spread)
+outliers_removed = dim(df_dsb)[1] - dim(plotsub_spread)[1]
+stats10x$outliers_removed_for_Vis = outliers_removed
+p = ggplot(plotsub %>% filter(prot %in% prot_plot), aes(x = UMAP_1, y = UMAP_2, color = DSB)) +
+  geom_point(shape = 16) + 
+  theme(legend.key.size = unit(0.8, units = "cm"), 
+        legend.title = element_text(size = 18, face = "bold"),
+        legend.text = element_text(size = 20, face = "bold")) + 
+  scale_color_viridis_c(option = "B") +
+  facet_wrap(~ prot,nrow = 2) +
+  theme(strip.background = element_blank(), strip.text = element_text(size = 15, face = "bold")) + 
+  theme(legend.position = "right")
+# ggsave(p, filename = paste0(figpath, project_title, "clusters_DSBdist.png"), width = 12, height = 7.4)
 ```
 
 ### notes // NIAID
