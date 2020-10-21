@@ -178,7 +178,7 @@ s[["p_dist"]] = FindNeighbors(p_dist)$snn
 s = FindClusters(s, resolution = 0.5, graph.name = "p_dist")
 ```
 
-# Suggested Step IV: cluster annotation with DSB normalized proetin value
+## Suggested Step IV: cluster annotation with DSB normalized proetin value
 
 DSB normalized vlaues provide a straightforward comparable value for
 each protein in each cluster. They are the log number of standard
@@ -232,18 +232,6 @@ df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_umap.png'/></a>
 
-``` r
-
-## Note
-
-# if link breaks on niaid migration replace: 
-# <a href='https://mattpm.github.io/dsb'><img src='man/figures/vignette_file.png'/></a>
-# with: 
-#![vignette_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)
-
-### MPM 
-```
-
 ## More information: How were background drops defined in the quick example above?
 
 The raw cell ranger output that we loaded contained all possible barcode
@@ -269,34 +257,19 @@ hist(log10(Matrix::colSums(rna))[log10(Matrix::colSums(rna)) > 0],breaks = 50,
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/full_lib.png'/></a>
 
 Only 5,000 cells are expected to be recovered from this experiment =
-these represent a tiny fraction of the total droplets- the peak around 2
-is the major background distribution and the cells are are in the
-population barely visible in this histogram \> 3.
+these represent a tiny fraction of the total droplets which are the
+cells with library size \> 3. The peak around 2 is the major background
+distribution used for DSB normalization. We also show in our updated
+manuscript that dSB Normalized values are highly robust to differrent
+definitions of background.
 
-The library size distribution of cells and empty droplets after QC
-(these steps were used above to define negative an pisitve droplets
-shown for reference) are shown below with the number of each population
-shown = this gives a sense of the umber of barcodes represtignig
-droplete with ambient protein , \> 50,000 vs cells ~ 3800 in line with
-what we expect from the experiment loading and QC.
-
-``` r
-neg_drops2 = md %>%
-  rownames_to_column("bc") %>% 
-  filter(log10umiprot < 2.5 & log10umiprot > 1.4)  %>% 
-  filter(nGene < 80) # %$% bc
-neg_drops2 = neg_drops2$bc
-neg_prot2 = prot[ , neg_drops2] %>%  as.matrix()
-
-# define a vector of cell-containing droplet barcodes based on protein library size and mRNA content 
-positive_cells = md %>%
-  rownames_to_column("bc") %>% 
-  filter(log10umiprot > min_cell_logprotumi) %>% 
-  filter(nGene < 3000 & nGene > 200) %>% 
-  filter(pctmt < 0.2) # %$% bc
-positive_cells = positive_cells$bc
-cells_prot = prot[ , positive_cells] %>% as.matrix()
-```
+The library size distribution of cells and empty droplets after QC in
+part I above (the steps were used above to define negative an positve
+droplets) are shown below with the number of each population shown-this
+gives a sense of the large number of barcodes with ambient protein
+detected (\> 50,000) vs cells ~ 3800 in line with what we expect from
+the experiment loading and removal of some cells during
+QC.
 
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png'/></a>
 
@@ -354,7 +327,7 @@ p5 = cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
 p5
 ```
 
-<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" />
 
 ## How do I get the empty droplets?
 
