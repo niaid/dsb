@@ -10,7 +10,7 @@ DSBNormalizeProtein(
   define.pseudocount = FALSE,
   pseudocount.use,
   denoise.counts = TRUE,
-  use.isotype.control = FALSE,
+  use.isotype.control = TRUE,
   isotype.control.name.vec = NULL
 )
 }
