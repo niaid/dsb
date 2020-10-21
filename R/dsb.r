@@ -17,7 +17,7 @@
 #' @importFrom stats prcomp
 #' @importFrom stats sd
 DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, define.pseudocount = FALSE,
-                               pseudocount.use, denoise.counts = TRUE, use.isotype.control = FALSE,
+                               pseudocount.use, denoise.counts = TRUE, use.isotype.control = TRUE,
                                isotype.control.name.vec = NULL){
   # suppressMessages(require(mclust))
   # suppressMessages(require(limma))
