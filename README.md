@@ -51,62 +51,140 @@ library(dsb)
 norm_mtx = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx, empty_drop_matrix = empty_drop_citeseq_mtx)
 ```
 
-# Quick start using *RAW* 10X cellranger output
+# Quick start DSB normalize CITE-seq protein data starting from *RAW* cell ranger output
 
-load RAW (not filtered\!) **feature / cellmatrix raw** public 10X
-CITE-seq data from here:
+With this workflow, a matrix of protein counts for empty droplets and
+cells are estimated using the protein and mRNA library size
+distributions of the raw cell ranger output. These are used to normalize
+the protein data for cells using the dsb package. This normalized (and
+raw) protein data and raw RNA data can then be used to create a Seurat
+object or any object in various single cell analysis software
+ecosystems, for example, Bioconductor’s SingleCellExperiment object, or
+the anndata class in Python. (see following setion for instructions)
+
+To follow this example load the RAW (not filtered\!) **feature /
+cellmatrix raw** public 10X CITE-seq data from here:
 <https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3>
 
+The steps below use R 3.6 and Seurat version 3.
+
 ``` r
-library(dsb)
-library(Seurat) # version 3 in example provided belo
+# R 3.6 Seurat V 3 
+library(Seurat)
 library(tidyverse)
-library(magrittr)
-path_to_data = "data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/"
-raw = Read10X(data.dir = path_to_data)
+library(dsb)
+# library(magrittr)
 
-# create object with Minimal filtering (retain drops with 5 unique mRNAs detected)
-s1 = CreateSeuratObject(counts = raw$`Gene Expression`,  min.cells = 10, min.features = 5)
+# read raw data using the Seurat function "Read10X"
+raw = Read10X("data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/")
 
-# add some metadata 
-s1$log10umi = log10(s1$nCount_RNA  + 1) 
-s1$bc = rownames(s1@meta.data)
+# Define separate RNA and protein sparse matrix  
+prot = raw$`Antibody Capture`
+rna = raw$`Gene Expression`
 
-# define negative and positive drops based on an mRNA threshold to define neg and positive cells (see details below) 
-hist(log10(s1$nCount_RNA  + 1), breaks = 1000)
-neg_drops = s1@meta.data %>% filter(log10umi > 1.5 & log10umi < 2.79) %$% bc
-positive_cells = s1@meta.data %>% filter(log10umi > 2.8 & log10umi < 4.4) %$% bc
-  
-# Subset protein data to create a standard R matrix of protein counts for negative droplets and cells 
-neg_prot = raw$`Antibody Capture`[ ,  neg_drops ] %>% as.matrix()
-positive_prot = raw$`Antibody Capture`[ , positive_cells] %>% as.matrix()
+# calculate metadata 
+mtgene = grep(pattern = "^MT-", rownames(rna), value = TRUE)
+pctmt = Matrix::colSums(rna[mtgene, ])/Matrix::colSums(rna)
+log10umi = log10((rna))
+log10umiprot = log10(Matrix::colSums(prot))
+nGene = Matrix::colSums(rna > 0)
 
-# run DSB normalization
-isotypes = rownames(positive_prot)[30:32]
-mtx = DSBNormalizeProtein(cell_protein_matrix = positive_prot,
-                           empty_drop_matrix = neg_prot,
-                           denoise.counts = TRUE, use.isotype.control = TRUE, 
+# combine into metadata 
+md = as.data.frame(cbind(pctmt, log10umi, nGene, log10umiprot))
+
+# histogram to estimate cells and background-cells are a tiny fraction of drops with log 10 protien lib size > 3
+hist(md$log10umiprot[md$log10umiprot < 5], breaks = 100)
+
+# define a vector of background / empty droplet barcodes based on protein library size and mRNA content  
+neg_drops2 = md %>%
+  rownames_to_column("bc") %>% 
+  filter(log10umiprot < 2.5 & log10umiprot > 1.4)  %>% 
+  filter(nGene < 80) # %$% bc
+neg_drops2 = neg_drops2$bc
+neg_prot2 = prot[ , neg_drops2] %>%  as.matrix()
+
+# define a vector of cell-containing droplet barcodes based on protein library size and mRNA content 
+positive_cells = md %>%
+  rownames_to_column("bc") %>% 
+  filter(log10umiprot > min_cell_logprotumi) %>% 
+  filter(nGene < 3000 & nGene > 200) %>% 
+  filter(pctmt < 0.2) # %$% bc
+positive_cells = positive_cells$bc
+cells_prot = prot[ , positive_cells] %>% as.matrix()
+
+#normalize protein data for the cell containing droplets with the dsb method. 
+isotypes = rownames(pos_prot)[30:32]
+mtx2 = DSBNormalizeProtein(cell_protein_matrix = cells_prot,
+                           empty_drop_matrix = neg_prot2,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
                            isotype.control.name.vec = isotypes)
-
-## subset the raw data to only iinclude cell containing drops and add protein data 
-s = subset(s1, cells = colnames(mtx))
-s[["CITE"]] = CreateAssayObject(counts = positive_prot)
-s = SetAssayData(s,assay = "CITE", slot = "data",new.data = mtx)
-
-# Done! you can also save the resulting normalized matrix for integration with scanpy etc
-write_delim(mtx, path = paste0(path_to_data, "dsb_norm_matrix.txt"),delim = "\t" )
 ```
 
-# Recommended next steps in CITEseq workflow: Protein based clustering + visualization for cluster annotation
-
-This is the same process followed in our paper
-<https://www.nature.com/articles/s41591-020-0769-8>
-
-DSB normalized vlaues provide a straightforward comparable value for
-each protein in each cluster. They are the denoised log number of
-standard deviations from the background.
+# Example of next steps: set up Seurat object
 
 ``` r
+# filter raw protein, RNA and metadata ton only include the cell containing droplets 
+count_rna = raw$`Gene Expression`[ ,positive_cells]
+count_prot = raw$`Antibody Capture`[ ,positive_cells]
+md = md %>% 
+  rownames_to_column("bc") %>% 
+  filter(bc %in% positive_cells) %>% 
+  column_to_rownames('bc')
+
+# create Seurat object * note min.cells ins a gene filter not a cell filter, we alerady filtered cells in steps above
+s = CreateSeuratObject(counts = count_rna, meta.data = md, assay = "RNA", min.cells = 20)
+
+# add DSB normalized "dsb_norm_prot" protein data to the seurat object 
+s[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
+```
+
+# Suggested workflow: Protein based clustering + visualization for cluster annotation
+
+  - This is similar to the workflow used in our paper
+    <https://www.nature.com/articles/s41591-020-0769-8>
+
+<!-- end list -->
+
+``` r
+
+# define euclidean distance matrix on dsb normalized protein data (without isotype controls)
+dsb = s@assays$CITE@data[1:29, ]
+p_dist = dist(t(dsb))
+p_dist = as.matrix(p_dist)
+
+# Cluster using Seurat 
+s[["p_dist"]] = FindNeighbors(p_dist)$snn
+s = FindClusters(s, resolution = 0.5, graph.name = "p_dist")
+```
+
+# annotate clusters via average protein expression
+
+DSB normalized vlaues provide a straightforward comparable value for
+each protein in each cluster. They are the log number of standard
+deviations (+ / - the cell-intrinsic denoised technical component) from
+the expected noise as reflected by the protein distribution in empty
+droplets.
+
+``` r
+prots = rownames(s@assays$CITE@data)
+adt_plot = adt_data %>% 
+  group_by(seurat_clusters) %>% 
+  summarize_at(.vars = prots, .funs = mean) %>% 
+  column_to_rownames("seurat_clusters") %>% 
+  t %>% 
+  as.data.frame
+
+pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), 
+                   fontsize_row = 8, border_color = NA, width = 5, height = 5 )
+#![label](" https://github.com/MattPM/dsb/tree/master/images/")
+```
+
+![vignette\_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)
+
+``` r
+
+# create 
 
 # Get dsb normalized protein data without isotype controls for clustering
 s_dsb = s@assays$CITE@data
@@ -247,7 +325,7 @@ p5 = cowplot::plot_grid(p1,p2, p3,p4, nrow = 1)
 p5
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-11-1.png" width="100%" />
 
 ## How do I get the empty droplets?
 
@@ -333,3 +411,23 @@ normalized_matrix = DSBNormalizeProtein(cell_protein_matrix = pos_adt_matrix,
 # add the assay to the Seurat object 
 singlet = SetAssayData(object = singlet, slot = "CITE", new.data = normalized_matrix)
 ```
+
+### notes // NIAID
+
+A review of this code has been conducted, no critical errors exist, and
+to the best of the authors knowledge, there are no problematic file
+paths, no local system configuration details, and no passwords or keys
+included in this code.
+
+Primary author(s): Matt Mulè  
+Organizational contact information: General: john.tsang AT nih.gov,
+code: mulemp AT nih.gov  
+Date of release: Oct 7 2020  
+Version: NA  
+License details: NA  
+Description: code to reproduce analysis of manuscript  
+Usage instructions: Provided in this markdown  
+Example(s) of usage: NA  
+Proper attribution to others, when applicable: NA
+
+### code check
