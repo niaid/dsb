@@ -42,6 +42,8 @@ details.
 
 ## Installation
 
+\#![heat](/images/vignette_file.png)
+
 ``` r
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
 require(devtools); devtools::install_github(repo = 'MattPM/dsb')
@@ -167,6 +169,7 @@ the expected noise as reflected by the protein distribution in empty
 droplets.
 
 ``` r
+
 prots = rownames(s@assays$CITE@data)
 adt_plot = adt_data %>% 
   group_by(seurat_clusters) %>% 
@@ -177,7 +180,6 @@ adt_plot = adt_data %>%
 
 pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), 
                    fontsize_row = 8, border_color = NA, width = 5, height = 5 )
-#![label](" https://github.com/MattPM/dsb/tree/master/images/")
 ```
 
 ![vignette\_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)

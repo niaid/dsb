@@ -28,6 +28,8 @@ As described in [preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.96
 
 ## Installation 
 
+<!-- #![heat](/images/vignette_file.png) -->
+
 ```{r, eval = FALSE}
 # this is analagous to install.packages("package), you need the package devtools to install a package from a github repository like this one. 
 require(devtools); devtools::install_github(repo = 'MattPM/dsb')
@@ -138,6 +140,7 @@ s = FindClusters(s, resolution = 0.5, graph.name = "p_dist")
 DSB normalized vlaues provide a straightforward comparable value for each protein in each cluster. They are the log number of standard deviations (+ / - the cell-intrinsic denoised technical component) from the expected noise as reflected by the protein distribution in empty droplets.
 
 ```{r, eval = FALSE}
+
 prots = rownames(s@assays$CITE@data)
 adt_plot = adt_data %>% 
   group_by(seurat_clusters) %>% 
@@ -148,12 +151,14 @@ adt_plot = adt_data %>%
 
 pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), 
                    fontsize_row = 8, border_color = NA, width = 5, height = 5 )
-#![label](" https://github.com/MattPM/dsb/tree/master/images/")
 ```
 
 
 ![vignette_file](https://user-images.githubusercontent.com/15280712/96745959-ad638480-1394-11eb-8a93-d159ca16728d.png)
- 
+
+
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/vignette_file.png'/></a>
+
 
 ```{r, eval = FALSE}
 
