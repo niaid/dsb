@@ -160,7 +160,7 @@ pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"),
 
 ```
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png'/></a>
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png' height="500"  /></a>
 
 ### calculate UMAP embedding on DSB normalized protein values and visualize all proteins in single cells on the same interpretable DSB scale
 
@@ -185,6 +185,11 @@ df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 ```
 
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_umap.png'/></a>
+
+### modeling assumptions in background rescaling and cell denoising in 10X data
+In this public dataset, the number of estimated cell-free droplets (>60,000 drops) with protein provided a robust estimate of the distribution of each proteins expected noise; this is consistent with our original report discovering ambient antibody as the major noise source by comparing unstained control cells and empty droplets. Part of defining the defining each cell's technical component, is fitting a Gaussian mixture model to each cell under the assumption cells will have a bimodal staining distribution of positive and negative proteins. The background mean from a Gaussian mixture model with k=2 components globally had the best fit across single cells comparing 1,2 and 3 component models, consistent with this assumption. The estimated µ1 from the k=2 model corelated the isotype control mean and individual isotype contorls. The inferred technical component using isotype controls and µ1 had a positive non-linear relationship with the protein library size across cell clusters, suggesting this technical component controls for stochastic technical differences in library sizes between cells, but not in the 1:1 linear proportion that would be enforced by library size scaling factors (as are commonly used for mRNA normalization but are not appropriate for protein due to expected biological variation in library sizes). 
+
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/10x_data_summary.png' height="500"  /></a>
 
 ## More information: How were background drops defined in the quick example above? 
 
