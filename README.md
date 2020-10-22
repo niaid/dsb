@@ -3,6 +3,11 @@
 
 # dsb : an R package for normalizing and denoising CITEseq protein data <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
 
+Package maintainer: Matt Mulè  
+Package hosted by: National Institutes of Allergy and Infectious
+Diseases,
+NIH
+
 <!-- badges: start -->
 
 <!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
@@ -13,7 +18,9 @@ dsb (*d*enoised and *s*caled by *b*ackground) is a lightweight R package
 for normalizing and denoising protein expression data from CITE-seq. The
 dsb package was developed in [John Tsang’s Lab at the
 NIH-NIAID](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt
-Mulè, Andrew Martins and John Tsang.
+Mulè, Andrew Martins and John Tsang. If you use dsb or find the noise
+modeling results in our paper useful in your research please consider
+citing the preprint below.
 
 [our biorxiv
 preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf)
@@ -416,15 +423,23 @@ this.
 A review of this code has been conducted, no critical errors exist, and
 to the best of the authors knowledge, there are no problematic file
 paths, no local system configuration details, and no passwords or keys
-included in this code.
+included in this code. This open source software comes as is with
+absolutely no warranty.
 
-Primary author(s): Matt Mulè  
-Organizational contact information: General: john.tsang AT nih.gov,
-code: mulemp AT nih.gov  
+\#\#\#Terms of Use By using this software, you agree this software is to
+be used for research purposes only. Any presentation of data analysis
+using dsb will acknowledge the software according to the guidelines
+below.
+
+Citation: 1. Mulè MP, Martins AJ, Tsang JS. Normalizing and denoising
+protein expression data from droplet-based single cell profiling.
+bioRxiv. 2020;2020.02.24.963603.
+
+Primary author(s): Matt Mulè Organizational contact information:
+General: john.tsang AT nih.gov, code: mulemp AT nih.gov  
 Date of release: Oct 7 2020  
-Version: NA  
-License details: NA  
-Description: code to reproduce analysis of manuscript  
+Version: 0.1.0 License details: see package Description: code to
+reproduce analysis of manuscript  
 Usage instructions: Provided in this markdown  
 Example(s) of usage: NA  
 Proper attribution to others, when applicable: NA

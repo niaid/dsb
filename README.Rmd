@@ -3,7 +3,9 @@ output: github_document
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dsb : an R package for normalizing and denoising CITEseq protein data <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
+# dsb : an R package for normalizing and denoising CITEseq protein data <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>  
+Package maintainer: Matt Mulè  
+Package hosted by: National Institutes of Allergy and Infectious Diseases, NIH  
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -18,7 +20,7 @@ knitr::opts_chunk$set(
 <!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
 <!-- badges: end -->
 
-dsb (*d*enoised and *s*caled by *b*ackground)  is a lightweight R package for normalizing and denoising protein expression data from CITE-seq. The dsb package was developed in [John Tsang's Lab at the NIH-NIAID](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè, Andrew Martins and John Tsang. 
+dsb (*d*enoised and *s*caled by *b*ackground)  is a lightweight R package for normalizing and denoising protein expression data from CITE-seq. The dsb package was developed in [John Tsang's Lab at the NIH-NIAID](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt Mulè, Andrew Martins and John Tsang. If you use dsb or find the noise modeling results in our paper useful in your research please consider citing the preprint below. 
 
 [our biorxiv preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1.full.pdf) provides details of the dsb method.  
 [our Nature Medicine paper](https://doi.org/10.1038/s41591-020-0769-8) shows the utility of dsb normalized values for CITE-seq clustering, modeling and visualization
@@ -277,16 +279,22 @@ singlet_object[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
 
 ### NIAID statement 
 
-A review of this code has been conducted, no critical errors exist, and to the best of the authors knowledge, there are no problematic file paths, no local system configuration details, and no passwords or keys included in this code.
+A review of this code has been conducted, no critical errors exist, and to the best of the authors knowledge, there are no problematic file paths, no local system configuration details, and no passwords or keys included in this code. This open source software comes as is with absolutely no warranty. 
 
-Primary author(s): Matt Mulè  
+### Terms of Use
+By using this software, you agree this software is to be used for research purposes only. Any presentation of data analysis using dsb will acknowledge the software according to the guidelines below.
+How to cite:  
+Please cite this software as: 
+1. Mulè MP, Martins AJ, Tsang JS. Normalizing and denoising protein expression data from droplet-based single cell profiling. bioRxiv. 2020;2020.02.24.963603. 
+
+Primary author(s): Matt Mulè 
 Organizational contact information: General: john.tsang AT nih.gov, code: mulemp AT nih.gov  
 Date of release: Oct 7 2020  
-Version: NA  
-License details: NA  
-Description: code to reproduce analysis of manuscript  
+Version: 0.1.0
+License details: see package
+Description: dsb : an R package for normalizing and denoising CITEseq protein data
 Usage instructions: Provided in this markdown  
-Example(s) of usage: NA  
+Example(s) of usage: Provided in this markdown and vignettes 
 Proper attribution to others, when applicable: NA
 
 ### code check 
@@ -308,6 +316,7 @@ lt = suppressMessages((lapply(scp, lintr::lint)))
 
 
 ```
+
 
 
 
