@@ -291,11 +291,11 @@ Primary author(s): Matt Mulè
 Organizational contact information: General: john.tsang AT nih.gov, code: mulemp AT nih.gov  
 Date of release: Oct 7 2020  
 Version: 0.1.0
-License details: see package
-Description: dsb : an R package for normalizing and denoising CITEseq protein data
+License details: see package  
+Description: dsb:an R package for normalizing and denoising CITEseq protein data  
 Usage instructions: Provided in this markdown  
-Example(s) of usage: Provided in this markdown and vignettes 
-Proper attribution to others, when applicable: NA
+Example(s) of usage: Provided in this markdown and vignettes  
+Proper attribution to others, when applicable: NA  
 
 ### code check 
 

@@ -426,22 +426,24 @@ paths, no local system configuration details, and no passwords or keys
 included in this code. This open source software comes as is with
 absolutely no warranty.
 
-\#\#\#Terms of Use By using this software, you agree this software is to
-be used for research purposes only. Any presentation of data analysis
-using dsb will acknowledge the software according to the guidelines
-below.
+### Terms of Use
 
-Citation: 1. Mulè MP, Martins AJ, Tsang JS. Normalizing and denoising
-protein expression data from droplet-based single cell profiling.
-bioRxiv. 2020;2020.02.24.963603.
+By using this software, you agree this software is to be used for
+research purposes only. Any presentation of data analysis using dsb will
+acknowledge the software according to the guidelines below. How to
+cite:  
+Please cite this software as: 1. Mulè MP, Martins AJ, Tsang JS.
+Normalizing and denoising protein expression data from droplet-based
+single cell profiling. bioRxiv. 2020;2020.02.24.963603.
 
 Primary author(s): Matt Mulè Organizational contact information:
 General: john.tsang AT nih.gov, code: mulemp AT nih.gov  
 Date of release: Oct 7 2020  
-Version: 0.1.0 License details: see package Description: code to
-reproduce analysis of manuscript  
+Version: 0.1.0 License details: see package  
+Description: dsb:an R package for normalizing and denoising CITEseq
+protein data  
 Usage instructions: Provided in this markdown  
-Example(s) of usage: NA  
+Example(s) of usage: Provided in this markdown and vignettes  
 Proper attribution to others, when applicable: NA
 
 ### code check
