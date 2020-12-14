@@ -1,18 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# dsb: an R package for normalizing and denoising CITE-seq protein data <a href='https://mattpm.github.io/dsb'><img src='man/figures/logo.png' align="right" height="150" /></a>
+# <a href='https://mattpm.github.io/dsb'><img src='man/figures/sticker.png' align="right" width="200" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
 
-**All package documentation is provided below in this readme including
-installation instructions, usage tutorials for standard or sample
-multiplexed experiments, and downstream integration using Seurat,
-Bioconductor and Scanpy. Also see FAQ section for common questions.**
-
-If you have a question, please open an issue on the github site
-<https://github.com/niaid/dsb> so that the community can benefit.
-Package maintainer / code: Matt Mulè (matthew.mule at nih.gov,
-permanent: mattmule at gmail. General contact: John Tsang (john.tsang at
-nih.gov)
+**All documentation is provided below including installation
+instructions, usage tutorials for standard or sample multiplexed
+experiments, and a workflow for using dsb with Seurat, Bioconductor and
+Scanpy. Also see FAQ
+section.**
 
 <!-- badges: start -->
 
@@ -22,116 +17,121 @@ nih.gov)
 
 dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R
 package for normalizing and denoising protein expression data from
-droplet based single cell experiments (CITE-seq, REAP-seq, Mission Bio
-Tapestri etc.). The dsb package was developed in [John Tsang’s Lab
+droplet based single cell experiments such as CITE-seq, REAP-seq, and
+proteogenomic data from the Mission Bio Tapestri. dsb centers the
+background cell population at zero by removing ambient noise associated
+with each protein and modeling and removing the technical component of
+each single cell’s protein library. The method was developed in [John
+Tsang’s Lab
 NIH-NIAID](https://www.niaid.nih.gov/research/john-tsang-phd) by Matt
-Mulè, Andrew Martins and John Tsang. If you use dsb or find the noise
-modeling results in our paper useful please consider citing the dsb
-preprint.  
-[**the dsb
-preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
-provides details of the dsb method.  
-[**a reproducible workflow**](https://github.com/niaid/dsb_manuscript)
-provides all code + data for reproducing results and figures reported in
-the the dsb paper.  
-In addition [**our paper on baseline immune
-states**](https://doi.org/10.1038/s41591-020-0769-8) in Nature Medicine
-shows utility of dsb for CITE-seq protein clustering, cluster
-annotation, modeling and
-visualization.
+Mulè, Andrew Martins and John
+Tsang.
 
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_overview.png' /></a>
 
-dsb centers the background cell population at zero by removing ambient
-noise associated with each protein and removes the technical component
-of each cell’s protein library
-<a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>
+[**Please consider citing the dsb
+preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
+if you use dsb or find the protein noise modeling results in our paper
+useful.  
+[**A complete reproducible workflow
+repository**](https://github.com/niaid/dsb_manuscript) links to all of
+the data, code and instructions for reproducing all results and figures
+in the
+paper.
 
-Follow tutorial below to integrate dsb with a workflow using *Seurat*
+<a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>  
+Follow tutorial below to use dsb in a workflow with Seurat or integrate
+with Bioconductor or Scanpy.
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_protdist.png'/></a>
 
-Our method is based on control experiments designed to interrogate the
-source of background noise in CITE-seq experiments. Please refer to the
-details in the
-[preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1).
+### Background
+
+Our method is based on control experiments and computational modeling
+designed to interrogate the source of background noise in CITE-seq
+experiments. Based on our findings we developed the dsb method and
+validated it on several external datasets as detailed in the [updated
+preprint](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1).
 Briefly, we discovered:
 
-1)  A major source of background noise in CITE-seq data comes from
-    ambient, unbound antibody encapsulated in droplets.
+1)  A major source of protein background noise in CITE-seq data comes
+    from ambient, unbound antibody encapsulated in droplets.
 
-2)  Empty droplets (containing mRNA and protein reads but not a cell)
-    outnumber cell-containing droplets by 10-100 fold due to Poisson
-    distributed cell encapsulation; based on exeriments and modeling,
-    these empty drops capture the *ambient component* of background
-    noise.
+2)  Empty / background droplets (containing mRNA and antibody reads but
+    no cell) which outnumber cell-containing droplets by 10-100 fold due
+    to Poisson distributed cell encapsulation, capture the *ambient
+    component* of protein background noise based on experiments and
+    modeling with our unstained control exeriments.
 
-3)  Cell-to-cell technical variations due to e.g. stochastic differences
-    in cell lysis and capture, RT efficiency, sequencing depth, and
+3)  Cell-to-cell technical variations such as stochastic differences in
+    cell lysis and capture, RT efficiency, sequencing depth, and
     non-specific antibody binding can be estimated and removed by
     defining the “technical component” of *each cell’s* protein library.
     We define the technical component as the shared variance component
     associated with isotype antibody controls and the cell’s background
-    protein population defined with a Gaussian mixture model.
+    protein population as modeled with a Gaussian mixture.
+
+After this tutorial, if you have a question, please open an issue on the
+github site <https://github.com/niaid/dsb> so the community can benefit.
+Package maintainer / code: Matt Mulè (matthew.mule at nih.gov,
+permanent: mattmule at gmail. General contact: John Tsang (john.tsang at
+nih.gov)
 
 ## Installation and quick overview with pre-loaded package data
 
-Here we normalize raw counts of cells (columns) by proteins (rows) of a
-pre-loaded sparse matrix ‘cells\_citeseq\_mtx’. We estimate the ambient
-component of noise with background/empty droplets containing raw protein
-counts ‘empty\_drop\_citeseq\_mtx’ and we also define and remove the
-‘technical component’ of each cell’s protein library. This is all
-implemented in the function **DSBNormalizeProtein()**.
+The **DSBNormalizeProtein()** is used to 1) normalize raw protein counts
+of cells (columns) by proteins (rows) of a pre-loaded sparse matrix
+‘cells\_citeseq\_mtx’, estimating the ambient component of noise with
+‘empty\_drop\_citeseq\_mtx’, a matrix of background/empty droplets and
+2) model and remove the ‘technical component’ of each cell’s protein
+library.
 
 ``` r
 # install dsb package directly from github: 
 require(devtools); devtools::install_github(repo = 'MattPM/dsb')
 library(dsb)
 
-# define a vector of the names of the isotype controls 
-isotypes = rownames(cells_citeseq_mtx)[67:70]
-
-# normalize raw protein data with dsb
 adt_norm = DSBNormalizeProtein(
-  # raw CITE-seq protein count matrices (rows = protein, columns = cells)
-  cell_protein_matrix = cells_citeseq_mtx,# 1: cell-containing droplets
-  empty_drop_matrix = empty_drop_citeseq_mtx, # 2: empty/background droplets
+  # remove ambient protien noise reflected in counts from empty droplets 
+  cell_protein_matrix = cells_citeseq_mtx, # cell-containing droplet raw protein count matrix
+  empty_drop_matrix = empty_drop_citeseq_mtx, # empty/background droplet raw protein counts
   
-  # Step II arguments 
-  denoise.counts = TRUE, # recommended (whether to define and remove each cell's technical component) 
-  use.isotype.control = TRUE, # whether to use isotype controls to define cell technical components (highly recommended)
-  isotypecontrol.name.vec = isotypes # the vector of isotype control proteins defined above 
+  # recommended step II: model and remove the technical component of each cell's protein library
+  denoise.counts = TRUE, # (default = TRUE); run step II  
+  use.isotype.control = TRUE, # (default = TRUE): use isotype controls to define technical components. 
+  isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
   )
 ```
 
 ## Tutorial with public 10X genomics data
 
-To follow this example download **RAW (not filtered\!)** **feature /
-cellmatrix raw** public 10X CITE-seq data from here:
-<https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3>.
-The steps below use R 3.6 and Seurat version 3. We emphasize that the
-normalized protein data and raw RNA data from this workflow can be used
-with *any single cell analysis software*. The matrices in this workflow
-can be saved in any format to create a Seurat object, Bioconductor’s
-SingleCellExperiment object, or an AnnData object in python for
-downstream analysis. A suggested workflow is provided below that is
-similar to the CITE-seq workflow used in [our paper on baseline immune
+Download **RAW (not filtered\!)** **feature / cellmatrix raw** from
+[public 10X CITE-seq data
+here](https://support.10xgenomics.com/single-cell-gene-expression/datasets/3.0.2/5k_pbmc_protein_v3).
+Steps below use R 3.6 and Seurat 3. We emphasize normalized protein data
+and raw RNA data from this workflow at step III can be used with Seurat,
+Bioconductor or Python’s AnnData class in scanpy. A suggested workflow
+is provided below that is similar to the CITE-seq workflow used in [our
+paper on baseline immune
 states](https://doi.org/10.1038/s41591-020-0769-8)
 
-### Step I: Define cell-containing and background droplets starting from the *raw* Cell Ranger output
+### Step Ia: load *raw* count alignment (e.g. Cell Ranger) output and define cell variables
 
-The raw output from a count aligner such as Cell Ranger is a sparse
-matrix of **all possible cell barcodes** (columns) vs genes/proteins
-(rows). In all CITE-seq datasets, there are 10-100 fold more “empty”
-drops with detectable ambient RNA + protein than cell containing
-droplets. Below we examine the distribution of library size across all
-cells for the protein and mRNA assays in order to define background
-noise droplets and the cell containing droplets based on clear
-boundaries between populations.
+The **raw** output from count aligners like Cell Ranger are a sparse
+matrix of **possible cell barcodes** (columns) vs genes/proteins (rows).
+In CITE-seq datasets, there are 10-100 fold more “empty” drops with
+detectable ambient RNA + protein than cell-containing droplets. Below we
+use the distribution of the protein and mRNA library size from these raw
+data to define background noise droplets and the cell-containing
+droplets based on boundaries between populations. *If you loaded
+multiple “lanes” of 10X data with the same pool of antibody stained
+cells, we recommend combining all raw outputs together to normalize (see
+FAQ section for code). If you used cell hashing and superloading you can
+also consider an alternative workflow at the end of this tutorial.*
 
 ``` r
-library(Seurat) # not a dependency, only used for example workflow below
-library(tidyverse) # not a dependency, only used for visualizations below
 library(dsb)
+library(Seurat) # not a dsb dependency, only used for example workflow below
+library(tidyverse) # not a dsb dependency, only used for visualizations below
 
 # read raw data using the Seurat helper function "Read10X"
 raw = Read10X("data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/")
@@ -140,8 +140,7 @@ raw = Read10X("data/10x_data/10x_pbmc5k_V3/raw_feature_bc_matrix/")
 prot = raw$`Antibody Capture`
 rna = raw$`Gene Expression`
 
-# calculate qc stats for each droplet 
-# Do not create Seurat object at this step, it will be too large to load into memory
+# create a dataframe of simple qc stats for each droplet 
 rna_size = log10(Matrix::colSums(rna))
 prot_size = log10(Matrix::colSums(prot))
 ngene = Matrix::colSums(rna > 0)
@@ -149,39 +148,62 @@ mtgene = grep(pattern = "^MT-", rownames(rna), value = TRUE)
 propmt = Matrix::colSums(rna[mtgene, ]) / Matrix::colSums(rna)
 md = as.data.frame(cbind(propmt, rna_size, ngene, prot_size))
 md$bc = rownames(md)
-
-# histogram to estimate cells and background-cells are a tiny fraction of drops with log 10 protien lib size > 3
-par(mfrow=c(1,2))
-hist(rna_size, col = "blue", cex.main = 1, main = paste0("RNA library size \n", nrow(md), " barcodes"))
-hist(prot_size, col = "red", cex.main = 1, main = paste0("protein library size \n", nrow(md), " barcodes"))
 ```
 
-*The rightmost peaks that are barely visible \> 3 are the
-cell-containing droplets*
-<a href='https://github.com/niaid/dsb'><img src='man/figures/libsizes.png' /></a>
+### Step Ib: Define cell-containing and background droplets
 
-In this example, we define the background droplets as the major peak in
-the background distribution between 1.4 and 2.5 log total protein
-counts. One could also use the entire population of droplets from 0 to
-2.5 with little impact on normalized values (see the paper for details).
-In addition, we add mRNA QC based filters as typically done in single
-cell workflows to remove potential low quality cells. Potential low
-quality cells are also removed from the empty droplet matrix. The
-library size distribution of the cells (orange) and background droplets
-(blue) used for normalization are
-highlighted.
+The number of droplets defined as cells should be in line with the
+expected cell loading/recovery from your particular experient.
+Background droplets will outnumber cell-containing droplets 10:1 to
+100:1. If we multiplexing with “superloading”, we may expect to recover
+\>50,000 cells + doublets in which case a population of droplets with
+higher library size than the background should be seen that is 50,000
+plus droplets. In this experiment, ~5000 cells were loaded, we expect a
+population \< 5k cells based on library size and therefore *The
+rightmost peaks that are barely visible \> 3 are the cell-containing
+droplets*
 
 ``` r
-# define a vector of background / empty droplet barcodes based on protein library size and mRNA content  
-background_drops = md[md$prot_size < 2.5 & md$prot_size > 1.4 & md$ngene < 80, ]$bc
+p1 = ggplot(md[md$rna_size > 0, ], aes(x = rna_size)) + geom_histogram(fill = "dodgerblue") + ggtitle("RNA library size \n distribution")
+p2 = ggplot(md[md$prot_size> 0, ], aes(x = prot_size)) + geom_density(fill = "firebrick2") + ggtitle("Protein library size \n distribution")
+cowplot::plot_grid(p1, p2, nrow = 1)
+```
+
+<a href='https://github.com/niaid/dsb'><img src='man/figures/libsize.png' /></a>
+
+Below we define the background droplets as the major peak in the
+background distribution between 1.4 and 2.5 log total protein counts.
+One could also use the entire population of droplets from 0 to 2.5 with
+little impact on normalized values (see the paper for details). In
+addition, we add mRNA quality control based filters to remove potential
+low quality cells-these can be tuned to your dataset based on
+distributional thresholds like used above, if unfamiliar with typical
+scRNAseq analysis, you can refer to Seurat tutorials or more for a more
+formal overview, the Quality Control section in [this
+paper](https://www.embopress.org/doi/full/10.15252/msb.20188746).
+Potential low quality cells are also removed from the empty droplet
+matrix.
+
+``` r
+# define a vector of background / empty droplet barcodes based on protein library size and mRNA content
+background_drops = md[md$prot_size > 1.4 & md$prot_size < 2.5 & md$ngene < 80, ]$bc
 negative_mtx_rawprot = prot[ , background_drops] %>%  as.matrix()
 
 # define a vector of cell-containing droplet barcodes based on protein library size and mRNA content 
 positive_cells = md[md$prot_size > 2.8 & md$ngene < 3000 & md$ngene > 200 & propmt <0.2, ]$bc
 cells_mtx_rawprot = prot[ , positive_cells] %>% as.matrix()
+
+# check - are the number of cells in line with the expected cell recovery from your experiment? 
+length(positive_cells)
 ```
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png' height="500" /></a>
+\[1\] 3481  
+3481 matches the number of cells we expected to recover; the protein
+library size distribution of the cells (orange) and background droplets
+(blue) used for normalization are highlighted below. \>67,000 negative
+droplets are used to estimate the ambient background for normalizing the
+3,481 single cells. (code for similar plot - see FAQ)
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
 
 ### Step II: normalize the cell containing droplets with the DSBNormalizeProtein Function.
 
@@ -192,8 +214,7 @@ dsb_norm_prot = DSBNormalizeProtein(
                            empty_drop_matrix = negative_mtx_rawprot,
                            denoise.counts = TRUE,
                            use.isotype.control = TRUE,
-                           isotype.control.name.vec = rownames(cells_mtx_rawprot)[30:32]
-                           )
+                           isotype.control.name.vec = rownames(cells_mtx_rawprot)[30:32])
 ```
 
 The function returns a matrix of normalized protein values can be
@@ -204,13 +225,12 @@ below.
 ## Step III (option a): integration with Seurat
 
 ``` r
-# Create Seurat object filter raw protein, RNA and metadata to only include cell-containing droplets 
-count_rna = raw$`Gene Expression`[ ,positive_cells]
-count_prot = raw$`Antibody Capture`[ ,positive_cells]
+# filter raw protein, RNA and metadata to only include cell-containing droplets 
+cells_rna = rna[ ,positive_cells]
 md = md[positive_cells, ]
 
-# create Seurat object * note min.cells is a gene filter not a cell filter, we already filtered cells in steps above
-s = CreateSeuratObject(counts = count_rna, meta.data = md, assay = "RNA", min.cells = 20)
+# create Seurat object(note min.cells is a gene filter not a cell filter, cells were filtered above)
+s = CreateSeuratObject(counts = cells_rna, meta.data = md, assay = "RNA", min.cells = 20)
 
 # add DSB normalized "dsb_norm_prot" protein data to the seurat object 
 s[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
@@ -253,17 +273,15 @@ prots = rownames(s@assays$CITE@data)
 adt_plot = adt_data %>% 
   group_by(seurat_clusters) %>% 
   summarize_at(.vars = prots, .funs = mean) %>% 
-  column_to_rownames("seurat_clusters") %>% 
-  t() %>% 
-  as.data.frame()
-# plot a heatmap of the averaged dsb normalized values for each cluster
-pheatmap::pheatmap(adt_plot, color = viridis::viridis(25, option = "B"), 
-                   fontsize_row = 8, border_color = NA, width = 5, height = 5 )
+  column_to_rownames("seurat_clusters") 
+# plot a heatmap of the average dsb normalized values for each cluster
+pheatmap::pheatmap(t(adt_plot), color = viridis::viridis(25, option = "B"), 
+                   fontsize_row = 8, border_color = NA)
 ```
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png' height="500"  /></a>
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png' height="400"  /></a>
 
-### Visualization of single cells on the interpretable dsb scale
+### Visualization of single cells protein levels on the interpretable dsb scale
 
 UMAP and tSNE plots can be useful as a visualization tools for example
 to guide cluster annotation as above viewing the protein levels across
@@ -286,6 +304,7 @@ colnames(umap_res) = c("UMAP_1", "UMAP_2")
 
 # save results dataframe 
 df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
+# or Seurat::RunUMAP(s, assay = "CITE") #then: cbind(s@meta.data, reductions$UMAP@cell_embeddings ...)
 # visualizatons below were made directly from the data frame df_dsb above with ggplot
 ```
 
@@ -309,21 +328,17 @@ altExp(sce, "CITE") = dsb_adt
 
 ### Step III (option c): integration with Scanpy using python’s AnnData class
 
-Rather than R you may wish to use the AnnData class in Python. The Theis
-lab has extensively written on interoperability between the
-SinglecellExperiment class, Seurat objects, and python’s Anndata class
-used in Scanpy, [see here for
-details](https://theislab.github.io/scanpy-in-R/). Since dsb is an R
+It is also simple to use dsb with the AnnData class in Python. [see here
+for documentation on interoperability between scanpy Bioconductor and
+Seurat](https://theislab.github.io/scanpy-in-R/). Since dsb is an R
 package, to integrate with Scanpy, one would follow this normalization
 tutorial steps 1 and 2 to read raw 10X data and normalize with dsb, then
 the simplest option (since you are already in an R environment) is to
-use reticulate to create and save as scanpy’s AnnData class. You can
-then import that into a python session. Anndata are not structured like
-Seurat objects and they do not have separate slots for different asssays
-with multimodal data so we need to merge the RNA and protein data. For
-analysis of CITE-seq data in scanpy, the recommendation is to later
-split this into a protein and RNA object based on the current [scanpy
-CITE-seq
+use reticulate to create scanpy’s AnnData class from the raw RNA and dsb
+denoised and normalized protein values. You can import that into a
+python session or use in R. Anndata are not structured without different
+asssays for multimodal data and we therefore need to merge the RNA and
+protein data. See the current [scanpy CITE-seq
 workflow](https://scanpy-tutorials.readthedocs.io/en/latest/cite-seq/pbmc5k.html)
 
 ``` r
@@ -341,14 +356,15 @@ adata_seurat = sc$AnnData(
 )
 ```
 
-## Quickstart V2 dsb correcting for noise in empty drops only (applicable if isotype controls were not used)
+## Quickstart V2 dsb correcting ambient background without cell denoising (if isotype controls not measured)
 
 If isotype controls were not included in the experiment, we recommend
 setting the denoise.counts argument to FALSE which results in *not*
 defining the technical component of each cell’s protein library. The
 values of the normalized matrix returned are the number of standard
 deviations above the expected ambient noise captured by empty droplets.
-\#\#\# option 1
+
+### no isotype controls - option 1 (recommended)
 
 ``` r
 # suggested workflow if isotype controls are not included 
@@ -358,7 +374,7 @@ dsb_rescaled = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                    denoise.counts = FALSE)
 ```
 
-### option II (advanced usage if isotype controls are not used)
+### no isotype controls - option II
 
 *This is **not** recommended unless you confirm that µ1 and µ2 are not
 correlated (see below).* The background mean for each cell inferred via
@@ -405,40 +421,38 @@ dsb_rescaled = dsb::DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
                                    denoise.counts = TRUE, use.isotype.control = FALSE)
 ```
 
-## How else can background/empty droplets be defined?
+## For experiments using sample barcoding / “cell hashing” antibodies
 
-If the experiment is sample multiplexed with barcoding (i.e. hashing,
-multiseq, demuxlet), demultiplexing functions define a “negative” cell
-population which can be used to define background. In our data, the
-resulting DSB normalized values were nearly identically distributed when
-dsb was run with demultiplexing-derived background droplets or protein
-library size defined (as shown above) background droplets. [HTODemux
-function in
+With sample multiplexing experiments, demultiplexing functions define a
+“negative” cell population which can then be used to define background
+droplets for dsb. In our data, dsb normalized values were nearly
+identically distributed when dsb was run with background defiend by
+demultiplexing functions or protein library size (see the paper).
+[HTODemux function in
 Seurat](https://satijalab.org/seurat/v3.1/hashing_vignette.html)
 [deMULTIplex function from
 Multiseq](https://github.com/chris-mcginnis-ucsf/MULTI-seq)
 [demuxlet](https://github.com/statgen/demuxlet)
 
-As with the workflow above, droplets with high RNA content should be
-eliminated from the background droplet estimate. In addition, these
-functions should be run to demultiplex the **raw** output from cell
-ranger with *partial thresholding* (shown below) prior to
-demultiplexing. This has multiple benefits: including more empty drops
-robustifies the background population estimated by the k-medoids
-function implemented in Seurat::HTODemux. More negatives will also
-result in more droplets defined by the function as “negative” which will
-increase the confidence in the estimate of background used by
-dsb.
-
 ## Example workflow with *Seurat* using dsb in conjunction with background defined by sample demultiplexing functions
 
-``` r
-# raw = path to cell ranger outs/raw_feature_bc_matrix ; 
+As in step Ia we load the **raw** output from cell ranger and use
+*partial thresholding* (shown below) prior to demultiplexing. This has
+multiple benefits: including more empty drops robustifies the background
+population (e.g. as estimated by the k-medoids function implemented in
+Seurat::HTODemux). More negatives will also result in more droplets
+defined by the function as “negative” which will increase the confidence
+in the estimate of background used by dsb. \#\#\# Alternative Step Ia:
+load *raw* count alignment and define background with multiplexing
+functions
 
-# slightly subset negative drops to include all with 5 unique mRNAs
+``` r
+# raw = Read10X see above -- path to cell ranger outs/raw_feature_bc_matrix ; 
+
+# partial thresholding to slightly subset negative drops include all with 5 unique mRNAs
 seurat_object = CreateSeuratObject(raw, min.genes = 5)
 
-# demultiplex 
+# demultiplex (positive.quantile can be tuned to dataset depending on size)
 seurat_object = HTODemux(seurat_object, assay = "HTO", positive.quantile = 0.99)
 Idents(seurat_object) = "HTO_classification.global"
 
@@ -451,14 +465,18 @@ neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'counts') %>% a
 positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'counts') %>% as.matrix()
 
 # normalize the data with dsb
-dsb_norm_prot = DSBNormalizeProtein(cell_protein_matrix = positive_adt_matrix,
-                                    empty_drop_matrix = neg_adt_matrix)
+dsb_norm_prot = DSBNormalizeProtein(
+                           cell_protein_matrix = cells_mtx_rawprot,
+                           empty_drop_matrix = negative_mtx_rawprot,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
+                           isotype.control.name.vec = rownames(cells_mtx_rawprot)[30:32])
 
 # now add the normalized dat back to the object (the singlets defined above as "object")
 singlet_object[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
 ```
 
-# FAQ
+# Frequently Asked Questions
 
 **I get the error “Error in quantile.default(x, seq(from = 0, to = 1,
 length = n)): missing values and NaN’s not allowed if ‘na.rm’ is FALSE”
@@ -478,6 +496,43 @@ numbers of negative droplets (or less) on a normal 16GB laptop. By
 further narrowing in on the major background distribution, one should be
 able to convert the cells and background to a normal R matrix which
 should run successfully.
+
+**I have multiple “lanes” of 10X data from the same pool of cells, how
+should I run the workflow above?**
+
+Droplets derived from the same pool of stained cells partitioned across
+multiple lanes should be normalized together. To do this, you should
+merge the raw output of each lane, then run step 1 in the workflow-note
+that since the cell barcode names are the same for each lane in the raw
+output, you need to add a string to each barcode to identify the lane of
+origin to make the barcodes have unique names; here is one way to do
+that: First, add each 10X lane *raw* output from Cell Ranger into a
+separate directory in a folder “data”  
+data  
+|\_10xlane1  
+  |\_outs  
+    |\_raw\_feature\_bc\_matrix  
+|\_10xlane2  
+  |\_outs  
+    |\_raw\_feature\_bc\_matrix
+
+``` r
+library(Seurat) # for Read10X helper function
+
+# path_to_reads = here("data/")
+umi.files = list.files(path_to_reads, full.names=T, pattern = "10x" )
+umi.list = lapply(umi.files, function(x) Read10X(data.dir = paste0(x,"/outs/raw_feature_bc_matrix/")))
+prot = rna = list()
+for (i in 1:length(umi.list)) {
+  prot[[i]] = umi.list[[i]]`Antibody Capture`
+  rna[[i]] = umi.list[[i]]`Gene Expression`
+  colnames(prot[[i]]) = paste0(colnames(prot[[i]]),"_", i )
+  colnames(rna[[i]]) = paste0(colnames(rna[[i]]),"_", i )
+}  
+prot = do.call(cbind, prot)
+rna = do.call(cbind, rna)
+# proceed with step 1 in tutorial - define background and cell containing drops for dsb
+```
 
 **I have 2 batches, should I combine them into a single batch or
 normalize each batch separately?** - (See issue 12) How much batch
@@ -532,7 +587,24 @@ discussion).
 
 <a href='https://mattpm.github.io/dsb'><img src='man/figures/10k v3 model data.png' /></a>
 
-### NIAID statement
+**Code for generating the count and density histogram of positive and
+negative droplet protein distributions?** assuming at step II, after
+setting thresholds:
+
+``` r
+# at step 3 
+pv = md[positive_cells, ]; pv$class = "cell_containing"
+nv = md[background_drops, ]; nv$class = "background"
+ddf = rbind(pv, nv)
+p = ggplot(ddf, aes(x = prot_size, fill = class, color = class )) + theme_bw() + 
+  geom_histogram(aes(y=..count..), alpha=0.5, bins = 50,position="identity")+ 
+  ggtitle(paste0("theoretical max barcodes = ", nrow(md), "\n", "cell containing drops after QC = ", nrow(pv), "\n", "negative droplets = ", nrow(nv))) + theme(legend.position = c(0.8, 0.7))
+xtop = cowplot::axis_canvas(p, axis = "x") + geom_density(data = ddf, aes(x = prot_size, fill = class), alpha = 0.5)
+p2 = cowplot::ggdraw(cowplot::insert_xaxis_grob(p, xtop, grid::unit(.4, "null"), position = "top"))
+```
+
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/distribs.png' height = "200" /></a>  
+\#\#\# NIAID statement
 
 A review of this code has been conducted, no critical errors exist, and
 to the best of the authors knowledge, there are no problematic file
