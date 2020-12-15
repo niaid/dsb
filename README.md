@@ -6,8 +6,8 @@
 **Documentation below includes installation instructions, usage
 tutorials for standard or sample multiplexed experiments, a workflow for
 using dsb with Seurat, and integration with Bioconductor and Scanpy.
-Also see FAQ
-section.**
+Also see FAQ section.**
+[![HitCount](http://hits.dwyl.com/MattPM/dsb.svg)](http://hits.dwyl.com/MattPM/dsb)
 
 <!-- badges: start -->
 

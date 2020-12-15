@@ -6,7 +6,7 @@
 \title{sample CITEseq protein data subset 87 protein by 2872 cells}
 \format{
 A matrix 87 protein by 2872 cells
-\describe {
+\describe{
 \item{cells_citeseq_mtx}{R matrix of cells by proteins; a random distribution of a maximum of 100 cells per cluster from the 30 clusters reported in Kotliarov et. al. 2020}
 }
 }

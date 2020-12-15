@@ -1,9 +1,5 @@
 context("testing dsb norm")
 library(testthat)
-library(here)
-# library(dsb)
-
-
 
 testthat::test_that(desc = "run dsb on example data", code = {
   set.seed(1)
