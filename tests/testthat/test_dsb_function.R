@@ -1,7 +1,8 @@
 context("testing dsb norm")
 library(testthat)
 library(here)
-setwd(here())
+# library(dsb)
+
 
 
 testthat::test_that(desc = "run dsb on example data", code = {
@@ -9,7 +10,9 @@ testthat::test_that(desc = "run dsb on example data", code = {
 
   # test the dsb normalization function on the example data with defaults
   result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                               empty_drop_matrix = empty_drop_citeseq_mtx)
+                               empty_drop_matrix = empty_drop_citeseq_mtx,
+                               denoise.counts = FALSE,
+                               use.isotype.control = FALSE)
 
   # the mean of the rowmeans is 1.61, make sure returned value is > 1
   expect_gt(object = mean(rowMeans(result)), 1)
