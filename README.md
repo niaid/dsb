@@ -6,12 +6,10 @@
 **Documentation below includes installation instructions, usage
 tutorials for standard or sample multiplexed experiments, a workflow for
 using dsb with Seurat, and integration with Bioconductor and Scanpy.
-Also see FAQ section.**
-[![HitCount](http://hits.dwyl.com/MattPM/dsb.svg)](http://hits.dwyl.com/MattPM/dsb)
+Also see FAQ
+section.**
 
 <!-- badges: start -->
-
-<!-- [![Travis build status](https://travis-ci.org/MattPM/dsb.svg?branch=master)](https://travis-ci.org/MattPM/dsb) -->
 
 <!-- badges: end -->
 
@@ -556,7 +554,7 @@ small subset of proteins measured relative to the surface proteome (see
 paper for a more detailed
 discussion).
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/10k v3 model data.png' /></a>
+<a href='https://mattpm.github.io/dsb'><img src='man/figures/10kv3modeldata.png' /></a>
 
 **Code for generating the count and density histogram of positive and
 negative droplet protein distributions?** assuming at step II, after
