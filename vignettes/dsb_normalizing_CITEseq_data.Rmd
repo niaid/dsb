@@ -179,9 +179,8 @@ colnames(umap_res) = c("UMAP_1", "UMAP_2")
 # save results dataframe 
 df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 # or Seurat::RunUMAP(s, assay = "CITE") #then: cbind(s@meta.data, reductions$UMAP@cell_embeddings ...)
-# visualizatons below were made directly from the data frame df_dsb above with ggplot
+# visualizatons can be made directly from the data frame df_dsb above with ggplot see package readme https://github.com/niaid/dsb
 ```
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/dsb_protdist.png' height = "125" /></a>  
 
 # Integration with Bioconductor and Scanpy 
 
