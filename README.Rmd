@@ -23,8 +23,6 @@ knitr::opts_chunk$set(
 dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R package developed in [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) (NIH-NIAID) by Matt Mulè, Andrew Martins and John Tsang. Through control experiments and computational modeling designed to interrogate sources of noise in antibody-based protein data from droplet single cell experiments, we developed and validated dsb for removing noise and normalizing protein data from single cell methods such as CITE-seq, REAP-seq, and Mission Bio Tapestri. 
 
 [**See the dsb *Biorxiv* preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1) for  details on the method.  
-[A complete reproducible workflow repository](https://github.com/niaid/dsb_manuscript)
-links to all data and code for reproducing results/figures in the paper.  
 
 <a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>  
 Follow tutorial below to use dsb in a workflow with Seurat or integrate with Bioconductor or Scanpy. 
