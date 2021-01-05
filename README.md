@@ -28,11 +28,8 @@ Bio Tapestri.
 
 [**See the dsb *Biorxiv*
 preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
-for details on the method.  
-[A complete reproducible workflow
-repository](https://github.com/niaid/dsb_manuscript) links to all data
-and code for reproducing results/figures in the
-paper.
+for details on the
+method.
 
 <a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>  
 Follow tutorial below to use dsb in a workflow with Seurat or integrate
