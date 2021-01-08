@@ -20,7 +20,7 @@ dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R package d
 
 This vignette outlines how to use dsb to normalize droplet-based single cell protein data from antibody counts and how to integrate the normalized values in an analysis workflow using Seurat, as well as integration with Bioconductor and Scanpy. If you have a question please first see the FAQ section then open an issue on the github site https://github.com/niaid/dsb so the community can benefit. 
 
-<a href='https://github.com/niaid/dsb'><img src='../man/figures/dsb_v_other.png' height="150" /></a>  
+<a href='https://github.com/niaid/dsb'><img src='../man/figures/dsb_v_other.png' height="140" /></a>  
 
 ## Background and motivation for the dsb method  
 CITE-seq protein data suffers from substantial background noise (for example, see supplementary fig 5a in [Stoeckius *et. al.* 2017 *Nat. Methods*](https://static-content.springer.com/esm/art%3A10.1038%2Fnmeth.4380/MediaObjects/41592_2017_BFnmeth4380_MOESM1_ESM.pdf)). We performed experiments and analysis to dissect this noise and the dsb method is based on 3 key findings outlined in our paper.   
@@ -205,7 +205,7 @@ df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 
 # visualizatons below were made directly from the data frame df_dsb above with ggplot
 ```
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/dsb_protdist.png' height="150" /></a>  
+<a href='https://mattpm.github.io/dsb'><img src='../man/figures/dsb_protdist.png' height="100" /></a>  
 
 # Integration with Bioconductor and Scanpy 
 
@@ -368,7 +368,6 @@ xtop = cowplot::axis_canvas(p, axis = "x") +
 p2 = cowplot::ggdraw(cowplot::insert_xaxis_grob(p, xtop, grid::unit(.4, "null"), position = "top"))
 
 ```
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/distribs.png' height = "200" /></a>  
 
 **How do I test the correlation between µ1 and µ2 for denoising without isotype controls?**
 This refers to Quickstart V2 Option 2 above. To define each cell's technical component as the cell's protein background mean alone without anchoring using isotype controls, confirm µ1 and µ2 have a low correlation: 
