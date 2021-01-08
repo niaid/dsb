@@ -1,6 +1,7 @@
 .Rhistory
 .RData
 .Rproj.user
+.Rproj.user/
 inst/doc
 docs/
 gitignore/
