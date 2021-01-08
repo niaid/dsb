@@ -3,9 +3,9 @@
 \docType{data}
 \name{cells_citeseq_mtx}
 \alias{cells_citeseq_mtx}
-\title{sample CITEseq protein data subset 87 protein by 2872 cells}
+\title{small example CITE-seq protein dataset for 87 surface protein in 2872 cells}
 \format{
-A matrix 87 protein by 2872 cells
+An R matrix, rows: 87 proteins, columns: 2872 cells
 \describe{
 \item{cells_citeseq_mtx}{R matrix of cells by proteins; a random distribution of a maximum of 100 cells per cluster from the 30 clusters reported in Kotliarov et. al. 2020}
 }
@@ -17,6 +17,6 @@ cells_citeseq_mtx
 A matrix of cells by antibodies Raw CITEseq data used for example scripts of the dsb package. raw data processed with CITE-seq-count https://hoohm.github.io/CITE-seq-Count/
 }
 \references{
-Kotliarov et. al. 20202 Nat. Medicine
+Kotliarov et. al. 2020 Nat. Medicine
 }
 \keyword{datasets}

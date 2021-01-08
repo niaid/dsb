@@ -6,6 +6,6 @@
 #'
 #' @format An R matrix, rows: 87 proteins, columns: 8005 empty droplets.
 #' \describe{
-#' \item{empty_drop_citeseq_mtx}{R matrix of empty / background droplets from a CITE-seq experiment. Negative drops were called on cell hashing data with Seurat's HTODemux function and cross referencing mRNA in driplets against patient genotypes with Demuxlet. Ambiguous drops, and with less than 80 unique mRNA were removed. This is used for robust estimation of the background distribution of each protein}
+#' \item{empty_drop_citeseq_mtx}{R matrix of empty / background droplets from a CITE-seq experiment. Negative drops were called on cell hashing data with Seurat's HTODemux function and cross referencing mRNA in droplets against patient genotypes with Demuxlet. Ambiguous drops, and with less than 80 unique mRNA were removed. This is used for robust estimation of the background distribution of each protein}
 #' }
 "empty_drop_citeseq_mtx"
