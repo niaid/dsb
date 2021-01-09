@@ -1,3 +1,29 @@
+## Resubmission Jan 8 2021 
+
+### R CMD check results ── dsb 0.1.0 ───  
+
+` devtools::check(args = c('--as-cran'))`
+
+Duration: 30.6s  
+
+0 errors ✓ | 0 warnings ✓ | 0 notes ✓  
+
+### Last submission from CRAN team: 
+
+#### License components with restrictions and base license permitting such:  
+Question about license emailed directly to cran team (Uwe), please let us know if there are additional questions. The license is a BSD3 with additional language making it even more permissive for 3rd party development and there is a 'for research only' (as opposed to being e.g. for patient care) liability statement, these are required by the US National Institutes of Health. 
+
+#### Found the following (possibly) invalid URLs:  
+##### URL: https://github.com/niaid/dsb_manuscript
+
+This invalid link is now removed from the packgae vignette.  
+
+
+##### URL: https://mattpm.github.io/dsb (moved to https://mattpm.github.io/dsb/)  
+This link is necessary because it is the only reference to the package in our preprint - it is active and redirects to the current repository. 
+
+
+
 ## Resubmission
 
 This is a resubmission. See revisions to each point flagged on initial submission below as well as the updated license to comply with my organization. 
