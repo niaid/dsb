@@ -1,3 +1,57 @@
+## Resubmission Jan 10 2021 
+
+` devtools::check(args = c('--as-cran'))`
+
+Duration: 29.2s
+
+0 errors ✓ | 0 warnings ✓ | 0 notes ✓
+
+### License file specification 
+CRAN team via email: nicense needs to be specified as: 
+
+License: BSD_3_clause + file LICENSE | file LICENSE
+
+   "...and you need in file LICENSE the CRAN template for the BSD_3_clause 
+   licene and in addition the alterative BSD text that is currently listed 
+   there anyway."
+   
+___________________
+
+Thanks for the guidance on the correct way to specify license in the description. I have updated it. Following the directions above I have used the BSD3 license template from CRAN https://cran.r-project.org/web/licenses/BSD_3_clause 
+
+Based on http://opensource.org/licenses/BSD-3-Clause   
+##### cran template   
+This is a template. Complete and ship as file LICENSE the following 3
+lines (only)   
+
+YEAR:  
+COPYRIGHT HOLDER:   
+ORGANIZATION:  
+
+and specify as  
+
+License: BSD_3_clause + file LICENSE  
+#####  
+I added those three lines and the current alternative BSD3 text in the LICENSE file and as instructed declared license in the Description  
+BSD_3_clause + file LICENSE | file LICENSE   
+
+
+
+### invalid URL 
+Found the following (possibly) invalid URLs:
+URL: https://mattpm.github.io/dsb (moved to https://mattpm.github.io/dsb/)
+
+CRAN team:  
+"Please add the trailing slash."
+
+___________________
+
+I see, thought error was due to redirection-I added trailing slashes to links. 
+
+
+
+
+
 ## Resubmission Jan 8 2021 
 
 ### R CMD check results ── dsb 0.1.0 ───  

@@ -18,9 +18,9 @@ knitr::opts_chunk$set(
 ```
 dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R package developed in [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) (NIH-NIAID) for removing noise and normalizing protein data from single cell methods such as CITE-seq, REAP-seq, and Mission Bio Tapestri. [**See the dsb *Biorxiv* preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1) for  details on the method and please consider citing the paper if you use this package or find the protein noise modeling results useful.  
 
-This vignette outlines how to use dsb to normalize droplet-based single cell protein data from antibody counts and how to integrate the normalized values in an analysis workflow using Seurat, as well as integration with Bioconductor and Scanpy. If you have a question please first see the FAQ section then open an issue on the github site https://github.com/niaid/dsb so the community can benefit. 
+This vignette outlines how to use dsb to normalize droplet-based single cell protein data from antibody counts and how to integrate the normalized values in an analysis workflow using Seurat, as well as integration with Bioconductor and Scanpy. If you have a question please first see the FAQ section then open an issue on the github site https://github.com/niaid/dsb/ so the community can benefit. 
 
-<a href='https://github.com/niaid/dsb'><img src='../man/figures/dsb_v_other.png' height="140" /></a>  
+<a href='https://github.com/niaid/dsb/'><img src='../man/figures/dsb_v_other.png' height="140" /></a>  
 
 ## Background and motivation for the dsb method  
 CITE-seq protein data suffers from substantial background noise (for example, see supplementary fig 5a in [Stoeckius *et. al.* 2017 *Nat. Methods*](https://static-content.springer.com/esm/art%3A10.1038%2Fnmeth.4380/MediaObjects/41592_2017_BFnmeth4380_MOESM1_ESM.pdf)). We performed experiments and analysis to dissect this noise and the dsb method is based on 3 key findings outlined in our paper.   
@@ -94,7 +94,7 @@ p1 = ggplot(md[md$rna_size > 0, ], aes(x = rna_size)) + geom_histogram(fill = "d
 p2 = ggplot(md[md$prot_size> 0, ], aes(x = prot_size)) + geom_density(fill = "firebrick2") + ggtitle("Protein library size \n distribution")
 cowplot::plot_grid(p1, p2, nrow = 1)
 ```
-<a href='https://github.com/niaid/dsb'><img src='../man/figures/libsize.png' height="200"  /></a>  
+<a href='https://github.com/niaid/dsb/'><img src='../man/figures/libsize.png' height="200"  /></a>  
 
 Below we define background droplets as the major peak in the background distribution between 1.4 and 2.5 log total protein counts-note one could also define the empty/ background droplets as the entire population from 0 to 2.5 with little impact on normalized values (see the dsb paper section on sensitivity analysis to different definitions of background for details). In addition, we add mRNA quality control-based filters to remove potential low quality cells from both the background drops and the cells as you would in any scRNAseq workflow (e.g. see Seurat tutorials and [Luecken *et. al.* 2019 *Mol Syst Biol*](https://www.embopress.org/doi/full/10.15252/msb.20188746)).   
 
@@ -118,7 +118,7 @@ length(positive_cells)
 [1] 3481   
 
 Yes. After quality control above we have 3481 cells which is in line with the 5000 cells loaded in this experiment and closely matches the estimated cells from the filtered output from cell ranger (not shown). The protein library size distribution of the cells (orange) and background droplets (blue) used for normalization are highlighted below. >67,000 negative droplets are used to estimate the ambient background for normalizing the 3,481 single cells. (see FAQ for code to generate this plot below)    
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='../man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
 
 ### Step II: normalize protein data with the DSBNormalizeProtein Function. 
 
@@ -181,7 +181,7 @@ adt_plot = adt_data %>%
 pheatmap::pheatmap(t(adt_plot), color = viridis::viridis(25, option = "B"), fontsize_row = 8, border_color = NA)
 
 ```
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/dsb_heatmap.png' height="400"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='../man/figures/dsb_heatmap.png' height="400"  /></a>
 
 ### Visualization of single cell protein levels on the interpretable dsb scale
 
@@ -205,7 +205,7 @@ df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 
 # visualizatons below were made directly from the data frame df_dsb above with ggplot
 ```
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/dsb_protdist.png' height="100" /></a>  
+<a href='https://mattpm.github.io/dsb/'><img src='../man/figures/dsb_protdist.png' height="100" /></a>  
 
 # Integration with Bioconductor and Scanpy 
 
@@ -341,7 +341,7 @@ rna = do.call(cbind, rna)
 
 **I have 2 batches, should I combine them into a single batch or normalize each batch separately?**
  - (See issue 12 on the dsb github) How much batch variation there is depends on how much experiment-specific and expected biological variability there is between the batches. In the dataset used in the preprint, if we normalized with all background drops and cells in a single normalization, the resulting dsb normalized values were highly concordant with when we normalized each batch separately, this held true with either definition of background drops used (i.e. based on thresholding with the library size or based on hashing-see below). One could try both and see which mitigates the batch variation the most. See **issue 12** for example code.
-<a href='https://mattpm.github.io/dsb'><img src='../man/figures/mbatch.png' height="300" /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='../man/figures/mbatch.png' height="300" /></a>
 
 **How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
 In nearly all cases this argument should be set to TRUE and we highly recommend that use.isotype.control is also set to TRUE when using denoise.counts feature (this is the package default). The denoise.counts argument specifies whether to remove cell-intrinsic technical noise by defining and regressing out *cell-intrinsic technical factors*  that contribute technical variations not captured by protein counts in background droplets used in dsb. The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment express all / a vast majority of proteins measured, this may not be an optimal assumption. In the paper we show that the k=2 model provided an optimal fit compared to other values of k in all 5 external datasets which measured between just 14 to 86 proteins. In all datasets, correlations between µ1 and 1) each individual isotype control and 2) the average of all four isotype controls were higher than those between the isotype control themselves suggesting shared variation between the independently inferred µ1 and isotype controls captured unobserved, latent factors contributing to technical noise. λ was associated with the protein library size within protein defined cell types suggesting that the shared component of variation in these variables reflect technical noise, but the library size alone should not be used as a normalization factor (as is typical for mRNA data) due to potential biological contributions and bias in the small subset of proteins measured relative to the surface proteome (see paper for a more detailed discussion). 

@@ -3,7 +3,7 @@ output: github_document
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-#  <a href='https://mattpm.github.io/dsb'><img src='man/figures/sticker.png' align="right" width="200" /></a>  dsb: an R package for normalizing and denoising CITE-seq protein data
+#  <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="200" /></a>  dsb: an R package for normalizing and denoising CITE-seq protein data
 **For detailed vignette on usage, tutorials with code for standard or sample multiplexed experiments with Seurat and integration with Bioconductor and Scanpy as well as FAQ, please see the vignette in the vignettes folder above!**
 
 ```{r, include = FALSE}
@@ -17,14 +17,14 @@ knitr::opts_chunk$set(
 
 <!-- badges: start -->
 <!-- badges: end -->
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_overview.png' height = "150"
+<a href='https://mattpm.github.io/dsb//'><img src='man/figures/dsb_overview.png' height = "150"
 /></a>  
 
 dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R package developed in [John Tsang's Lab](https://www.niaid.nih.gov/research/john-tsang-phd) (NIH-NIAID) by Matt Mulè, Andrew Martins and John Tsang. Through control experiments and computational modeling designed to interrogate sources of noise in antibody-based protein data from droplet single cell experiments, we developed and validated dsb for removing noise and normalizing protein data from single cell methods such as CITE-seq, REAP-seq, and Mission Bio Tapestri. 
 
 [**See the dsb *Biorxiv* preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1) for  details on the method.  
 
-<a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>  
+<a href='https://github.com/niaid/dsb/'><img src='man/figures/dsb_v_other.png' /></a>  
 Follow tutorial below to use dsb in a workflow with Seurat or integrate with Bioconductor or Scanpy. 
 
 ## Background and motivation for the dsb method  
@@ -35,7 +35,7 @@ CITE-seq protein data suffers from substantial background noise (for example, se
 2) "Empty" droplets (containing ambient mRNA and antibody but no cell), outnumber cell-containing droplets by 10-100 fold and capture the *ambient component* of protein background noise. 
 
 3) Cell-to-cell technical variations such as stochastic differences in cell lysis/capture, RT efficiency, sequencing depth, and non-specific antibody binding can be estimated and removed by defining the "technical component" of each cell's protein library. 
-[**Please consider citing the dsb preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1) if you use this package or find the protein noise modeling results useful.  If you have a question please first see the FAQ section of the vignette then open an issue on the github site https://github.com/niaid/dsb so the community can benefit. 
+[**Please consider citing the dsb preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1) if you use this package or find the protein noise modeling results useful.  If you have a question please first see the FAQ section of the vignette then open an issue on the github site https://github.com/niaid/dsb/ so the community can benefit. 
 
 ## Installation and quick overview with pre-loaded package data  
 
@@ -101,7 +101,7 @@ p1 = ggplot(md[md$rna_size > 0, ], aes(x = rna_size)) + geom_histogram(fill = "d
 p2 = ggplot(md[md$prot_size> 0, ], aes(x = prot_size)) + geom_density(fill = "firebrick2") + ggtitle("Protein library size \n distribution")
 cowplot::plot_grid(p1, p2, nrow = 1)
 ```
-<a href='https://github.com/niaid/dsb'><img src='man/figures/libsize.png' /></a>  
+<a href='https://github.com/niaid/dsb/'><img src='man/figures/libsize.png' /></a>  
 
 Below we define background droplets as the major peak in the background distribution between 1.4 and 2.5 log total protein counts-note one could also define the empty/ background droplets as the entire population from 0 to 2.5 with little impact on normalized values (see the dsb paper section on sensitivity analysis to different definitions of background for details). In addition, we add mRNA quality control-based filters to remove potential low quality cells from both the background drops and the cells as you would in any scRNAseq workflow (e.g. see Seurat tutorials and [Luecken *et. al.* 2019 *Mol Syst Biol*](https://www.embopress.org/doi/full/10.15252/msb.20188746)).  
 ```{r, eval = FALSE}
@@ -124,7 +124,7 @@ length(positive_cells)
 [1] 3481   
 
 Yes. After quality control above we have 3481 cells which is in line with the 5000 cells loaded in this experiment and closely matches the estimated cells from the filtered output from cell ranger (not shown). The protein library size distribution of the cells (orange) and background droplets (blue) used for normalization are highlighted below. >67,000 negative droplets are used to estimate the ambient background for normalizing the 3,481 single cells. (see FAQ for code to generate this plot below)  
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
 
 ### Step II: normalize protein data with the DSBNormalizeProtein Function. 
 
@@ -187,7 +187,7 @@ adt_plot = adt_data %>%
 pheatmap::pheatmap(t(adt_plot), color = viridis::viridis(25, option = "B"), fontsize_row = 8, border_color = NA)
 
 ```
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png' height="400"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='man/figures/dsb_heatmap.png' height="400"  /></a>
 
 ### Visualization of single cell protein levels on the interpretable dsb scale
 

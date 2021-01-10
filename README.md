@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# <a href='https://mattpm.github.io/dsb'><img src='man/figures/sticker.png' align="right" width="200" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
+# <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="200" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
 
 **For detailed vignette on usage, tutorials with code for standard or
 sample multiplexed experiments with Seurat and integration with
@@ -13,7 +13,7 @@ above\!**
 
 <!-- badges: end -->
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_overview.png' height = "150"
+<a href='https://mattpm.github.io/dsb//'><img src='man/figures/dsb_overview.png' height = "150"
 /></a>
 
 dsb (**d**enoised and **s**caled by **b**ackground) is a lightweight R
@@ -31,7 +31,7 @@ preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
 for details on the
 method.
 
-<a href='https://github.com/niaid/dsb'><img src='man/figures/dsb_v_other.png' /></a>  
+<a href='https://github.com/niaid/dsb/'><img src='man/figures/dsb_v_other.png' /></a>  
 Follow tutorial below to use dsb in a workflow with Seurat or integrate
 with Bioconductor or Scanpy.
 
@@ -60,7 +60,7 @@ method is based on 3 key findings outlined in our paper.
     if you use this package or find the protein noise modeling results
     useful. If you have a question please first see the FAQ section of
     the vignette then open an issue on the github site
-    <https://github.com/niaid/dsb> so the community can benefit.
+    <https://github.com/niaid/dsb/> so the community can benefit.
 
 ## Installation and quick overview with pre-loaded package data
 
@@ -159,7 +159,7 @@ p2 = ggplot(md[md$prot_size> 0, ], aes(x = prot_size)) + geom_density(fill = "fi
 cowplot::plot_grid(p1, p2, nrow = 1)
 ```
 
-<a href='https://github.com/niaid/dsb'><img src='man/figures/libsize.png' /></a>
+<a href='https://github.com/niaid/dsb/'><img src='man/figures/libsize.png' /></a>
 
 Below we define background droplets as the major peak in the background
 distribution between 1.4 and 2.5 log total protein counts-note one could
@@ -200,7 +200,7 @@ background droplets (blue) used for normalization are highlighted below.
 for normalizing the 3,481 single cells. (see FAQ for code to generate
 this plot
 below)  
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='man/figures/library_size_10x_dsb_distribution.png' height="200"  /></a>
 
 ### Step II: normalize protein data with the DSBNormalizeProtein Function.
 
@@ -288,7 +288,7 @@ adt_plot = adt_data %>%
 pheatmap::pheatmap(t(adt_plot), color = viridis::viridis(25, option = "B"), fontsize_row = 8, border_color = NA)
 ```
 
-<a href='https://mattpm.github.io/dsb'><img src='man/figures/dsb_heatmap.png' height="400"  /></a>
+<a href='https://mattpm.github.io/dsb/'><img src='man/figures/dsb_heatmap.png' height="400"  /></a>
 
 ### Visualization of single cell protein levels on the interpretable dsb scale
 
