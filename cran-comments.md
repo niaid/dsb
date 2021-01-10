@@ -7,7 +7,7 @@ Duration: 29.2s
 0 errors ✓ | 0 warnings ✓ | 0 notes ✓
 
 ### License file specification 
-CRAN team via email: nicense needs to be specified as: 
+CRAN team via email: license needs to be specified as: 
 
 License: BSD_3_clause + file LICENSE | file LICENSE
 
