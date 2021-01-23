@@ -49,7 +49,7 @@ adt_norm = DSBNormalizeProtein(
   # recommended step II: model and remove the technical component of each cell's protein library
   denoise.counts = TRUE, # model and remove each cell's technical component
   use.isotype.control = TRUE, # use isotype controls to define the technical component
-  isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
+  isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
   )
 ```
 
@@ -262,7 +262,7 @@ dsb_rescaled = dsb::DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
 
 ```
 
-# Multiplexing experiments: For experiments using sample barcoding / "cell hashing" antibodies 
+# Multiplexing experiments using barcoding antibodies or genomic barcoding
 In multiplexing experiments with cell superloading, demultiplexing functions define a "negative" cell population which can then be used to define background droplets for dsb. In our data, dsb normalized values were nearly identically distributed when dsb was run with background defined by demultiplexing functions or protein library size (see the paper). 
 [HTODemux (Seurat)](https://satijalab.org/seurat/v3.1/hashing_vignette.html)
 [deMULTIplex (Multiseq)](https://github.com/chris-mcginnis-ucsf/MULTI-seq)

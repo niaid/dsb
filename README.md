@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="200" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
+# <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="165" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
 
 **For detailed vignette on usage, tutorials with code for standard or
 sample multiplexed experiments with Seurat and integration with
@@ -86,7 +86,7 @@ adt_norm = DSBNormalizeProtein(
   # recommended step II: model and remove the technical component of each cell's protein library
   denoise.counts = TRUE, # (default = TRUE); run step II  
   use.isotype.control = TRUE, # (default = TRUE): use isotype controls to define technical components. 
-  isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
+  isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
   )
 ```
 

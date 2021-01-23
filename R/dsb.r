@@ -8,7 +8,7 @@
 #' @param define.pseudocount TRUE FALSE : false by default users can supply a pseudocount besides the default 10 which is optimal for CITEseq data.
 #' @param pseudocount.use the pseudocount to use if overriding the default pseudocount by setting efine.pseudocount to TRUE
 #'
-#' @return a normalized matrix of cells by proteins that can be added to any Seurat,  SingleCellExperiment or python anndata object - see vignette
+#' @return a normalized R "matrix" of cells by proteins that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette
 #' @export
 #'
 #' @importFrom limma removeBatchEffect
@@ -17,20 +17,32 @@
 #' @importFrom stats prcomp
 #' @importFrom stats sd
 #' @examples
-#' \donttest{
-#' library(dsb) # lazy loads example data cells_citeseq_mtx and empty_drop_matrix included in package
+#' library(dsb) # lazy load example data cells_citeseq_mtx and empty_drop_matrix included in package
 #'
-#' adt_norm = DSBNormalizeProtein(
-#'   # remove ambient protien noise reflected in counts from empty droplets
-#'   cell_protein_matrix = cells_citeseq_mtx, # cell-containing droplet raw protein count matrix
-#'   empty_drop_matrix = empty_drop_citeseq_mtx, # empty/background droplet raw protein counts
+#' # use a subset of 40 cells and bacground droplets from example data
+#' cells_citeseq_mtx = cells_citeseq_mtx[ ,1:400]
+#' empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:400]
+#'
+#' adt_norm = dsb::DSBNormalizeProtein(
+#'
+#'   # step I: remove ambient protien noise reflected in counts from empty droplets
+#'   cell_protein_matrix = cells_citeseq_mtx,
+#'   empty_drop_matrix = empty_drop_matrix,
 #'
 #'   # recommended step II: model and remove the technical component of each cell's protein library
-#'   denoise.counts = TRUE, # model and remove each cell's technical component
-#'   use.isotype.control = TRUE, # use isotype controls to define the technical component
-#'   isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
+#'   denoise.counts = TRUE,
+#'   use.isotype.control = TRUE,
+#'   isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70]
 #' )
-#' }
+#'
+#' # example II - experiments without isotype controls
+#'
+#' adt_norm = dsb::DSBNormalizeProtein(
+#'   cell_protein_matrix = cells_citeseq_mtx,
+#'   empty_drop_matrix = empty_drop_matrix,
+#'   denoise.counts = FALSE
+#' )
+#'
 DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix,
                                denoise.counts = TRUE,  use.isotype.control = TRUE, isotype.control.name.vec = NULL,
                                define.pseudocount = FALSE,pseudocount.use){
