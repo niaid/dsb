@@ -30,7 +30,7 @@ DSBNormalizeProtein(
 \item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting efine.pseudocount to TRUE}
 }
 \value{
-a normalized matrix of cells by proteins that can be added to any Seurat,  SingleCellExperiment or python anndata object - see vignette
+a normalized R "matrix" of cells by proteins that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette
 }
 \description{
 the DSB normalization function
