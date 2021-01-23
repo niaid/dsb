@@ -6,6 +6,9 @@
 \usage{
 lhs \%>\% rhs
 }
+\value{
+no return value this is the tidyverse pipe operator
+}
 \description{
 See \code{magrittr::\link[magrittr]{\%>\%}} for details.
 }

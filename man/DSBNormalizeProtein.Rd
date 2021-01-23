@@ -30,8 +30,22 @@ DSBNormalizeProtein(
 \item{isotype.control.name.vec}{a vector of the names of the isotype control proteins exactly as in the data to be normalized}
 }
 \value{
-a normalized matrix that can be added to any S4 object e.g. Seurat or SingleCellExperiment Object
+a normalized matrix of cells by proteins that can be added to any Seurat,  SingleCellExperiment or python anndata object - see vignette
 }
 \description{
 the DSB normalization function
+}
+\examples{
+library(dsb) # lazy loads example data cells_citeseq_mtx and empty_drop_matrix included in package
+
+adt_norm = DSBNormalizeProtein(
+  # remove ambient protien noise reflected in counts from empty droplets
+  cell_protein_matrix = cells_citeseq_mtx, # cell-containing droplet raw protein count matrix
+  empty_drop_matrix = empty_drop_citeseq_mtx, # empty/background droplet raw protein counts
+
+  # recommended step II: model and remove the technical component of each cell's protein library
+  denoise.counts = TRUE, # model and remove each cell's technical component
+  use.isotype.control = TRUE, # use isotype controls to define the technical component
+  isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
+)
 }

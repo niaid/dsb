@@ -14,7 +14,7 @@ An R matrix, rows: 87 proteins, columns: 8005 empty droplets.
 empty_drop_citeseq_mtx
 }
 \description{
-A matrix of cells by antibodies Raw CITEseq data used for example scripts of the dsb package. raw data processed with CITE-seq-count https://hoohm.github.io/CITE-seq-Count/
+A matrix of empty background droplet counts for surface proteins measured with CITE-seq antibodies. This data is used for example scripts in the dsb package. Raw data was processed with CITE-seq-Count.
 }
 \references{
 Kotliarov et. al. 2020 Nat. Medicine

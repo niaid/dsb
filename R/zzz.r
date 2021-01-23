@@ -13,7 +13,7 @@ dsbmessage <- function()
   # startup message
   msg <- dsbmessage()
   if(!interactive())
-  msg[1] <- paste("Package 'dsb' version", packageVersion("dsb"))
+  msg[1] <- paste("Package 'dsb'")
   packageStartupMessage(msg)
   invisible()
 }
