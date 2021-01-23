@@ -7,27 +7,27 @@
 DSBNormalizeProtein(
   cell_protein_matrix,
   empty_drop_matrix,
-  define.pseudocount = FALSE,
-  pseudocount.use,
   denoise.counts = TRUE,
   use.isotype.control = TRUE,
-  isotype.control.name.vec = NULL
+  isotype.control.name.vec = NULL,
+  define.pseudocount = FALSE,
+  pseudocount.use
 )
 }
 \arguments{
-\item{cell_protein_matrix}{the data to be normalized cells = columns, proteins = rows}
+\item{cell_protein_matrix}{the raw protein count data to be normalized cells = columns, proteins = rows}
 
-\item{empty_drop_matrix}{the empty droplets used for background correction}
+\item{empty_drop_matrix}{the raw empty droplet protein count data used for background correction}
+
+\item{denoise.counts}{set to TRUE by default (recommended) - defines and regresses each cell's technical component using background proteins in each cell and itotype controls when}
+
+\item{use.isotype.control}{set to TRUE by default (recommended) with denoise.counts = TRUE include isotype controls in defining the ?}
+
+\item{isotype.control.name.vec}{a vector of the names of the isotype control proteins exactly as in the data to be normalized}
 
 \item{define.pseudocount}{TRUE FALSE : false by default users can supply a pseudocount besides the default 10 which is optimal for CITEseq data.}
 
 \item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting efine.pseudocount to TRUE}
-
-\item{denoise.counts}{account for a per cell background correction factor by getting the mean of negative proteins in that cell + or -  isotype controls}
-
-\item{use.isotype.control}{should the denoising covariate include isotype controls - recommended but false by default}
-
-\item{isotype.control.name.vec}{a vector of the names of the isotype control proteins exactly as in the data to be normalized}
 }
 \value{
 a normalized matrix of cells by proteins that can be added to any Seurat,  SingleCellExperiment or python anndata object - see vignette
@@ -36,6 +36,7 @@ a normalized matrix of cells by proteins that can be added to any Seurat,  Singl
 the DSB normalization function
 }
 \examples{
+\donttest{
 library(dsb) # lazy loads example data cells_citeseq_mtx and empty_drop_matrix included in package
 
 adt_norm = DSBNormalizeProtein(
@@ -48,4 +49,5 @@ adt_norm = DSBNormalizeProtein(
   use.isotype.control = TRUE, # use isotype controls to define the technical component
   isotypecontrol.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
 )
+}
 }
