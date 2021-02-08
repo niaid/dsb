@@ -3,11 +3,47 @@
 
 # <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="165" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
 
-**For detailed vignette on usage, tutorials with code for standard or
-sample multiplexed experiments with Seurat and integration with
-Bioconductor and Scanpy as well as FAQ, please see the vignette in the
-vignettes folder
-above\!**
+dsb is available on *CRAN* [latest dsb release on
+CRAN](https://cran.r-project.org/web/packages/dsb/index.html). Install
+dsb in R with: `library(dsb)`.
+
+In addition to quick tutorials in the readme below, see the Vignette for
+full tutorial: [Using dsb to normalize single cell protein data:
+analysis workflow and integration with Seurat, Bioconductor and
+Scanpy](https://cran.r-project.org/web/packages/dsb/vignettes/dsb_normalizing_CITEseq_data.html)
+
+[**See the dsb *Biorxiv*
+preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
+for details on the method and please cite the paper if you use dsb in
+your research or found the underlying noise modeling results in our
+paper helpful.
+
+## Installation and quick overview with pre-loaded package data
+
+Use the `DSBNormalizeProtein()` function to  
+1\) normalize raw protein counts of a cells (columns) by proteins (rows)
+matrix `cells_citeseq_mtx` estimating the ambient component of noise
+with `empty_drop_citeseq_mtx`, a matrix of background/empty droplets. 2)
+model and remove the ‘technical component’ of each cell’s protein
+library by setting `denoise.counts = TRUE` and include isotype controls
+in the calculation of the technical component with `use.isotype.control
+= TRUE`.
+
+``` r
+# install dsb package directly from CRAN 
+library(dsb)
+
+adt_norm = DSBNormalizeProtein(
+  # remove ambient protien noise reflected in counts from empty droplets 
+  cell_protein_matrix = cells_citeseq_mtx, # cell-containing droplet raw protein count matrix
+  empty_drop_matrix = empty_drop_citeseq_mtx, # empty/background droplet raw protein counts
+  
+  # recommended step II: model and remove the technical component of each cell's protein library
+  denoise.counts = TRUE, # (default = TRUE); run step II  
+  use.isotype.control = TRUE, # (default = TRUE): use isotype controls to define technical components. 
+  isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
+  )
+```
 
 <!-- badges: start -->
 
@@ -24,12 +60,8 @@ and computational modeling designed to interrogate sources of noise in
 antibody-based protein data from droplet single cell experiments, we
 developed and validated dsb for removing noise and normalizing protein
 data from single cell methods such as CITE-seq, REAP-seq, and Mission
-Bio Tapestri.
-
-[**See the dsb *Biorxiv*
-preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1)
-for details on the
-method.
+Bio
+Tapestri.
 
 <a href='https://github.com/niaid/dsb/'><img src='man/figures/dsb_v_other.png' /></a>  
 Follow tutorial below to use dsb in a workflow with Seurat or integrate
@@ -61,34 +93,6 @@ method is based on 3 key findings outlined in our paper.
     useful. If you have a question please first see the FAQ section of
     the vignette then open an issue on the github site
     <https://github.com/niaid/dsb/> so the community can benefit.
-
-## Installation and quick overview with pre-loaded package data
-
-Use the `DSBNormalizeProtein()` function to  
-1\) normalize raw protein counts of a cells (columns) by proteins (rows)
-matrix `cells_citeseq_mtx` estimating the ambient component of noise
-with `empty_drop_citeseq_mtx`, a matrix of background/empty droplets. 2)
-model and remove the ‘technical component’ of each cell’s protein
-library by setting `denoise.counts = TRUE` and include isotype controls
-in the calculation of the technical component with `use.isotype.control
-= TRUE`.
-
-``` r
-# install dsb package directly from github: 
-require(devtools); devtools::install_github(repo = 'MattPM/dsb')
-library(dsb)
-
-adt_norm = DSBNormalizeProtein(
-  # remove ambient protien noise reflected in counts from empty droplets 
-  cell_protein_matrix = cells_citeseq_mtx, # cell-containing droplet raw protein count matrix
-  empty_drop_matrix = empty_drop_citeseq_mtx, # empty/background droplet raw protein counts
-  
-  # recommended step II: model and remove the technical component of each cell's protein library
-  denoise.counts = TRUE, # (default = TRUE); run step II  
-  use.isotype.control = TRUE, # (default = TRUE): use isotype controls to define technical components. 
-  isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70] # vector of isotype control names
-  )
-```
 
 ## Tutorial with public 10X genomics data
 
@@ -320,7 +324,8 @@ colnames(umap_res) = c("UMAP_1", "UMAP_2")
 df_dsb = cbind(s@meta.data, umap_res, as.data.frame(t(s@assay$CITE@data)))
 ```
 
-*Additional topics covered in the vignette*  
+*Additional topics covered in the
+[vignette](https://cran.r-project.org/web/packages/dsb/vignettes/dsb_normalizing_CITEseq_data.html)*  
 **Multiplexing Experiments**  
 **Multi-lane / multi-batch processing**  
 **Integration with Bioconductor**  
