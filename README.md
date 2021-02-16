@@ -283,7 +283,8 @@ residual of the fitted model to the cell-intrinsic technical component.
 
 ``` r
 # calculate the average of each protein separately for each cluster 
-prots = rownames(s@assays$CITE@data)
+prots = rownames(dsb_norm_prot)
+adt_data = cbind(s@meta.data, as.data.frame(t(dsb_norm_prot)))
 adt_plot = adt_data %>% 
   group_by(seurat_clusters) %>% 
   summarize_at(.vars = prots, .funs = mean) %>% 
