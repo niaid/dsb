@@ -3,7 +3,7 @@ output: github_document
 ---
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-#  <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="165" /></a>  dsb: an R package for normalizing and denoising CITE-seq protein data
+#  <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker.png' align="right" width="175" /></a>  dsb: an R package for normalizing and denoising CITE-seq protein data
 
 dsb is available on *CRAN* [latest dsb release on CRAN](https://cran.r-project.org/web/packages/dsb/index.html). Install dsb in R with: `library(dsb)`.  
 
