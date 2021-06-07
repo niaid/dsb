@@ -48,10 +48,11 @@ DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix,
                                define.pseudocount = FALSE,pseudocount.use){
   if(!is.null(isotype.control.name.vec)) {
       if(!all(isotype.control.name.vec %in% rownames(cell_protein_matrix))) {
-          stop("One or more 'isotype.control.name.vec' cannot be found in the rownames of 'cell_protein_matrix'")
+          stop("this isotype control cannot be found in the rownames of 'cell_protein_matrix': ",
+               setdiff(isotype.control.name.vec, rownames(cell_protein_matrix)))
       }
   }
-  
+
   adt = cell_protein_matrix %>% as.matrix()
   adtu = empty_drop_matrix %>% as.matrix()
 
