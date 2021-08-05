@@ -8,8 +8,8 @@
 # <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker2.png' align="right" width="175" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
 
 dsb is available on *CRAN* [latest dsb release on
-CRAN](https://cran.r-project.org/web/packages/dsb/index.html). Install
-dsb in R with: `library(dsb)`.
+CRAN](https://CRAN.R-project.org/package=dsb). Install dsb in R with:
+`install.packages('dsb')`.
 
 A workflow tutorial is provided below. See the vignette for full
 tutorial: [Using dsb to normalize single cell protein data: analysis
