@@ -64,7 +64,7 @@ DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, denoise.c
                                use.isotype.control = TRUE, isotype.control.name.vec = NULL,
                                define.pseudocount = FALSE, pseudocount.use,quantile.clipping = FALSE,
                                quantile.clip = c(0.001, 0.9995), return.stats = FALSE){
-  # check names of supplied isotype controls for denoising are in the matrix
+  # error handling
   if(!is.null(isotype.control.name.vec)) {
     if(!all(isotype.control.name.vec %in% rownames(cell_protein_matrix))) {
       stop("the following isotype control cannot be found in the rownames of `cell_protein_matrix`: ",
@@ -74,9 +74,13 @@ DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, denoise.c
   if (isTRUE(return.stats) & isFALSE(denoise.counts)) {
     stop("set return.stats = FALSE to run dsb if denoise.counts = FALSE")
   }
+  if (isTRUE(use.isotype.control) & is.null(isotype.control.name.vec)) {
+    stop('must specify a vector of isotype control names if use.isotype.control is set to TRUE (recommended)')
+  }
   # convert input data to matrix (e.g. for sparse matrix conversion) and log transform
   adt = cell_protein_matrix %>% as.matrix()
   adtu = empty_drop_matrix %>% as.matrix()
+  # log transform
   if(isTRUE(define.pseudocount)) {
     adtu_log = log(adtu + pseudocount.use)
     adt_log = log(adt + pseudocount.use)

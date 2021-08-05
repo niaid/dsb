@@ -1,3 +1,17 @@
+# dsb 0.2.0
+
+• Enhancements  
+quantile clipping: rarely, a small minority of cells can have outlier values for a single protein, for example expression at level -25 after normalization. These values can now be clipped to be the lowest / highest quantile by default c(0.001, 0.9995). To use this feature set `quantile.clipping = TRUE` and quantile.clip to be a vector of lowest and highest quantile values to use; by default c(0.001, 0.9995). 
+
+• return dsb internal stats  
+Some advanced users may desire to look into the latent noise variables estimated by dsb. Setting `return.stats = TRUE` now returns a list, the first element is the dsb normalized ADT values, the second element is a dataframe of noise variables for each cell, including the derived "dsb technical component" along with its constituent variables, the background mean and the isotype control protein values for each cell. 
+
+• Documentation  
+Documentation has been overhauled, the main vignette now includes simpler estimation of cells vs empty drops by using the EmptyDrops method that is now implemented by Cell Ranger by default. A workflow for multimodal (CITE-seq) single cell analysis using the dsb method for normalization is provided including loading raw data, quality control, clustering and multiple versions of the Seurat Weighted Nearest Neighbors joint mRNA and protein clustering method.  
+
+An additional vignette is provided with step by step intuition for underlying code / modeling for the dsb method. 
+
+
 # dsb 0.1.0
 
 • dsb is now hosted on CRAN: [go to dsb on CRAN](https://cran.r-project.org/web/packages/dsb/index.html)

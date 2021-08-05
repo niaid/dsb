@@ -1,6 +1,6 @@
 ## Submission Aug 1 2021 
 
-Submission for version 0.2.0
+Update submission for version 0.2.0
 
 ## Test environments
 * Winbuilder
@@ -17,8 +17,8 @@ Bioconductor does not yet build and check packages for R version 4.2 see https:/
 devtools::check(args = c('--as-cran'))  
 0 errors ✓ | 0 warnings ✓ | 0 notes ✓
 
-**Re. custom license**
-Please refer to Cran team comments from 2021/01/24 
+**Re. custom license used in this package**
+Please refer to Cran team comments from 2021/01/24
 
 "Please only ship the CRAN template for the BSD_3_clause license."  
 Following instructions sent via email 9 Jan, 2021, the CRAN template for BSD-3 (https://cran.r-project.org/web/licenses/BSD_3_clause) is listed "in addition to the alternate BSD text". License documents are referenced in the description as instructed (see email below).
