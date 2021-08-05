@@ -1,12 +1,12 @@
 Package: dsb
 Type: Package
-Title: Normalize & Denoise Droplet Single Cell Protein Data (CITE-seq)
-Version: 0.1.0
+Title: Normalize & Denoise Droplet Single Cell Protein Data (CITE-Seq)
+Version: 0.2.0
 Authors@R: 
     c(person(given = "Matthew",
              family = "Mulè",
              role = c("aut", "cre"),
-             email = "matthew.mule@nih.gov",
+             email = "mattmule@gmail.com",
              comment = c(ORCID = "0000-0001-8457-2716")),
       person(given = "Andrew",
              family = "Martins",
@@ -33,7 +33,11 @@ Imports:
 Suggests: 
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    ggplot2,
+    cowplot,
+    spelling
 URL: https://github.com/niaid/dsb
 BugReports: https://github.com/niaid/dsb/issues
 VignetteBuilder: knitr
+Language: en-US

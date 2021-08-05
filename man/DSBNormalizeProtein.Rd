@@ -11,7 +11,10 @@ DSBNormalizeProtein(
   use.isotype.control = TRUE,
   isotype.control.name.vec = NULL,
   define.pseudocount = FALSE,
-  pseudocount.use
+  pseudocount.use,
+  quantile.clipping = FALSE,
+  quantile.clip = c(0.001, 0.9995),
+  return.stats = FALSE
 )
 }
 \arguments{
@@ -19,15 +22,21 @@ DSBNormalizeProtein(
 
 \item{empty_drop_matrix}{the raw empty droplet protein count data used for background correction}
 
-\item{denoise.counts}{set to TRUE by default (recommended) - defines and regresses each cell's technical component using background proteins in each cell and itotype controls when}
+\item{denoise.counts}{set to TRUE by default (recommended) - defines and regresses each cell's technical component using background proteins in each cell and isotype controls when}
 
 \item{use.isotype.control}{set to TRUE by default (recommended) with denoise.counts = TRUE include isotype controls in defining the ?}
 
-\item{isotype.control.name.vec}{a vector of the names of the isotype control proteins exactly as in the data to be normalized}
+\item{isotype.control.name.vec}{to be used if denoise.counts = TRUE. a vector of the names of the isotype control proteins in the rows of the cells and background matrix e.g. c('isotype1', 'isotype2') or rownames(cells_citeseq_mtx)[grepl('sotype', rownames(cells_citeseq_mtx))]}
 
 \item{define.pseudocount}{TRUE FALSE : false by default users can supply a pseudocount besides the default 10 which is optimal for CITEseq data.}
 
-\item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting efine.pseudocount to TRUE}
+\item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting define.pseudocount to TRUE}
+
+\item{quantile.clipping}{default to true, apply 0.001 and 0.998th quantile value clipping to handle low and high magnitude outliers - useful for downstream modeling and visualization}
+
+\item{quantile.clip}{if using quantile clipping a vector of the lowest and highest quantile to clip, the default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.}
+
+\item{return.stats}{if TRUE, returns a list, element 1 is the normalized adt matrix element 2 is the internal stats used by dsb during denoising (the background mean, isotype control values, and the final dsb technical component that is regressed out of the counts)}
 }
 \value{
 a normalized R "matrix" of cells by proteins that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette
@@ -38,10 +47,11 @@ the DSB normalization function
 \examples{
 library(dsb) # lazy load example data cells_citeseq_mtx and empty_drop_matrix included in package
 
-# use a subset of 40 cells and bacground droplets from example data
+# use a subset of cells and background droplets from example data
 cells_citeseq_mtx = cells_citeseq_mtx[ ,1:400]
 empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:400]
 
+# example I
 adt_norm = dsb::DSBNormalizeProtein(
 
   # step I: remove ambient protien noise reflected in counts from empty droplets
@@ -55,11 +65,26 @@ adt_norm = dsb::DSBNormalizeProtein(
 )
 
 # example II - experiments without isotype controls
-
 adt_norm = dsb::DSBNormalizeProtein(
   cell_protein_matrix = cells_citeseq_mtx,
   empty_drop_matrix = empty_drop_matrix,
   denoise.counts = FALSE
 )
+
+# example III - return dsb internal stats used during denoising for each cell
+# returns a 2 element list - the normalized matrix and the internal stats
+dsb_object = dsb::DSBNormalizeProtein(
+   cell_protein_matrix = cells_citeseq_mtx,
+   empty_drop_matrix = empty_drop_matrix,
+   isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
+   return.stats = TRUE
+)
+
+# the dsb normalized matrix to be used in downstream analysis
+dsb_object$dsb_normalized_matrix
+
+# the internal dsb stats; can be examined e.g. for outliers
+dsb_object$dsb_stats
+
 
 }

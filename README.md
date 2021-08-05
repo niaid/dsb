@@ -433,16 +433,24 @@ Seurat::DimPlot(s, reduction = 'umap', group.by = 'celltype',
 
 ## Weighted Nearest Neighbor multimodal clustering using dsb normalized values with Seurat <a name="wnn"></a>
 
-Below we demonstrate a variation on Seurat’s weighted nearest neighbors
-multimodal clustering method where the protein dsb normalized values are
-used directly, rather than running PCA on the protein values. The
-performance of this algorithm is better on larger datasets but we
-demonstrate here on this small dataset as an example. Since there are so
-few proteins measured on most datasets (usually tens), we’ve found that
-using the dsb normalized protein matrix as the protein assay as opposed
-to compressing protein data with PCA can help with interpretation. One
-can also use the default implementation of the WNN algorithm by running
-PCA on the dsb normalized values.
+Below we demonstrate using Seurat’s weighted nearest neighbors
+multimodal clustering method with dsb normalized values as input for the
+protein assay. The performance of this algorithm is better on larger
+datasets but we demonstrate here on this small dataset as an example.
+
+Of note, the default recommendation of the WNN method is to first
+compress both the ADT and mRNA data into principal components. For a
+dataset with a smaller number of proteins, we have found that just using
+the dsb normalized cells x protein directly rather than compressing the
+ADT data into principal components can improve the resulting clusters
+and interpretation of the joint embedding. Datasets generated with
+recently available pre-titrated panels consisting of more than 100 or
+200 proteins may benefit more from dimensionality reduction with PCA.
+
+Below, examples are provided for using both the dsb normalized protein
+values directly as well as the dsb normalized values compressed into
+principal components (the default WNN method). Again, this algorithm is
+more powerful on datasets with a greater number of cells.
 
 ``` r
 # use pearson residuals as normalized values for pca 

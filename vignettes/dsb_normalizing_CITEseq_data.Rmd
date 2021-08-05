@@ -38,7 +38,7 @@ dsb (**d**enoised and **s**caled by **b**ackground) is an R package developed in
 13. [Integrating dsb with python/Scanpy](#scanpy)
 14. [Using dsb with data lacking isotype controls](#noisotype) 
 15. [Integrating dsb with sample multiplexing experiments](#multiplexing)
-16. [Frequently Asked Questions](#faq)
+16. [Frequently Asked Questions and advanced usage topics](#faq)
 
 
 ## Background and motivation <a name="background_motivation"></a>
@@ -183,7 +183,7 @@ length(positive_cells)
 
 Yes. After quality control above we have 4096 cells which is in line with the ~5000 cells loaded in this experiment. 
 
-We also filter background droplets to remove potential spurious cells (drops with high mRNA contene) and use the major peak in the background distribution between 1.4 and 2.5 log total protein counts. 
+We also filter background droplets to remove potential spurious cells (drops with high mRNA content) and use the major peak in the background distribution between 1.4 and 2.5 log total protein counts. 
 
 ```{r, eval = FALSE}
 # define a vector of background droplet barcodes based on protein library size and mRNA content
@@ -275,7 +275,7 @@ s = FindNeighbors(object = s, dims = NULL, assay = 'CITE',
 # direct graph clustering 
 s = FindClusters(object = s, resolution = 1, algorithm = 3, graph.name = 'CITE_snn', verbose = FALSE)
 
-# umap (this is a long step and in our opinion can often be skipped)
+# umap (optional)
 s = RunUMAP(object = s, assay = "CITE", features = prots, seed.use = 1990,
             min.dist = 0.2, n.neighbors = 30, verbose = FALSE)
 ```
@@ -332,7 +332,11 @@ Seurat::DimPlot(s, reduction = 'umap', group.by = 'celltype',
 <img src="../man/figures/umap.png" width="400" height="400" />
 
 ## Weighted Nearest Neighbor multimodal clustering using dsb normalized values with Seurat <a name="wnn"></a>
-Below we demonstrate a variation on Seurat's weighted nearest neighbors multimodal clustering method where the protein dsb normalized values are used directly, rather than running PCA on the protein values. The performance of this algorithm is better on larger datasets but we demonstrate here on this small dataset as an example. Since there are so few proteins measured on most datasets (usually tens), we've found that using the dsb normalized protein matrix as the protein assay as opposed to compressing protein data with PCA can help with interpretation. One can also use the default implementation of the WNN algorithm by running PCA on the dsb normalized values. 
+Below we demonstrate using Seurat's weighted nearest neighbors multimodal clustering method with dsb normalized values as input for the protein assay. The performance of this algorithm is better on larger datasets but we demonstrate here on this small dataset as an example.
+
+Of note, the default recommendation of the WNN method is to first compress both the ADT and mRNA data into principal components. For a dataset with a smaller number of proteins, we have found that just using the dsb normalized cells x protein directly rather than compressing the ADT data into principal components can improve the resulting clusters and interpretation of the joint embedding. Datasets generated with recently available pre-titrated panels consisting of more than 100 or 200 proteins may benefit more from dimensionality reduction with PCA. 
+
+Below, examples are provided for using both the dsb normalized protein values directly as well as the dsb normalized values compressed into principal components (the default WNN method). Again, this algorithm is more powerful on datasets with a greater number of cells.  
 
 ```{r, eval = FALSE}
 # use pearson residuals as normalized values for pca 
@@ -387,8 +391,7 @@ p1
 
 ```
 
-<img src="../man/figures/WNN_umap.png" />
-
+<img src="../man/figures/WNN_umap.png" />  
 
 Now we can add these higher resolution subcluster annotations to the dsb derived protein only clusters for interpretation and visualize the results with a multimodal heatmap. 
 
@@ -438,7 +441,8 @@ draw(ht_list)
 
 ```
 
-<img src="../man/figures/multimodal_heatmap.png" />
+<img src="../man/figures/multimodal_heatmap.png" />  
+
 One can also use the default implementation of Seurat's WNN analysis with principal components based dsb normalized values as input.  
 
 ```{r, eval=FALSE}
@@ -490,7 +494,7 @@ altExp(sce, "CITE") = adt
 ## Integrating dsb with python/Scanpy <a name="scanpy"></a>
 You can also use dsb normalized values with the AnnData class in Python by following steps 1 and 2 above to load data, define drops and normalize with dsb in R. The simplest option is then to use reticulate to create the AnnData object from dsb denoised and normalized protein values as well as raw RNA data. That object can then be imported into a python session. Anndata are not structured as separate assays; we therefore need to merge the RNA and protein data. See the current [Scanpy CITE-seq workflow](https://scanpy-tutorials.readthedocs.io/en/latest/cite-seq/pbmc5k.html) and more on [interoperability between Scanpy Bioconductor and Seurat](https://theislab.github.io/scanpy-in-R/)  
 
-NEW: dsb users keen on using python are also encouraged to checkout the dsb wraper available in the `muon` python multimodal framework 
+NEW: dsb users keen on using python are also encouraged to checkout the dsb wrapper available in the `muon` python multimodal framework 
 [about muon](https://muon.readthedocs.io/en/latest/index.html)
 [dsb wrapper for python in muon](https://muon.readthedocs.io/en/latest/omics/citeseq.html)
 
@@ -580,34 +584,59 @@ singlet_object[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
 ## Frequently Asked Questions <a name="faq"></a>
 
 **Can other count aligners like Kallisto and CITE-seq-count be used?**
-Yes! dsb was developed prior to 10X Genomics supporting CITE-seq or hashing data and we routinely use other alignment pipelines. It is important to specify a large number of cells for e.g. CITE-seq-count in order to make sure you obtain background reads and not just cells. If you loaded 10,000 cells, you would NOT set the --cells argument in CITE-seq-count to be 10000, you would set it to e.g. 300000 in order to align to background drops as well as thelarge library size cell-containing droplets. dsb can then be used exactly as in the vignette, one simply loads the ADT count data and defines foreground and background drops using thresholds based on mRNA and protein as shown in the vignette. 
+Yes! dsb was developed prior to 10X Genomics supporting CITE-seq or hashing data and we routinely use other alignment pipelines. It is important to specify a large number of cells for e.g. CITE-seq-count in order to make sure you obtain background reads and not just cells. If you loaded 10,000 cells, you would NOT set the --cells argument in CITE-seq-count to be 10000, you would set it to e.g. 300000 in order to align to background drops as well as the large library size cell-containing droplets. dsb can then be used exactly as in the vignette, one simply loads the ADT count data and defines foreground and background drops using thresholds based on mRNA and protein as shown in the vignette. For using Cell Ranger, the analogous argument `expect-cells` should actually be set to the number of expected recovered cells-Cell Ranger uses the [EmptyDrops](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-019-1662-y) algorithm to call cells vs empty drops based in part on this parameter and returns the full output in the raw and just the estimated cells in the filtered outputs respectively (as shown in the documentation example above). 
 
 For more info see: https://github.com/Hoohm/CITE-seq-Count/issues/146  
 For comparison of CITE-seq alignment pipelines in a workflow that used dsb see: https://github.com/Terkild/CITE-seq_optimization
 
 **I get the error "Error in quantile.default(x, seq(from = 0, to = 1, length = n)): missing values and NaN's not allowed if 'na.rm' is FALSE" What should I do?**
- -  This error occurs during denoising, (denoise = TRUE) when you have antibodies with 0 counts or close to 0 across *all cells*. To get rid of this error, check the distributions of the antibodies with e.g. `apply(cells_protein_matrix, 1, quantile)` to find the protein(s) with basically no counts, then remove these from the empty drops and the cells. 
-more info: https://github.com/niaid/dsb/issues/6  
+ -  This error occurs during denoising, (denoise = TRUE) when you have antibodies with 0 counts or close to 0 across *all cells*. To get rid of this error, check the distributions of the antibodies with e.g. `apply(cells_protein_matrix, 1, quantile)` to find the protein(s) with basically no counts, then remove these from the empty drops and the cells. Please refer to these links:  
+https://github.com/niaid/dsb/issues/6  
+https://github.com/niaid/dsb/issues/26  
  
 **I get a "problem too large or memory exhausted error when I try to convert to a regular R matrix**
- - (see issue 10 on the dsb github) CITE-seq protein counts don't need a sparse representation-very likely this error is because there are too many negative droplets defined (i.e. over 1 million). You should be able to normalize datasets with 100,000+ cells and similar numbers of negative droplets (or less) on a normal 16GB laptop. By further narrowing in on the major background distribution, one should be able to convert the cells and background to a normal R matrix which should run successfully. 
-more info: https://github.com/niaid/dsb/issues/10
+ - (see issue 10 on the dsb github) CITE-seq protein counts don't need a sparse representation-very likely this error is because there are too many negative droplets defined (i.e. over 1 million). You should be able to normalize datasets with 100,000+ cells and similar numbers of negative droplets (or less) on a normal 16GB laptop. By further narrowing in on the major background distribution, one should be able to convert the cells and background to a normal R matrix which should run successfully.   
+https://github.com/niaid/dsb/issues/10  
 
 **the range of dsb normalized values is large is this normal?**
-In all cases encountered thusfar, very extreme value ranges (e.g. ranging from -50 to 30) are caused by just a few outlier cells, most often a few cells with low negative values for the protein. For very high values after dsb normalization (~100) check how many cells are in this quantile-these can be removed as outliers (or retained but removed for visualization purposes). 
-https://github.com/niaid/dsb/issues/22
-https://github.com/niaid/dsb/issues/9
- 
+In all cases encountered thus far, very extreme value ranges (e.g. ranging from -50 to 30) are caused by just a few outlier cells, most often a few cells with low negative values for the protein. For very high values after dsb normalization (~100) check how many cells are in this quantile-these can be removed as outliers (or retained but removed for visualization purposes). We have now provided a quantile clipping option in dsb to address these outlier cells. Users can also investigate these cells to see if they have very high values for isotype control proteins and they can possibly be removed from the dataset. 
+https://github.com/niaid/dsb/issues/22  
+https://github.com/niaid/dsb/issues/9  
+
+
+### check for outliers in dsb normalized values 
 ```{r, eval = FALSE}
 # find outliers 
-pheatmap::pheatmap(apply(dsb_norm_prot, 1, function(x){quantile(x,c(0.9999, 0.99, 0.98, 0.95, 0.0001, 0.01, 0.1) )}))
+pheatmap::pheatmap(apply(dsb_norm_prot, 1, function(x){
+  quantile(x,c(0.9999, 0.99, 0.98, 0.95, 0.0001, 0.01, 0.1))
+  }))
 
 ```
 
 
-Very low negative values, e.g. those < -10 can be interpreted as not expressed and one can simply convert these values to 0 with the code below. 
+### implement dsb with Quantile clipping 
+
+By default setting `quanitle.clipping = TRUE` sets cells values for a given protein above the 99.95th percentile or below the 0.1 percentile of that protein's expression to be thees quantile values. That value is optimized to remove a few high and low magnitude outliers but can be set to adapt to the number of cells in the dataset. 
 ```{r, eval = FALSE}
-dsb_norm_prot = apply(dsb_norm_prot, 2, function(x){ ifelse(test = x < -10, yes = 0, no = x)})
+dsb_norm_prot = DSBNormalizeProtein(
+                           cell_protein_matrix = cells_citeseq_mtx,
+                           empty_drop_matrix = empty_drop_citeseq_mtx,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
+                           isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
+                           # implement Quantile clipping 
+                           quantile.clipping = TRUE, 
+                           # high and low otlier quantile across proteins to clip
+                           quantile.clip = c(0.001, 0.9995) 
+                           )
+```
+
+### A simpler alternative to quantile clipping not requiring re-running dsb
+Another simple option if there are a few low magnitude outliers: cells with a given protein value < -10 can be interpreted as not expressed. One can simply convert these values to 0 with the code below. 
+```{r, eval = FALSE}
+dsb_norm_prot = apply(dsb_norm_prot, 2, function(x){ 
+  ifelse(test = x < -10, yes = 0, no = x)
+  })
 ```
 
 **I have multiple "lanes" of 10X data from the same pool of cells, how should I run the workflow above?**
@@ -643,29 +672,27 @@ rna = do.call(cbind, rna)
 **I have 2 batches, should I combine them into a single batch or normalize each batch separately?**
  - (See issue 12 on the dsb github) How much batch variation there is depends on how much experiment-specific and expected biological variability there is between the batches. In the dataset used in the preprint, if we normalized with all background drops and cells in a single normalization, the resulting dsb normalized values were highly concordant with when we normalized each batch separately, this held true with either definition of background drops used (i.e. based on thresholding with the library size or based on hashing-see below). One could try both and see which mitigates the batch variation the most. See **issue 12** for example code.
 
-**How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
-In nearly all cases this argument should be set to TRUE and we highly recommend that use.isotype.control is also set to TRUE when using denoise.counts feature (this is the package default). The denoise.counts argument specifies whether to remove cell-intrinsic technical noise by defining and regressing out *cell-intrinsic technical factors*  that contribute technical variations not captured by protein counts in background droplets used in dsb. The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment express all / a vast majority of proteins measured, this may not be an optimal assumption. In the paper we show that the k=2 model provided an optimal fit compared to other values of k in all 5 external datasets which measured between just 14 to 86 proteins. In all datasets, correlations between µ1 and 1) each individual isotype control and 2) the average of all four isotype controls were higher than those between the isotype control themselves suggesting shared variation between the independently inferred µ1 and isotype controls captured unobserved, latent factors contributing to technical noise. λ was associated with the protein library size within protein defined cell types suggesting that the shared component of variation in these variables reflect technical noise, but the library size alone should not be used as a normalization factor (as is typical for mRNA data) due to potential biological contributions and bias in the small subset of proteins measured relative to the surface proteome (see paper for a more detailed discussion). 
-
-**How can I generate a count histogram and marginal density histogram of positive and negative droplet protein distributions like the one in the paper?**
+**What are the minimum number of proteins required to use dsb**
+dsb is compatible with datasets with any number of proteins with step I alone. We have validated the algorithm assumptions on datasets with 14 phenotyping antibodies and 3 isotype controls. With less proteins than this, we recommend users return the internal stats calculated by dsb and check correlations of the variables as shown below. If these values are reasonably correlated, it indicates the model assumptions of dsb are likely being met. 
 
 ```{r, eval=FALSE}
-# at step 3 
-pv = md[positive_cells, ]; pv$class = "cell_containing"
-nv = md[background_drops, ]; nv$class = "background"
-ddf = rbind(pv, nv)
-# plot 
-p = ggplot(ddf, aes(x = prot_size, fill = class, color = class )) +
-  theme_bw() + 
-  geom_histogram(aes(y=..count..), alpha=0.5, bins = 50,position="identity")+ 
-  ggtitle(paste0("theoretical max barcodes = ", nrow(md), 
-                 "\n", "cell containing drops after QC = ", nrow(pv),
-                 "\n", "negative droplets = ", nrow(nv))) + 
-  theme(legend.position = c(0.8, 0.7))
-# add a marginal histogram
-xtop = cowplot::axis_canvas(p, axis = "x") +
-  geom_density(data = ddf, aes(x = prot_size, fill = class), alpha = 0.5)
-# merge plots 
-p2 = cowplot::ggdraw(cowplot::insert_xaxis_grob(p, xtop, grid::unit(.4, "null"), position = "top"))
+
+dsb_object = DSBNormalizeProtein(cell_protein_matrix = dsb::cells_citeseq_mtx, 
+                                 empty_drop_matrix = dsb::empty_drop_citeseq_mtx,
+                                 denoise.counts = TRUE, 
+                                 isotype.control.name.vec = rownames(dsb::cells_citeseq_mtx)[67:70], 
+                                 return.stats = TRUE)
+d = as.data.frame(dsb_object$dsb_stats)
+
+# test correlation of background mean with the inferred dsb technical component 
+abs(cor(d$cellwise_background_mean, d$dsb_technical_component))
+
+# test average isotype control value correlation with the background mean 
+isotype_names = rownames(dsb::cells_citeseq_mtx)[67:70]
+cor(rowMeans(d[,isotype_names]), d$cellwise_background_mean)
 
 ```
 
+
+**How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
+In nearly all cases this argument should be set to TRUE and we highly recommend that use.isotype.control is also set to TRUE when using denoise.counts feature (this is the package default). The denoise.counts argument specifies whether to remove cell-intrinsic technical noise by defining and regressing out *cell-intrinsic technical factors*  that contribute technical variations not captured by protein counts in background droplets used in dsb. The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment express all / a vast majority of proteins measured, this may not be an optimal assumption. In the paper we show that the k=2 model provided an optimal fit compared to other values of k in all 5 external datasets which measured between just 14 to 86 proteins. In all datasets, correlations between µ1 and 1) each individual isotype control and 2) the average of all four isotype controls were higher than those between the isotype control themselves suggesting shared variation between the independently inferred µ1 and isotype controls captured unobserved, latent factors contributing to technical noise. λ was associated with the protein library size within protein defined cell types suggesting that the shared component of variation in these variables reflect technical noise, but the library size alone should not be used as a normalization factor (as is typical for mRNA data) due to potential biological contributions and bias in the small subset of proteins measured relative to the surface proteome (see paper for a more detailed discussion). 

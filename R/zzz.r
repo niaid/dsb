@@ -2,7 +2,7 @@ dsbmessage <- function()
 {
   mesg <-
     cat("dsb package for CITE-seq protein normalization loaded \n",
-        "please cite our paper at: https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1 \n",
+        "please cite our paper (under review) at: https://www.biorxiv.org/content/10.1101/2020.02.24.963603v1 \n",
         "see vignette at https://github.com/niaid/dsb"
     )
   return(mesg)
