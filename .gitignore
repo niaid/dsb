@@ -7,3 +7,4 @@ docs/
 gitignore/
 .Rapp.history
 .Rapp.history/
+.DS_Store
