@@ -2,7 +2,7 @@
 % Please edit documentation in R/dsb.r
 \name{DSBNormalizeProtein}
 \alias{DSBNormalizeProtein}
-\title{the DSB normalization function}
+\title{Normalize single cell antibody derived tag (ADT) protein data with the DSBNormalizeProtein function. This single function runs step I (ambient protein background correction) and step II (defining and removing cell to cell technical variation) of the dsb normalization method. See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.}
 \usage{
 DSBNormalizeProtein(
   cell_protein_matrix,
@@ -18,31 +18,31 @@ DSBNormalizeProtein(
 )
 }
 \arguments{
-\item{cell_protein_matrix}{the raw protein count data to be normalized cells = columns, proteins = rows}
+\item{cell_protein_matrix}{Raw protein ADT count data to be normalized with cells as columns and proteins as rows. See vignette, this is defined after quality control outlier cell removal based on the filtered output from Cell Ranger. Any CITE-seq count alignment tool can be used to define this as well.}
 
-\item{empty_drop_matrix}{the raw empty droplet protein count data used for background correction}
+\item{empty_drop_matrix}{Raw empty droplet protein count data used for background correction with cells as columns and proteins as rows. This can easily be defined from the raw output from Cell Ranger (see vignette). Any count alignment tool for CITE-seq can be used to align and define these background drops.}
 
-\item{denoise.counts}{set to TRUE by default (recommended) - defines and regresses each cell's technical component using background proteins in each cell and isotype controls when}
+\item{denoise.counts}{TRUE (default) recommended to keep this TRUE and use with use.isotype.control = TRUE. This runs step II of the dsb algorithm to define and remove cell to cell technical noise.}
 
-\item{use.isotype.control}{set to TRUE by default (recommended) with denoise.counts = TRUE include isotype controls in defining the ?}
+\item{use.isotype.control}{TRUE (default) recommended to use this with denoise.counts = TRUE. This includes isotype controls in defining the dsb technical component.}
 
-\item{isotype.control.name.vec}{to be used if denoise.counts = TRUE. a vector of the names of the isotype control proteins in the rows of the cells and background matrix e.g. c('isotype1', 'isotype2') or rownames(cells_citeseq_mtx)[grepl('sotype', rownames(cells_citeseq_mtx))]}
+\item{isotype.control.name.vec}{A vector of the names of the isotype control proteins in the rows of the cells and background matrix e.g. isotype.control.name.vec = c('isotype1', 'isotype2') or rownames(cells_citeseq_mtx)[grepl('sotype', rownames(cells_citeseq_mtx))]}
 
-\item{define.pseudocount}{TRUE FALSE : false by default users can supply a pseudocount besides the default 10 which is optimal for CITEseq data.}
+\item{define.pseudocount}{FALSE (default) uses the value 10 optimized for protein ADT data.}
 
-\item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting define.pseudocount to TRUE}
+\item{pseudocount.use}{the pseudocount to use if overriding the default pseudocount by setting define.pseudocount = TRUE}
 
-\item{quantile.clipping}{default to true, apply 0.001 and 0.998th quantile value clipping to handle low and high magnitude outliers - useful for downstream modeling and visualization}
+\item{quantile.clipping}{FALSE (default), if outliers or a large range of values for some proteins is seen (e.g. -50 to 50) re-run with quantile.clipping = TRUE. This applies 0.001 and 0.998th quantile value clipping to handle low and high magnitude outliers.}
 
-\item{quantile.clip}{if using quantile clipping a vector of the lowest and highest quantile to clip, the default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.}
+\item{quantile.clip}{if quantile.clipping = TRUE, one can provide a vector of the lowest and highest quantile to clip, these can be tuned to the dataset size. The default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.}
 
-\item{return.stats}{if TRUE, returns a list, element 1 is the normalized adt matrix element 2 is the internal stats used by dsb during denoising (the background mean, isotype control values, and the final dsb technical component that is regressed out of the counts)}
+\item{return.stats}{if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2 $dsb_stats is the internal stats used by dsb during denoising (the background mean, isotype control values, and the final dsb technical component that is regressed out of the counts)}
 }
 \value{
-a normalized R "matrix" of cells by proteins that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette
+The normalized ADT data are returned as a standard R "matrix" of cells (columns) by proteins (rows) that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette.
 }
 \description{
-the DSB normalization function
+Normalize single cell antibody derived tag (ADT) protein data with the DSBNormalizeProtein function. This single function runs step I (ambient protein background correction) and step II (defining and removing cell to cell technical variation) of the dsb normalization method. See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
 }
 \examples{
 library(dsb) # lazy load example data cells_citeseq_mtx and empty_drop_matrix included in package
@@ -53,12 +53,11 @@ empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:400]
 
 # example I
 adt_norm = dsb::DSBNormalizeProtein(
-
-  # step I: remove ambient protien noise reflected in counts from empty droplets
+  # step I: remove ambient protein noise reflected in counts from empty droplets
   cell_protein_matrix = cells_citeseq_mtx,
   empty_drop_matrix = empty_drop_matrix,
 
-  # recommended step II: model and remove the technical component of each cell's protein library
+  # recommended step II: model and remove the technical component of each cell's protein data
   denoise.counts = TRUE,
   use.isotype.control = TRUE,
   isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70]
@@ -83,7 +82,7 @@ dsb_object = dsb::DSBNormalizeProtein(
 # the dsb normalized matrix to be used in downstream analysis
 dsb_object$dsb_normalized_matrix
 
-# the internal dsb stats; can be examined e.g. for outliers
+# the internal dsb stats; can be examined for outliers see vignette FAQ
 dsb_object$dsb_stats
 
 

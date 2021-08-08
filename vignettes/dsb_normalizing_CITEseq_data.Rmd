@@ -6,9 +6,9 @@ output:
 theme: united
 author: Matt Mulè
 vignette: >
+  %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{using dsb to normalize single cell protein data: analysis workflow and integration with Seurat, Bioconductor and Scanpy}
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
@@ -599,10 +599,9 @@ https://github.com/niaid/dsb/issues/26
 https://github.com/niaid/dsb/issues/10  
 
 **the range of dsb normalized values is large is this normal?**
-In all cases encountered thus far, very extreme value ranges (e.g. ranging from -50 to 30) are caused by just a few outlier cells, most often a few cells with low negative values for the protein. For very high values after dsb normalization (~100) check how many cells are in this quantile-these can be removed as outliers (or retained but removed for visualization purposes). We have now provided a quantile clipping option in dsb to address these outlier cells. Users can also investigate these cells to see if they have very high values for isotype control proteins and they can possibly be removed from the dataset. 
+In all cases encountered thus far, the large range of values for a protein (e.g. ranging from -50 to 50) are caused by just a few outlier cells, most often a few cells with low negative values for the protein. We have now provided a quantile clipping option in dsb to address these outlier cells. Users can also investigate these cells to see if they have very high values for isotype control proteins and they can possibly be removed from the dataset.
 https://github.com/niaid/dsb/issues/22  
 https://github.com/niaid/dsb/issues/9  
-
 
 ### check for outliers in dsb normalized values 
 ```{r, eval = FALSE}
@@ -639,6 +638,30 @@ dsb_norm_prot = apply(dsb_norm_prot, 2, function(x){
   })
 ```
 
+**What are the minimum number of proteins required to use dsb**
+dsb is compatible with datasets with any number of proteins with step I alone. We have validated the algorithm assumptions on datasets with 14 phenotyping antibodies and 3 isotype controls. With less proteins than this, we recommend users return the internal stats calculated by dsb and check correlations of the variables as shown below. If these values are reasonably correlated, it indicates the model assumptions of dsb are likely being met. 
+
+```{r, eval=FALSE}
+
+dsb_object = DSBNormalizeProtein(cell_protein_matrix = dsb::cells_citeseq_mtx, 
+                                 empty_drop_matrix = dsb::empty_drop_citeseq_mtx,
+                                 denoise.counts = TRUE, 
+                                 isotype.control.name.vec = rownames(dsb::cells_citeseq_mtx)[67:70], 
+                                 return.stats = TRUE)
+d = as.data.frame(dsb_object$dsb_stats)
+
+# test correlation of background mean with the inferred dsb technical component 
+cor(d$cellwise_background_mean, d$dsb_technical_component)
+
+# test average isotype control value correlation with the background mean 
+isotype_names = rownames(dsb::cells_citeseq_mtx)[67:70]
+cor(rowMeans(d[,isotype_names]), d$cellwise_background_mean)
+
+```
+
+**How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
+In the vast majority of cases we recommend setting `denoise.counts = TRUE` and `use.isotype.control = TRUE` (this is the package default). The denoise.counts argument specifies whether to remove cell-intrinsic technical noise by defining and regressing out *cell-intrinsic technical factors*  that contribute technical variations not captured by protein counts in background droplets used in dsb. The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment be positive for all of the proteins measured, this may not be an optimal assumption. Model assumptions were validated on datasets measuring less than 20 to more than 200 proteins. If your data have less proteins, see note above. 
+
 **I have multiple "lanes" of 10X data from the same pool of cells, how should I run the workflow above?**
 
 Droplets derived from the same pool of stained cells partitioned across multiple lanes should be normalized together. To do this, you should merge the raw output of each lane, then run step 1 in the workflow-note that since the cell barcode names are the same for each lane in the raw output, you need to add a string to each barcode to identify the lane of origin to make the barcodes have unique names; here is one way to do that: First, add each 10X lane *raw* output from Cell Ranger into a separate directory in a folder "data"  
@@ -670,29 +693,4 @@ rna = do.call(cbind, rna)
 ```
 
 **I have 2 batches, should I combine them into a single batch or normalize each batch separately?**
- - (See issue 12 on the dsb github) How much batch variation there is depends on how much experiment-specific and expected biological variability there is between the batches. In the dataset used in the preprint, if we normalized with all background drops and cells in a single normalization, the resulting dsb normalized values were highly concordant with when we normalized each batch separately, this held true with either definition of background drops used (i.e. based on thresholding with the library size or based on hashing-see below). One could try both and see which mitigates the batch variation the most. See **issue 12** for example code.
-
-**What are the minimum number of proteins required to use dsb**
-dsb is compatible with datasets with any number of proteins with step I alone. We have validated the algorithm assumptions on datasets with 14 phenotyping antibodies and 3 isotype controls. With less proteins than this, we recommend users return the internal stats calculated by dsb and check correlations of the variables as shown below. If these values are reasonably correlated, it indicates the model assumptions of dsb are likely being met. 
-
-```{r, eval=FALSE}
-
-dsb_object = DSBNormalizeProtein(cell_protein_matrix = dsb::cells_citeseq_mtx, 
-                                 empty_drop_matrix = dsb::empty_drop_citeseq_mtx,
-                                 denoise.counts = TRUE, 
-                                 isotype.control.name.vec = rownames(dsb::cells_citeseq_mtx)[67:70], 
-                                 return.stats = TRUE)
-d = as.data.frame(dsb_object$dsb_stats)
-
-# test correlation of background mean with the inferred dsb technical component 
-abs(cor(d$cellwise_background_mean, d$dsb_technical_component))
-
-# test average isotype control value correlation with the background mean 
-isotype_names = rownames(dsb::cells_citeseq_mtx)[67:70]
-cor(rowMeans(d[,isotype_names]), d$cellwise_background_mean)
-
-```
-
-
-**How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
-In nearly all cases this argument should be set to TRUE and we highly recommend that use.isotype.control is also set to TRUE when using denoise.counts feature (this is the package default). The denoise.counts argument specifies whether to remove cell-intrinsic technical noise by defining and regressing out *cell-intrinsic technical factors*  that contribute technical variations not captured by protein counts in background droplets used in dsb. The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment express all / a vast majority of proteins measured, this may not be an optimal assumption. In the paper we show that the k=2 model provided an optimal fit compared to other values of k in all 5 external datasets which measured between just 14 to 86 proteins. In all datasets, correlations between µ1 and 1) each individual isotype control and 2) the average of all four isotype controls were higher than those between the isotype control themselves suggesting shared variation between the independently inferred µ1 and isotype controls captured unobserved, latent factors contributing to technical noise. λ was associated with the protein library size within protein defined cell types suggesting that the shared component of variation in these variables reflect technical noise, but the library size alone should not be used as a normalization factor (as is typical for mRNA data) due to potential biological contributions and bias in the small subset of proteins measured relative to the surface proteome (see paper for a more detailed discussion). 
+ - (See issue 12 on the dsb github) How much batch variation there is depends on how much experiment-specific and expected biological variability there is between the batches. In the dataset used in the preprint, if we normalized with all background drops and cells in a single normalization, the resulting dsb normalized values were highly concordant with when we normalized each batch separately, this held true with either definition of background drops used (i.e. based on thresholding with the library size or based on hashing-see below). One could try both and see which mitigates the batch variation the most. See https://github.com/niaid/dsb/issues/12 for example code.

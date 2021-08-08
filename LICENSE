@@ -1,9 +1,9 @@
 
-YEAR:2021   
-COPYRIGHT HOLDER: NA     
-ORGANIZATION: National Institute of Allergy and Infectious Diseases (NIAID), a participating institute of the National Institutes of Health (NIH)   
+YEAR:2021
+COPYRIGHT HOLDER: NA
+ORGANIZATION: National Institute of Allergy and Infectious Diseases (NIAID), a participating institute of the National Institutes of Health (NIH)
 
-dsb_0.1.0 (Release date: 10-01-2021)
+R package dsb (all versions)
 • DEFINITIONS: AUTHOR(S) Matthew Mulè, Andrew Martins, John Tsang
 • PROVIDER: The National Institute of Allergy and Infectious Diseases (NIAID), a participating institute of the National Institutes of Health (NIH), and an agency of the United States Government.
 • SOFTWARE: the human readable source code form, the machine readable, binary, object code form, and the related documentation for the modules of the dsb_0.1.0 software package, which is an R package for normalizing single cell data.

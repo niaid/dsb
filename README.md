@@ -3,6 +3,8 @@
 
 <!-- badges: start -->
 
+[![CRAN
+status](https://www.r-pkg.org/badges/version/dsb)](https://CRAN.R-project.org/package=dsb)
 <!-- badges: end -->
 
 # <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker2.png' align="right" width="175" /></a> dsb: an R package for normalizing and denoising CITE-seq protein data
@@ -11,10 +13,10 @@ dsb is available on *CRAN* [latest dsb release on
 CRAN](https://CRAN.R-project.org/package=dsb). Install dsb in R with:
 `install.packages('dsb')`.
 
-A workflow tutorial is provided below. See the vignette for full
-tutorial: [Using dsb to normalize single cell protein data: analysis
-workflow and integration with Seurat, Bioconductor and
-Scanpy](https://cran.r-project.org/web/packages/dsb/vignettes/dsb_normalizing_CITEseq_data.html)
+A workflow tutorial is provided below. See the vignette tab on the CRAN
+dsb site for full tutorial: [Using dsb to normalize single cell protein
+data: analysis workflow and integration with Seurat, Bioconductor and
+Scanpy](https://CRAN.R-project.org/package=dsb)
 
 See the
 [**preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3)
@@ -592,9 +594,11 @@ p1
 
 <img src="man/figures/WNN_umap_default.png" />
 
-See Vignette for additional topics:  
+See Vignettes for additional topics:  
 **Integrating dsb with Bioconductor**  
 **Integrating dsb with python/Scanpy**  
 **Using dsb with data lacking isotype controls**  
-**Integrating dsb with sample multiplexing experiments**  
-**Frequently Asked Questions**
+**Integrating dsb with sample multiplexing experiments** **dsb step by
+step detailed demonstration** **outlier handling with quantile
+clipping** **returning internal stats used by dsb** **Frequently Asked
+Questions**
