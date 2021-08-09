@@ -4,12 +4,10 @@
 \name{cells_citeseq_mtx}
 \alias{cells_citeseq_mtx}
 \title{small example CITE-seq protein dataset for 87 surface protein in 2872 cells}
-\format{
-An R matrix, rows: 87 proteins, columns: 2872 cells
+\format{An R matrix, rows: 87 proteins, columns: 2872 cells
 \describe{
 \item{cells_citeseq_mtx}{R matrix of cells by proteins; a random distribution of a maximum of 100 cells per cluster from the 30 clusters reported in Kotliarov et. al. 2020}
-}
-}
+}}
 \usage{
 cells_citeseq_mtx
 }

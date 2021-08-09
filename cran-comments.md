@@ -1,3 +1,28 @@
+## Submission Aug 9 2021 
+
+This is a resubmission -- please read section about license below. I have specified the license exactly as instructed by the CRAN team from my last CRAN release; *the license is unchanged*. Please see email correspondence from 24 Jan 2021. 
+
+Re  License components with restrictions and base license permitting such:Please only ship the CRAN template for the BSD_3_claus license. SEE BELOW.
+
+    ########################### 
+    On 1/24/21, 7:55 PM, "Mule, Matthew (NIH/NIAID) [F]" <matthew.mule AT nih.gov> wrote:
+
+    1) re: "Please only ship the CRAN template for the BSD_3_clause license."
+    
+    Following instructions sent via email 9 Jan, 2021 below to add the CRAN template for BSD-3 which I have added "in addition to the
+    alternate BSD text" as written below. Please do let me know if I misunderstood? 
+       
+    On 1/9/21, 8:53 AM, "Uwe Ligges" <ligges AT statistik.tu-dortmund.de> wrote:
+
+    I understood now, but then you need:
+
+    License: BSD_3_clause + file LICENSE | file LICENSE
+
+    and you need in file LICENSE the CRAN template for the BSD_3_clause licene and in addition the alterative BSD text that is
+    currently listed there anyway.
+
+    ###########################
+
 ## Submission Aug 7 2021 
 
 Update submission for version 0.2.0
