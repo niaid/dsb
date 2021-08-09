@@ -1,8 +1,8 @@
 ## Submission Aug 9 2021 
 
-This is a resubmission -- please read section about license below. I have specified the license exactly as instructed by the CRAN team from my last CRAN release; *the license is unchanged*. Please see email correspondence from 24 Jan 2021. 
+This is a resubmission -- please read correspondence about license below. I have specified the license as instructed by the CRAN team from my last CRAN release; *the license is unchanged from the last release*. 
 
-Re  License components with restrictions and base license permitting such:Please only ship the CRAN template for the BSD_3_claus license. SEE BELOW.
+Re License components with restrictions and base license permitting such: "Please only ship the CRAN template for the BSD_3_claus license." SEE BELOW.
 
     ########################### 
     On 1/24/21, 7:55 PM, "Mule, Matthew (NIH/NIAID) [F]" <matthew.mule AT nih.gov> wrote:
