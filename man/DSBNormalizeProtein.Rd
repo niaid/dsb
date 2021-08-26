@@ -87,3 +87,6 @@ dsb_object$dsb_stats
 
 
 }
+\author{
+Matthew P. Mulè, \email{mattmule@gmail.com}
+}

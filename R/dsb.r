@@ -1,5 +1,5 @@
 #' Normalize single cell antibody derived tag (ADT) protein data with the DSBNormalizeProtein function. This single function runs step I (ambient protein background correction) and step II (defining and removing cell to cell technical variation) of the dsb normalization method. See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
-#'
+#' @author Matthew P. Mulè, \email{mattmule@@gmail.com}
 #' @param cell_protein_matrix Raw protein ADT count data to be normalized with cells as columns and proteins as rows. See vignette, this is defined after quality control outlier cell removal based on the filtered output from Cell Ranger. Any CITE-seq count alignment tool can be used to define this as well.
 #' @param empty_drop_matrix Raw empty droplet protein count data used for background correction with cells as columns and proteins as rows. This can easily be defined from the raw output from Cell Ranger (see vignette). Any count alignment tool for CITE-seq can be used to align and define these background drops.
 #' @param denoise.counts TRUE (default) recommended to keep this TRUE and use with use.isotype.control = TRUE. This runs step II of the dsb algorithm to define and remove cell to cell technical noise.
@@ -83,8 +83,8 @@ DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, denoise.c
       ' and set `isotype.control.name.vec` to a vector of isotype control protien names from cell_protein_matrix'
       )
     iso_detect = rownames(cell_protein_matrix)[grepl('sotype|Iso|iso', rownames(cell_protein_matrix))]
-    if (length(iso_detect > 0)) {
-      print('potential isotype controls detected')
+    if (length(iso_detect) > 0) {
+      print('potential isotype controls detected: ')
       print(iso_detect)
     }
   }
@@ -148,5 +148,5 @@ DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, denoise.c
     return(ret_obj)
     } else {
       return(norm_adt)
-      }
+    }
 }
