@@ -1,0 +1,16 @@
+citHeader("To cite dsb in publications use:")
+
+citEntry(
+  entry    = "Article",
+  author   = personList(as.person("Matthew P. Mulè"),
+                        as.person("Andrew J. Martins"),
+                        as.person("John S. Tsang")),
+  title    = "Normalizing and denoising protein expression data from droplet-based single cell profiling",
+  journal  = "Biorxiv",
+  year     = 2021,
+  doi = "10.1101/2020.02.24.963603",
+  url      = "https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3",
+  textVersion = paste(
+  "Mulè and Martins et al. Normalizing and denoising protein expression data from droplet-based single cell profiling. Biorxiv (2021) [dsb]"
+  )
+)
