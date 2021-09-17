@@ -539,7 +539,7 @@ adt_plot = d %>%
 # make a combined plot 
 suppressMessages(library(ComplexHeatmap))
 # protein heatmap 
-prot_col = circlize::colorRamp2(breaks = seq(-10,30, by = 2), colors = viridis::viridis(n = 18, option = "B", end = 0.95))
+prot_col = circlize::colorRamp2(breaks = seq(-10,30, by = 2), colors = viridis::viridis(n = 21, option = "B", end = 0.95))
 p1 = Heatmap(t(adt_plot)[prots, ], name = "protein",col = prot_col, use_raster = T,
              row_names_gp = gpar(color = "black", fontsize = 5))
 
