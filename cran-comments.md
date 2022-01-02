@@ -8,6 +8,7 @@ Duration: 25.2s
 0 errors ✓ | 0 warnings ✓ | 0 notes ✓  
 
 ### devtools::check_win_release()  
+Status: 1 NOTE  
 License components with restrictions and base license permitting such:  
   BSD_3_clause + file LICENSE    
 **The license is unchanged from the previous accepted version of the package.**  
