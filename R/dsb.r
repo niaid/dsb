@@ -45,18 +45,16 @@
 #'
 #'# example III - return dsb internal stats used during denoising for each cell
 #'# returns a 2 element list - the normalized matrix and the internal stats
-#' dsb_object = dsb::DSBNormalizeProtein(
+#' dsb_output = dsb::DSBNormalizeProtein(
 #'    cell_protein_matrix = cells_citeseq_mtx,
 #'    empty_drop_matrix = empty_drop_matrix,
 #'    isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
 #'    return.stats = TRUE
 #' )
 #'
-#' # the dsb normalized matrix to be used in downstream analysis
-#' dsb_object$dsb_normalized_matrix
-#'
-#' # the internal dsb stats; can be examined for outliers see vignette FAQ
-#' dsb_object$dsb_stats
+#' # the dsb normalized matrix to be used in downstream analysis is dsb_output$dsb_normalized_matrix
+#' # protein level stats are in dsb_output$protein_stats
+#' # cell-level stats are in dsb_output$technical_stats
 #'
 DSBNormalizeProtein = function(cell_protein_matrix, empty_drop_matrix, denoise.counts = TRUE,
                                use.isotype.control = TRUE, isotype.control.name.vec = NULL,
