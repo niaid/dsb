@@ -1,3 +1,47 @@
+# dsb 0.3.0 
+
+### Enhancements  
+
+Additional error checking on input cell and background matrices:  
+ - stop if input matrix rows are not equivalent length https://github.com/niaid/dsb/issues/29
+ - stop if any names in input matrices are not equivalent  
+ - warn if the rows are not in the same order and reorder to match.  
+
+Improve warning and error messages for isotype control name matching issues.
+
+Advanced users can now examine protein (mean sd) and cell level stats to output if `return.stats = TRUE`. If `denoise.counts = FALSE`. The output includes protein level stats. If `denoise.counts = TRUE`, the output contains cell level stats including the dsb technical component and derivative variables used in step II.  
+
+dsb with full options specified: 
+
+```
+# full options: defined pseudocount, isotype controls, outlier clip, stats
+  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                               empty_drop_matrix = empty_drop_citeseq_mtx,
+                               define.pseudocount = TRUE,
+                               pseudocount.use = 5,
+                               use.isotype.control = TRUE,
+                               isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
+                                                          rownames(cells_citeseq_mtx), pattern = 'otyp')],
+                               quantile.clipping = TRUE,
+                               return.stats = TRUE
+  )
+  
+# normalized data 
+result$dsb_normalized_matrix
+
+# protein-level statistics
+result$protein_stats
+
+# cell-level statistics
+result$technical_stats
+
+
+```
+If `return.stats = FALSE`, the output is a R matrix equivalent to `result$dsb_normalized_matrix` above. 
+
+
+Add unit tests for changes.
+
 # dsb 0.2.0
 
 ### Enhancements  
