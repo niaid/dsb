@@ -39,7 +39,7 @@ DSBNormalizeProtein(
 \item{return.stats}{if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2 $dsb_stats is the internal stats used by dsb during denoising (the background mean, isotype control values, and the final dsb technical component that is regressed out of the counts)}
 }
 \value{
-The normalized ADT data are returned as a standard R "matrix" of cells (columns) by proteins (rows) that can be added to any Seurat, SingleCellExperiment or python anndata object - see vignette.
+Normalized ADT data are returned as a standard R "matrix" of cells (columns), proteins (rows) that can be added to Seurat, SingleCellExperiment or python anndata object - see vignette. If return.stats = TRUE, function returns a list: x$dsb_normalized_matrix normalized matrix, x$protein_stats are mean and sd of log transformed cell, background and the dsb normalized values (as list). x$technical_stats includes the dsb technical component value for each cell and each variable used to calculate the technical component.
 }
 \description{
 Normalize single cell antibody derived tag (ADT) protein data with the DSBNormalizeProtein function. This single function runs step I (ambient protein background correction) and step II (defining and removing cell to cell technical variation) of the dsb normalization method. See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
@@ -84,7 +84,6 @@ dsb_object$dsb_normalized_matrix
 
 # the internal dsb stats; can be examined for outliers see vignette FAQ
 dsb_object$dsb_stats
-
 
 }
 \author{

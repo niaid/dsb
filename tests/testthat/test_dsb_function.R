@@ -1,74 +1,79 @@
 # unit testing for dsb function
-context("testing dsb norm")
 library(testthat)
+context("testing dsb norm")
 
 testthat::test_that(desc = "run dsb on example data", code = {
-  # initialize
   set.seed(1)
-  isotype_names = c("Mouse IgG2bkIsotype_PROT", "MouseIgG1kappaisotype_PROT",
-                    "MouseIgG2akappaisotype_PROT","RatIgG2bkIsotype_PROT")
 
-  # test appropriate errors and warnings
-  # no isotype control name vector specified with use.isotype.control = TRUE
-  expect_error(
-    object = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                 empty_drop_matrix = empty_drop_citeseq_mtx,
-                                 denoise.counts = TRUE,
-                                 use.isotype.control = TRUE)
+  # test error handling
+  cell = dsb::cells_citeseq_mtx
+  empty = dsb::empty_drop_citeseq_mtx
 
-  )
-  # incorrectly specified isotype control names (not matching rownames of raw input matrix)
-  expect_error(
-    object = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                 empty_drop_matrix = empty_drop_citeseq_mtx,
-                                 denoise.counts = TRUE,
-                                 use.isotype.control = TRUE,
-                                 isotype.control.name.vec = c('incorrect_isotype1','RatIgG2bkIsotype_PROT' )
-                                 )
-  )
-  # error if return stats TRUE but no denoising step run
-  expect_error(
-    object = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                                 empty_drop_matrix = empty_drop_citeseq_mtx,
-                                 denoise.counts = FALSE, return.stats = TRUE)
-
-  )
-
-  # warn if isotypes not specified and denoising
-  expect_warning(
-    object = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
-                                 empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:100],
-                                 denoise.counts = TRUE, use.isotype.control = FALSE)
-      )
-
-  # test function runs with options specified for 100% code coverage
-  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
-                               empty_drop_matrix = empty_drop_citeseq_mtx,
-                               denoise.counts = FALSE,
-                               define.pseudocount = FALSE,
-                               use.isotype.control = FALSE)
-  # test result value
-  expect_gt(object = mean(rowMeans(result)), 1)
-
-  # test mu1 only denoising
-  tester = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:50],
-                                 empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:50],
-                                 denoise.counts = TRUE,
-                                 use.isotype.control = FALSE)
-
-  # test full options on data subset
-  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:400],
-                               empty_drop_matrix = empty_drop_citeseq_mtx[ ,1:400],
-                               define.pseudocount = TRUE,
-                               pseudocount.use = 0.5,
+  # test mis-specified isotypes
+  isotypes = rownames(cell)[grepl(x = rownames(cell), pattern = 'otyp')]
+  isotypes[2] = 'mis-specified_isotype'
+  testthat::expect_error(
+    norm = DSBNormalizeProtein(cell_protein_matrix = cell[ ,1:50],
+                               empty_drop_matrix = empty,
+                               # input mis specified isotype in function
                                use.isotype.control = TRUE,
-                               isotype.control.name.vec = isotype_names,
-                               return.stats = TRUE,
-                               quantile.clipping = TRUE)
+                               isotype.control.name.vec = isotypes)
+  )
 
-  # check stats return andcorrelaiton of technical component
-  dsb_stats = result$dsb_stats
-  result = result$dsb_normalized_matrix
-  # test vals
-  expect_gt(object = mean(rowMeans(result)), 1)
+  # test scrambled rownames
+  scramble_row = sample(rownames(empty),size = 87, replace = FALSE)
+  cell = cell[scramble_row, ]
+  testthat::expect_warning(
+    DSBNormalizeProtein(cell_protein_matrix = cell[ ,1:50],
+                        empty_drop_matrix = empty,
+                        use.isotype.control = FALSE)
+  )
+
+  #test mismatched rows
+  rownames(cell)[5] = 'wrong name'
+  testthat::expect_error(
+    norm = DSBNormalizeProtein(cell_protein_matrix = cell,
+                               empty_drop_matrix = empty,
+                               use.isotype.control = FALSE)
+  )
+
+  # test a missing row
+  cell = cell[-5, ]
+  testthat::expect_error(
+    norm = DSBNormalizeProtein(cell_protein_matrix = cell,
+                               empty_drop_matrix = empty,
+                               use.isotype.control = FALSE)
+  )
+
+  # test DSBNormalizeProtein without step II
+  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                               empty_drop_matrix = empty_drop_citeseq_mtx,
+                               denoise.counts = FALSE, use.isotype.control = FALSE)
+
+  # test output return value of function run on example data.
+  testthat::expect_gt(object = mean(rowMeans(result)), 1)
+
+  # test output dimensions of returned matrix
+  testthat::expect_equal(ncol(result), expected = 100)
+  testthat::expect_equal(nrow(result), expected = 87)
+
+  # test full options: defined pseudocount, isotype controls, outlier clip, stats
+  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                               empty_drop_matrix = empty_drop_citeseq_mtx,
+                               define.pseudocount = TRUE,
+                               pseudocount.use = 5,
+                               use.isotype.control = TRUE,
+                               isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(rownames(cells_citeseq_mtx), pattern = 'otyp')],
+                               quantile.clipping = TRUE,
+                               return.stats = TRUE
+  )
+  # test returned value is a list with return.stats = TRUE
+  testthat::expect_type(object = result, type = 'list')
+
+  # test returned matrix value and dimensions
+  normprot = result$dsb_normalized_matrix
+  testthat::expect_equal(ncol(normprot), expected = 100)
+  testthat::expect_equal(nrow(normprot), expected = 87)
+  testthat::expect_gt(object = mean(rowMeans(normprot)), 1)
+
 })

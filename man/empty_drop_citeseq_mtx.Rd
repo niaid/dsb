@@ -4,10 +4,12 @@
 \name{empty_drop_citeseq_mtx}
 \alias{empty_drop_citeseq_mtx}
 \title{small example CITE-seq protein dataset for 87 surface protein in 8005 empty droplets}
-\format{An R matrix, rows: 87 proteins, columns: 8005 empty droplets.
+\format{
+An R matrix, rows: 87 proteins, columns: 8005 empty droplets.
 \describe{
 \item{empty_drop_citeseq_mtx}{R matrix of empty / background droplets from a CITE-seq experiment. Negative drops were called on cell hashing data with Seurat's HTODemux function and cross referencing mRNA in droplets against patient genotypes with Demuxlet. Ambiguous drops, and with less than 80 unique mRNA were removed. This is used for robust estimation of the background distribution of each protein}
-}}
+}
+}
 \usage{
 empty_drop_citeseq_mtx
 }
