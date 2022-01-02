@@ -24,6 +24,10 @@ for details on the method and please cite the paper if you use dsb in
 your research or found the underlying noise modeling results in our
 paper helpful.
 
+Check the [news.md
+file](https://github.com/niaid/dsb/blob/master/NEWS.md) for recent
+updates.
+
 ## Table of Contents
 
 1.  [Background and motivation](#background_motivation)

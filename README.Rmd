@@ -13,7 +13,9 @@ dsb is available on *CRAN* [latest dsb release on CRAN](https://CRAN.R-project.o
 
 A workflow tutorial is provided below. See the vignette tab on the CRAN dsb site for full tutorial: [Using dsb to normalize single cell protein data: analysis workflow and integration with Seurat, Bioconductor and Scanpy](https://CRAN.R-project.org/package=dsb)
 
-See the [**preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3) for  details on the method and please cite the paper if you use dsb in your research or found the underlying noise modeling results in our paper helpful. 
+See the [**preprint**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3) for  details on the method and please cite the paper if you use dsb in your research or found the underlying noise modeling results in our paper helpful.  
+
+Check the [news.md file](https://github.com/niaid/dsb/blob/master/NEWS.md) for recent updates.  
 
 ## Table of Contents
 1. [Background and motivation](#background_motivation)
