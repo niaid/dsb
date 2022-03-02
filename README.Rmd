@@ -133,8 +133,7 @@ md = md[md$rna.size > 0 & md$prot.size > 0, ]
 **we now have 103,075 barcodes in `md` with RNA and protein data** only about 7,000 contain cells. With dsb we use a majority of this data instead of discarding everything except the cells.
 
 ## Step 3 Quality control cells and background droplets <a name="step3"></a>
-
-We next visualize the log library size (total reads) of mRNA and protein coloring values with MT gene proportion to see where in the distribution potentially low-quality, dying cells are, and where the highest density (number) of droplets are. We use this to subset the empty drops to narrow in on the major background distribution -- the area of high density in the leftmost plot. We can see in the 3rd plot from the left with cells colored by MT gene proportion that some empty drops as defined by Cell Ranger may be low-quality apoptotic cells (which have high MT gene content). It is likely inevitable to have some low quality cells in the ambient matrix but we can filter these out as well by setting upper and lower cutoffs on the background matrix library size. The Normalized values are robust to different background thresholds used, so long as one does not omit this major background population (See Supplementary Fig. 7 in the paper for more information). 
+We next visualize the log library size (total reads) of mRNA and protein. We coloring cells by MT gene proportion to identify potentially lysed / low quality cells (which have high MT gene content) and the location of the greatest density (the greatest number) of droplets. The leftmost plot shows the location of the major background distribution (the yellow area of high density / many empty droplets with ADT reads). We can see in the 3rd plot from the left with empty droplets colored by MT gene proportion that some may be low-quality apoptotic cells. We next set upper and lower cutoffs on the background matrix library size. The Normalized values are robust to different background thresholds used, so long as one does not omit this major background population (See Supplementary Fig. 7 in the paper for more information). 
 <img src="man/figures/drop_thresholds2.png" />
 
 ```{r, eval = FALSE}
@@ -213,16 +212,19 @@ background.adt.mtx = background.adt.mtx[!rownames(background.adt.mtx) == 'CD34_T
 
 ## Step 4 Normalize protein data with the DSBNormalizeProtein Function <a name="step4"></a>
 
-We are now ready to use dsb to normalize and denoise the ADTs. For data with isotype control proteins, set `denoise.counts = TRUE` and `use.isotype.control = TRUE` and provide a vector containing names of isotype control proteins (the rownames of the protein matrix that are isotype controls). For data without isotype controls, see the vignette section *Using dsb with data lacking isotype controls*. 
-
+We are now ready to use dsb to normalize and denoise the ADTs. For data with isotype control proteins, set `denoise.counts = TRUE` and `use.isotype.control = TRUE` and provide a vector containing names of isotype control proteins (the rownames of the protein matrix that are isotype controls). For data without isotype controls, see the additional vignettes on CRAN.
 ```{r, eval = FALSE}
-#normalize protein data for the cell containing droplets with the dsb method. 
-dsb_norm_prot = DSBNormalizeProtein(
-  cell_protein_matrix = cells_mtx_rawprot, 
-  empty_drop_matrix = negative_mtx_rawprot, 
+# define isotype controls 
+isotype.controls = c("IgG1_control_TotalSeqB", "IgG2a_control_TotalSeqB", 
+                     "IgG2b_control_TotalSeqB")
+
+# normalize and denoise with dsb with 
+cells.dsb.norm = DSBNormalizeProtein(
+  cell_protein_matrix = cell.adt.raw, 
+  empty_drop_matrix = background.adt.mtx, 
   denoise.counts = TRUE, 
   use.isotype.control = TRUE, 
-  isotype.control.name.vec = rownames(cells_mtx_rawprot)[29:31] 
+  isotype.control.name.vec = 
   )
 # note: normalization takes ~ 20 seconds
 # system.time()
@@ -269,8 +271,8 @@ s = Seurat::CreateSeuratObject(counts = cell.rna.raw,
                                assay = "RNA", 
                                min.cells = 20)
 
-# add dsb normalized matrix "dsb_norm_prot" to the "CITE" data (not counts!) slot
-s[["CITE"]] = Seurat::CreateAssayObject(data = cell.adt.dsb)
+# add dsb normalized matrix "cells.dsb.norm" to the "CITE" data (not counts!) slot
+s[["CITE"]] = Seurat::CreateAssayObject(data = cells.dsb.norm)
 
 
 
@@ -313,6 +315,7 @@ To see if we recovered the expected cell populations, it is often more informati
 
 dsb values are interpretable as the number of standard deviations of each protein from the expected noise with additional correction for cell to cell technical variations.  
 ```{r, eval = FALSE}
+library(magrittr)
 # calculate the median protein expression separately for each cluster 
 adt_plot = d %>% 
   dplyr::group_by(CITE_snn_res.1) %>% 
@@ -418,7 +421,10 @@ vf = VariableFeatures(s,assay = "RNA")
 Idents(s) = "dsb_knn_res.1.5"
 DefaultAssay(s)  = "RNA"
 rnade = FindAllMarkers(s, features = vf, only.pos = TRUE)
-gene_plot = rnade %>% filter(avg_log2FC > 1 ) %>%  group_by(cluster) %>% top_n(3) %$% gene %>% unique 
+gene_plot = rnade %>% 
+  dplyr::filter(avg_log2FC > 1 ) %>%  
+  dplyr::group_by(cluster) %>% 
+  dplyr::top_n(3) %$% gene %>% unique 
 
 s@meta.data$celltype_subcluster = paste(s@meta.data$celltype, s@meta.data$dsb_knn_res.1.5)
 
