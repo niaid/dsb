@@ -50,6 +50,27 @@ testthat::test_that(desc = "run dsb on example data", code = {
                                empty_drop_matrix = empty_drop_citeseq_mtx,
                                denoise.counts = FALSE, use.isotype.control = FALSE)
 
+  # test non default scaling
+  r2 =
+    DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                         empty_drop_matrix = empty_drop_citeseq_mtx,
+                         define.pseudocount = TRUE,
+                         pseudocount.use = 5,
+                         use.isotype.control = TRUE,
+                         isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
+                           rownames(cells_citeseq_mtx), pattern = 'otyp')],
+                         quantile.clipping = TRUE, scale.factor = 'mean.subtract',
+                         return.stats = FALSE)
+  r2mean = mean(rowMeans(r2))
+  testthat::expect_lt(object = r2mean, 1)
+
+  # test mis-specified non-default scaling
+  testthat::expect_error(
+      DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                          empty_drop_matrix = empty_drop_citeseq_mtx,
+                          scale.factor = 'not.an.option')
+  )
+
   # test output return value of function run on example data.
   testthat::expect_gt(object = mean(rowMeans(result)), 1)
 
