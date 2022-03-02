@@ -1,0 +1,323 @@
+---
+title: "topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"
+output: 
+  rmarkdown::html_vignette:
+  toc: true
+theme: united
+author: Matt Mulè
+vignette: >
+  %\VignetteIndexEntry{topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+This vignette provides additional information on dsb for the topics below:  
+
+1. [Integrating dsb with Bioconductor](#bioconductor)
+2. [Integrating dsb with python/Scanpy](#scanpy)
+3. [Using dsb with data lacking isotype controls](#noisotype) 
+4. [Integrating dsb with sample multiplexing experiments](#multiplexing)
+5. [advanced usage - return internal stats used by dsb](#advanced)  
+5. [outlier clipping with the quantile.clipping argument](#outliers)
+6. [using a different background scaling method](#scale)  
+7. [Frequently Asked Questions](#faq)
+
+## Integrating dsb with Bioconductor <a name="bioconductor"></a>  
+
+Rather than Seurat you may wish to use the SingleCellExperiment class to use Bioconductor packages. To use Bioconductor's semantics, we store raw protein values in an 'alternative Experiment' in a SingleCellExperiment object containing RNA counts. 
+```{r, eval=FALSE}
+suppressMessages(library(SingleCellExperiment))
+sce = SingleCellExperiment(assays = list(counts = cell.rna.raw), colData = cellmd)
+# define the dsb normalized values as logcounts to use a common SingleCellExperiment / Bioconductor convention
+adt = SummarizedExperiment(
+  assays = list(
+    'counts' = as.matrix(cell.adt.raw),
+    'logcounts' = as.matrix(cell.adt.dsb)
+    )
+  )
+altExp(sce, "CITE") = adt
+```
+  
+## Using dsb in Python <a name="scanpy"></a>
+
+NEW: Python users are encouraged to checkout the `muon` python multimodal framework to use dsb from within python
+[about muon](https://muon.readthedocs.io/en/latest/index.html)
+[dsb wrapper for python in muon](https://muon.readthedocs.io/en/latest/omics/citeseq.html)
+
+dsb is available directly from within muon, for example see the snippet below from muon documentation
+```{python, eval = FALSE}
+import numpy as np
+import pandas as pd
+import scanpy as sc
+import muon as mu
+from muon import prot as pt
+# see muon documentation for example and data
+mdata = mu.read_10x_mtx(os.path.join(data_dir, "filtered_feature_bc_matrix"))
+mdata_raw = mu.read_10x_mtx(os.path.join(data_dir, "raw_feature_bc_matrix"))
+prot = mdata.mod['prot']
+pt.pp.dsb(mdata, raw=mdata_raw, empty_droplets=droplets)
+isotypes = mdata_raw['prot'].var_names[29:32].values isotypes
+pt.pp.dsb(mdata, mdata_raw, empty_counts_range=(1.5, 2.8), isotype_controls=isotypes, random_state=1)
+```
+
+
+You can also use dsb normalized values with the AnnData class in Python by using reticulate to create the AnnData object from dsb denoised and normalized protein values as well as raw RNA data. Anndata are not structured as separate assays; we therefore need to merge the RNA and protein data -- this is a shortcoming that muon solves so users are again encouraged to use muon. See the current [Scanpy CITE-seq workflow](https://scanpy-tutorials.readthedocs.io/en/latest/cite-seq/pbmc5k.html) and more on [interoperability between Scanpy Bioconductor and Seurat](https://theislab.github.io/scanpy-in-R/)  
+
+```{r, eval = FALSE}
+library(reticulate); sc = import("scanpy")
+
+# merge dsb-normalized protein and raw RNA data 
+combined_dat = rbind(cell.rna.raw, cell.adt.dsb)
+s[["combined_data"]] = CreateAssayObject(data = combined_dat)
+
+# create Anndata Object 
+adata_seurat = sc$AnnData(
+    X   = t(GetAssayData(s,assay = "combined_data")),
+    obs = seurat@meta.data,
+    var = GetAssay(seurat)[[]]
+    )
+```
+
+## Using dsb with data lacking isotype controls <a name="noisotype"></a> 
+
+If isotype controls are not included, you can run dsb correcting ambient background without cell denoising. We only recommend setting `denoise.counts = FALSE` if isotype controls were not included in the experiment which results in *not* defining the technical component of each cell's protein library. The values of the normalized matrix returned are the number of standard deviations above the expected ambient noise captured by empty droplets.   
+
+
+```{r, eval = FALSE}
+# suggested workflow if isotype controls are not included 
+dsb_rescaled = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
+                                   empty_drop_matrix = empty_drop_citeseq_mtx, 
+                                   # do not denoise each cell's technical component
+                                   denoise.counts = FALSE)
+```
+
+We strongly recommend using isotype controls, however if these are not available, the background mean for each cell inferred via a per-cell gaussian mixture model (µ1) can theoretically be used alone to define the cell's technical component, however this assumes the background mean has no expected biological variation. In our data the background mean had weak but significant correlation with the foreground mean (µ2) across single cells (see the paper). Isotype controls anchor the component of the background mean associated with noise. 
+
+```{r, eval = FALSE}
+
+dsb_rescaled = dsb::DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx,
+                                        empty_drop_matrix = empty_drop_citeseq_mtx, 
+                                        # denoise with background mean only 
+                                        denoise.counts = TRUE, 
+                                        use.isotype.control = FALSE)
+
+```
+
+## Using dsb with sample multiplexing experiments <a name="multiplexing"></a>
+In multiplexing experiments with cell superloading, demultiplexing functions define a "negative" cell population which can then be used to define background droplets for dsb. 
+Multiplexing / Demultiplexing methods and functions compatible with dsb:  
+[HTODemux (Seurat)](https://satijalab.org/seurat/v3.1/hashing_vignette.html)   
+[deMULTIplex (Multiseq)](https://github.com/chris-mcginnis-ucsf/MULTI-seq)  
+[demuxlet](https://github.com/statgen/demuxlet)  
+
+In our data, dsb normalized values were nearly identically distributed when dsb was run with background defined by demultiplexing functions or protein library size (see the paper). 
+
+Note-- we must load the **raw** output from cell ranger! This is essential; the filtered output are the cells estimated by Cell Ranger. there is not sufficient background in the filtered output for demultiplexing functions like `HTODemux` which need a negative population and that's the population of droplets needed by dsb to estimate the ambient component. A good way to use demultiplexing with dsb and improve your demultiplexing calls is to use the `min.genes` argument in the `Seurat::Read10X` function to partially threshold out some background drops yet still retain sufficient (often > 80,000 droplets per 10X lane depending on experiment) from which to estimate the background. This balances memory strain when demultiplexing tens of thousands of cells with requirements of the `Seurat::HTODemux` function to have sufficient empty drops to estimate the background population of each Hash antibody. **Increasing the number of drops used in demultiplexing will result in more droplets defined by the function as "negative" which can increase the confidence in the estimate of background used by dsb**  
+
+```{r, eval=FALSE}
+# raw = Read10X see above -- path to cell ranger outs/raw_feature_bc_matrix ; 
+
+# partial thresholding to slightly subset negative drops include all with 5 unique mRNAs
+seurat_object = CreateSeuratObject(raw, min.genes = 5)
+
+# demultiplex (positive.quantile can be tuned to dataset depending on size)
+seurat_object = HTODemux(seurat_object, assay = "HTO", positive.quantile = 0.99)
+Idents(seurat_object) = "HTO_classification.global"
+
+# subset empty drop/background and cells 
+neg_object = subset(seurat_object, idents = "Negative")
+singlet_object = subset(seurat_object, idents = "Singlet")
+
+## (QC the negative object to filter out cells with high RNA content)
+# quick example below, different crteria can be used
+# this step depends on dataset; see main vignette for more principled filtering 
+neg_object = subset(seurat_object, idents = "Negative", nGene < 80)
+
+
+# non sparse CITEseq data store more efficiently in a regular matrix
+neg_adt_matrix = GetAssayData(neg_object, assay = "CITE", slot = 'counts') %>% as.matrix()
+positive_adt_matrix = GetAssayData(singlet_object, assay = "CITE", slot = 'counts') %>% as.matrix()
+
+# normalize the data with dsb
+dsb_norm_prot = DSBNormalizeProtein(
+                           cell_protein_matrix = cells_mtx_rawprot,
+                           empty_drop_matrix = negative_mtx_rawprot,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
+                           isotype.control.name.vec = rownames(cells_mtx_rawprot)[30:32])
+
+# now add the normalized dat back to the object (the singlets defined above as "object")
+singlet_object[["CITE"]] = CreateAssayObject(data = dsb_norm_prot)
+
+# proceed with same tutorial workflow shown above. 
+```
+
+## Advanced usage - return internal stats used by dsb <a name="advanced"></a>
+
+If you want to look at internal stats calculated by dsb you can do so by setting `return.stats = TRUE`.   
+
+```{r}
+library(dsb)
+result.list = 
+  DSBNormalizeProtein(
+    cell_protein_matrix = cells_citeseq_mtx[ ,1:50], 
+    empty_drop_matrix = empty_drop_citeseq_mtx, 
+    denoise.counts = TRUE, 
+    use.isotype.control = TRUE, 
+    isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70], 
+    return.stats = TRUE
+  )
+
+```
+
+
+The results are provided as a list 
+```{r}
+names(result.list)
+```
+
+Different protein level stats available: 
+
+```{r}
+names(result.list$protein_stats)
+```
+
+We can extract the dsb technical component from this list for example:   
+```{r}
+result.list$technical_stats %>% head 
+```
+
+
+## outlier clipping with the quantile.clipping argument  <a name="outliers"></a>  
+
+By default setting `quanitle.clipping = TRUE` sets cells values for a given protein above the 99.95th percentile or below the 0.1 percentile of that protein's expression to be thees quantile values. That value is optimized to remove a few high and low magnitude outliers but can be set to adapt to the number of cells in the dataset. 
+```{r, eval = FALSE}
+dsb_norm_prot = DSBNormalizeProtein(
+                           cell_protein_matrix = cells_citeseq_mtx,
+                           empty_drop_matrix = empty_drop_citeseq_mtx,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
+                           isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
+                           # implement Quantile clipping 
+                           quantile.clipping = TRUE
+                           # high and low otlier quantile across proteins to clip
+                           # the `quantile.clip` parameter can be adjusted: 
+                           quantile.clip = c(0.001, 0.9995) 
+                           )
+```
+
+
+## Using a different background scaling method <a name="scale"></a>  
+
+To enable subtraction of the ambient background mean without dividing by the ambient background standard deviation, one can set `scale.factor = 'mean.subtract'`. This method may be more appropriate for datasets staining with very large panels with lowly titrated antibodies. Can be used if the range of values for some proteins looks vary large or if minimal background detected.  
+
+```{r, eval = FALSE}
+
+dsb_norm_prot = DSBNormalizeProtein(
+                           cell_protein_matrix = cells_citeseq_mtx,
+                           empty_drop_matrix = empty_drop_citeseq_mtx,
+                           denoise.counts = TRUE,
+                           use.isotype.control = TRUE,
+                           isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
+                           quantile.clipping = TRUE,
+                           scale.factor = 'mean.subtract'
+                           )
+
+```
+
+
+
+## Frequently Asked Questions <a name="faq"></a>
+
+**I get the error "Error in quantile.default(x, seq(from = 0, to = 1, length = n)): missing values and NaN's not allowed if 'na.rm' is FALSE" What should I do?**
+ -  This error occurs during denoising, (denoise = TRUE) when you have antibodies with 0 counts or close to 0 across *all cells*. To get rid of this error, check the distributions of the antibodies with e.g. `apply(cells_protein_matrix, 1, quantile)` to find the protein(s) with basically no counts, then remove these from BOTH the empty drops and the cells. Please refer to these links:  
+https://github.com/niaid/dsb/issues/6  
+https://github.com/niaid/dsb/issues/26  
+
+**I am getting a memory limit error when I use dsb**  
+This is likely becaues you are using too many barcodes in the negative population--please follow the vignette; if you are using Cell Ranger counts the raw barcode matrix is all the theoretical barcides, you need to narrow in on the barcodes for which you have empty drops that captured ADT and cell containing droplets. 
+ 
+**I get a "problem too large or memory exhausted error when I try to convert to a regular R matrix**
+ - See above and see issue 10 on the dsb github. CITE-seq protein counts don't need a sparse representation-very likely this error is because there are too many negative droplets defined (i.e. over 1 million). You should be able to normalize datasets with 100,000+ cells and similar numbers of negative droplets (or less) on a normal 16GB laptop. By further narrowing in on the major background distribution, one should be able to convert the cells and background to a normal R matrix which should run successfully.  
+https://github.com/niaid/dsb/issues/10  
+
+**the range of dsb normalized values is large is this normal?**
+In nearly all cases encountered thus far, the large range of values for a protein (e.g. ranging from -50 to 50) are caused by just a few outlier cells, most often a few cells with low negative values for the protein. We have now provided a quantile clipping option in dsb to address these outlier cells. Users can also investigate these cells to see if they have very high values for isotype control proteins and they can possibly be removed from the dataset.
+https://github.com/niaid/dsb/issues/22  
+https://github.com/niaid/dsb/issues/9  
+
+### check for outliers in dsb normalized values 
+```{r, eval = FALSE}
+# find outliers 
+pheatmap::pheatmap(apply(dsb_norm_prot, 1, function(x){
+  quantile(x,c(0.9999, 0.99, 0.98, 0.95, 0.0001, 0.01, 0.1))
+  }))
+
+```
+
+We can address this by clipping the max and min values as above in the quantile clipping section.  
+
+**What are the minimum number of proteins required to use dsb**
+dsb is compatible with datasets with any number of proteins with step I alone. To remove ambient background noise simply set `denoise.counts = FALSE`. We have validated the algorithm assumptions on datasets with 14 phenotyping antibodies and 3 isotype controls. With less proteins than this, we recommend users return the internal stats calculated by dsb and check correlations of the variables as shown below. If these values are reasonably correlated, it indicates the model assumptions of dsb could be valid. 
+
+```{r, eval=FALSE}
+
+dsb_object = DSBNormalizeProtein(cell_protein_matrix = dsb::cells_citeseq_mtx, 
+                                 empty_drop_matrix = dsb::empty_drop_citeseq_mtx,
+                                 denoise.counts = TRUE, 
+                                 isotype.control.name.vec = rownames(dsb::cells_citeseq_mtx)[67:70], 
+                                 return.stats = TRUE)
+d = as.data.frame(dsb_object$dsb_stats)
+
+# test correlation of background mean with the inferred dsb technical component 
+cor(d$cellwise_background_mean, d$dsb_technical_component)
+
+# test average isotype control value correlation with the background mean 
+isotype_names = rownames(dsb::cells_citeseq_mtx)[67:70]
+cor(rowMeans(d[,isotype_names]), d$cellwise_background_mean)
+
+```
+
+**How do I know whether I should set the denoise.counts argument to TRUE vs FALSE?**  
+In the vast majority of cases we recommend setting `denoise.counts = TRUE` and `use.isotype.control = TRUE` (this is the package default). The only reason not to use this argument is if the model assumptions used to define the technical component are not expected to be met by the particular experiment: with `denoise.counts = TRUE` dsb models the negative protein population (µ1) for each cell with a two-component Gaussian mixture, making the conservative assumption that cells in the experiment should be negative for a subset of the measured proteins. If you expect all cells in your experiment be positive for all of the proteins measured, this may not be an optimal assumption. Model assumptions were validated on datasets measuring less than 20 to more than 200 proteins. 
+
+**I have multiple "lanes" of 10X data from the same pool of cells, how should I run the workflow above?**
+
+Droplets derived from the same pool of stained cells partitioned across multiple lanes should ideally be normalized together, though pooling background droplets derived from independent staining reactions may still produce good results if the same staining panel was used with the same experimental conditions. To do this, you should merge the raw output of each lane, then run step 1 in the workflow-note that since the cell barcode names are the same for each lane in the raw output, you need to add a string to each barcode to identify the lane of origin to make the barcodes have unique names; here is one way to do that: First, add each 10X lane *raw* output from Cell Ranger into a separate directory in a folder "data"  
+data.  
+|_10xlane1  
+&nbsp;&nbsp;|_outs  
+&nbsp;&nbsp;&nbsp;&nbsp;|_raw_feature_bc_matrix  
+|_10xlane2  
+&nbsp;&nbsp;|_outs    
+&nbsp;&nbsp;&nbsp;&nbsp;|_raw_feature_bc_matrix  
+
+```{r, eval = FALSE}
+library(Seurat) # for Read10X helper function
+
+# path_to_reads = here("data/")
+umi.files = list.files(path_to_reads, full.names=T, pattern = "10x" )
+umi.list = lapply(umi.files, function(x) Read10X(data.dir = paste0(x,"/outs/raw_feature_bc_matrix/")))
+prot = rna = list()
+for (i in 1:length(umi.list)) {
+  prot[[i]] = umi.list[[i]]`Antibody Capture`
+  rna[[i]] = umi.list[[i]]`Gene Expression`
+  colnames(prot[[i]]) = paste0(colnames(prot[[i]]),"_", i )
+  colnames(rna[[i]]) = paste0(colnames(rna[[i]]),"_", i )
+}  
+prot = do.call(cbind, prot)
+rna = do.call(cbind, rna)
+# proceed with step 1 in tutorial - define background and cell containing drops for dsb
+
+```
+
+**I have 2 batches, should I combine them into a single batch or normalize each batch separately?**
+ - (See issue 12 on the dsb github) How much batch variation there is depends on how much experiment-specific and expected biological variability there is between the batches. In the dataset used in the preprint, if we normalized with all background drops and cells in a single normalization, the resulting dsb normalized values were highly concordant with when we normalized each batch separately, this held true with either definition of background drops used (i.e. based on thresholding with the library size or based on hashing-see below). One could try both and see which mitigates the batch variation the most. See https://github.com/niaid/dsb/issues/12 for example code. If there are significant batch to batch variations from an experiment with the same antobidy panel on the same type of cells, we recommend starting out with simple linear model based correction with limma as a starting point (type ?limma::removeBatchEffect into R console for more information).
+
+
