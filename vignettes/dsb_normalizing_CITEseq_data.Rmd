@@ -282,39 +282,6 @@ s = Seurat::CreateSeuratObject(counts = cell.rna.raw,
 # add dsb normalized matrix "cell.adt.dsb" to the "CITE" data (not counts!) slot
 s[["CITE"]] = Seurat::CreateAssayObject(data = cells.dsb.norm)
 
-
-
-```
-
-
-We can annotate cell type based on median dsb normalized protein level per cluster, e.g.
-```{r, eval = FALSE}
-clusters = c(0:13)
-celltype = c("CD4_Tcell_Memory", # 0 
-             "CD14_Monocytes", #1
-             "CD14_Monocytes_Activated", #2
-             "CD4_Naive_Tcell", #3
-             "B_Cells", #4
-             "NK_Cells", #5
-             "CD4_Naive_Tcell_CD62L+", #6
-             "CD8_Memory_Tcell", #7
-             "DC", #8
-             "CD8_Naive_Tcell", #9
-             "CD4_Effector", #10
-             "CD16_Monocyte", #11
-             "DOUBLETS", #12
-             "DoubleNegative_Tcell" #13
-)
-
-s@meta.data$celltype = plyr::mapvalues(
-  x = s@meta.data$CITE_snn_res.1, 
-  from = clusters,  to = celltype
-  )
-
-# # optional -- any dimensionality reduction plot 
-# Seurat::DimPlot(s, reduction = 'umap', group.by = 'celltype',
-#               label = TRUE, repel = TRUE, label.size = 2.5, pt.size = 0.1) + 
-#   theme_bw() + NoLegend() + ggtitle('dsb normalized protein')
 ```
 
 ## Clustering cells based on dsb normalized protein using Seurat  <a name="seurat_clustering"></a>

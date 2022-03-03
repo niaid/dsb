@@ -332,7 +332,7 @@ cells.dsb.norm = DSBNormalizeProtein(
 
 The function returns a matrix of normalized protein values which can be
 integrated with any single cell analysis software. We provide an example
-with Seurat, Bioconductor and Scanpy below.
+with Seurat below.
 
 Advanced users may want to examine internal stats used in dsb, in that
 case use `return.stats = TRUE`. If the range of values after
@@ -583,9 +583,7 @@ dat_plot = d %>%
 
 With the aggregated data above we can make a joint heatmap of protein
 expression and mRNA expression. Below we visualize protein levels on the
-dsb scale that we used to cluster the cells. We visualize relative mRNA
-expression as a z score like the default Seurat `DoHeatmap` to visualize
-relative expression of marker genes for each cluster.
+dsb scale that we used to cluster the cells.
 
 ``` r
 # make a combined plot 

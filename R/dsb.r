@@ -160,7 +160,7 @@ DSBNormalizeProtein = function(cell_protein_matrix,
       '`use.isotype.control` = FALSE is not recommended if setting `denoise.counts` = TRUE',
       ' \nwhen isotype controls are available.\n If data include isotype controls',
       ' set `denoise.counts` = TRUE `use.isotype.control` = TRUE',
-      ' \nand set `isotype.control.name.vec` to a vector of isotype control rownames'
+      ' \and set `isotype.control.name.vec` to a vector of isotype control rownames'
     ))
     if (length(iso_detect) > 0) {
       print('potential isotype controls detected: ')

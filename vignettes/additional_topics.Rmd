@@ -14,7 +14,8 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>", 
+  eval = FALSE
 )
 ```
 This vignette provides additional information on dsb for the topics below:  
@@ -51,7 +52,7 @@ NEW: Python users are encouraged to checkout the `muon` python multimodal framew
 [dsb wrapper for python in muon](https://muon.readthedocs.io/en/latest/omics/citeseq.html)
 
 dsb is available directly from within muon, for example see the snippet below from muon documentation
-```{python, eval = FALSE}
+```{python, eval = FALSE, python.reticulate = FALSE}
 import numpy as np
 import pandas as pd
 import scanpy as sc
