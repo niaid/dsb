@@ -23,9 +23,8 @@ The purpose of this document is for users interested in the underlying model wor
 ```{r}
 suppressMessages(library(mclust))
 suppressMessages(library(magrittr))
-suppressMessages(library(tidyverse))
+suppressMessages(library(ggplot2))
 library(dsb) 
-r = 'deepskyblue3'
 ```
 
 ### Load example package data  
@@ -75,6 +74,7 @@ Below we view the distribution of ambient corrected data compared to a simple lo
 
 ```{r, fig.width=8, fig.height=3.5} 
 # check structure of denoised data with zero centering of background population 
+r = 'deepskyblue3'
 plist = list(theme_bw(), geom_density_2d(color = r), 
              geom_vline(xintercept = 0, linetype = 'dashed'),
              geom_hline(yintercept = 0, linetype = 'dashed'),

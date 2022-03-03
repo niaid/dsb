@@ -1,5 +1,5 @@
 ---
-title: "topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"
+title: "Additional Topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"
 output: 
   rmarkdown::html_vignette:
   toc: true
