@@ -353,6 +353,7 @@ cell.adt.dsb.2 = DSBNormalizeProtein(
   isotype.control.name.vec = rownames(cell.adt.raw)[29:31],
   define.pseudocount = TRUE,
   pseudocount.use = 1,
+  scale.factor = 'mean_subtract',
   quantile.clipping = TRUE,
   quantile.clip = c(0.01, 0.99), 
   return.stats = TRUE
@@ -424,8 +425,12 @@ trying to look at cells in 2-d visualization plots like umap.
 ## dsb derived cluster interpretation <a name="interpretation"></a>
 
 dsb values are interpretable as the number of standard deviations of
-each protein from the expected noise with additional correction for cell
-to cell technical variations.
+each protein from the expected noise (if using the default settings)
+with additional correction for cell to cell technical variations. One
+can use this to set a threshold across all proteins for positivity,
+e.g. expression below 3 or 4 can be deemed unexpressed. If normalized
+with the same parameters from dsb, the same threshold can be applied
+across multiple datasets.
 
 ``` r
 library(magrittr)
@@ -587,14 +592,14 @@ relative expression of marker genes for each cluster.
 suppressMessages(library(ComplexHeatmap)); ht_opt$message = FALSE
 
 # protein heatmap 
-prot_col = circlize::colorRamp2(breaks = seq(-5,30, by = 5), 
-                                colors = viridis::viridis(n = 8, option = "B"))
+prot_col = circlize::colorRamp2(breaks = seq(-1,25, by = 1), 
+                                colors = viridis::viridis(n = 27, option = "B"))
 p1 = Heatmap(t(dat_plot)[prots, ], 
              name = "protein", 
              col = prot_col, 
              use_raster = T,
              row_names_gp = gpar(color = "black", fontsize = 5)
-             )
+)
 
 
 # mRNA heatmap 
