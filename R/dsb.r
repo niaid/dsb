@@ -9,7 +9,7 @@
 #' @param empty_drop_matrix Raw empty droplet / background ADT UMI count data used for background correction
 #' with Cells - columns and Proteins (ADTs) - rows. This can easily be defined from the raw_feature_bc_matrix
 #' output from Cell Ranger or other alignment tools such as kallisto and Cite-Seq-Count. See vignette.
-#' @param scale.factor one of `standardize` or `mean_subtract`.
+#' @param scale.factor one of `standardize` or `mean.subtract`.
 #' The recommended default `standardize` subtracts from the cells the the background droplet matrix mean and
 #' divides by the background matrix standard deviation. Values for each protein with this method are
 #' interpretable as the number of standard deviations from the mean of the protein background distribution.
@@ -27,7 +27,7 @@
 #' @param quantile.clipping FALSE (default), if outliers or a large range of values for some proteins are observed
 #'  (e.g. -50 to 50) these are often from rare outlier cells. re-running the function with `quantile.clipping = TRUE`
 #'  will adjust by applying 0.001 and 0.998th quantile value clipping to trim values to those max and min values. If
-#'  range of normalized values are still very broad and high (e.g. above 40) try setting `scale.factor = mean_subtract`.
+#'  range of normalized values are still very broad and high (e.g. above 40) try setting `scale.factor = mean.subtract`.
 #' @param quantile.clip if `quantile.clipping = TRUE`, a vector of the lowest and highest quantiles to clip. These can
 #'  be tuned to the dataset size. The default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.
 #' @param return.stats if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2
@@ -92,7 +92,7 @@ DSBNormalizeProtein = function(cell_protein_matrix,
                                pseudocount.use,
                                quantile.clipping = FALSE,
                                quantile.clip = c(0.001, 0.9995),
-                               scale.factor = c('standardize', 'mean_subtract')[1],
+                               scale.factor = c('standardize', 'mean.subtract')[1],
                                return.stats = FALSE){
   # input formatting checks:
   a = isotype.control.name.vec
