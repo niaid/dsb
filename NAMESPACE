@@ -2,6 +2,7 @@
 
 export("%>%")
 export(DSBNormalizeProtein)
+export(ModelNegativeADTnorm)
 importFrom(limma,removeBatchEffect)
 importFrom(magrittr,"%>%")
 importFrom(mclust,Mclust)

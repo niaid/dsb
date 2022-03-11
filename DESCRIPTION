@@ -1,7 +1,7 @@
 Package: dsb
 Type: Package
 Title: Normalize & Denoise Droplet Single Cell Protein Data (CITE-Seq)
-Version: 0.0.3
+Version: 1.0.0
 Authors@R: 
     c(person(given = "Matthew",
              family = "Mulè",
