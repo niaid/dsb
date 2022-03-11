@@ -94,12 +94,17 @@ DSBNormalizeProtein = function(cell_protein_matrix,
                                quantile.clip = c(0.001, 0.9995),
                                scale.factor = c('standardize', 'mean.subtract')[1],
                                return.stats = FALSE){
-  # input formatting checks:
+  # background matrix detect
+  if (is.null(empty_drop_matrix)) {
+    stop(paste0('to use DSBNormalizeProtein specify `empty_drop_matrix`',
+                'to normalize ADT data without using empty droplets use',
+                'the function `ModelNegativeADTnorm`'))
+  }
+
   a = isotype.control.name.vec
   b = rownames(empty_drop_matrix)
   cm = rownames(cell_protein_matrix)
 
-  # detect unequal rows (ADT) and parse through possible reasons with specific error messages:
   # formatting checks conditional on input matrices  {{
   if (!isTRUE(all.equal(cm, b))){
     diff = c(setdiff(cm, b), setdiff(b, cm))
@@ -126,13 +131,14 @@ DSBNormalizeProtein = function(cell_protein_matrix,
 
   ### dsb Step II argument checks
   # try to detect isotypes and suggest usage in error messages
-  iso_detect = cm[grepl(pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
+  iso_detect = cm[grepl(
+    pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
 
   # isotype.control.name.vec specified but some isotypes are not in input matrices
   if (!is.null(a) & !isTRUE(all(a %in% b)) & !isTRUE(all(a %in% cm))){
     stop(paste0("some elements of isotype.control.name.vec are not in input data rownames: \n",
-                'cell_protein_matrix - ', setdiff(a,b),
-                ' \nempty_drop_matrix - ', setdiff(a,cm))
+                'cell_protein_matrix - ', setdiff(a,cm),
+                ' \nempty_drop_matrix - ', setdiff(a,b))
     )
   }
   # step II = FALSE - remind user isotypes unused. set isotype-related args to FALSE, NULL
@@ -167,7 +173,7 @@ DSBNormalizeProtein = function(cell_protein_matrix,
       print(iso_detect)
     }
   }
-  # Create norm_adt
+  # STEP I
   # if matrices are dgTMatrix coerce into regular matrix
   adt = cell_protein_matrix %>% as.matrix()
   adtu = empty_drop_matrix %>% as.matrix()
@@ -183,14 +189,25 @@ DSBNormalizeProtein = function(cell_protein_matrix,
   mu_u = apply(adtu_log, 1 , mean)
   sd_u = apply(adtu_log, 1 , sd)
   if (scale.factor == 'standardize') {
+    # print low sd proteins
+    if (any(sd_u < 0.05)) {
+      print(paste0('some proteins with low background variance detected',
+                   ' check raw and normalized distributions. ',
+                   ' protein stats can be returned with return.stats = TRUE'
+      ))
+      print(names(which(sd_u<0.05)))
+    }
+    # standardize
     norm_adt = apply(adt_log, 2, function(x) (x  - mu_u) / sd_u)
   }
   if(scale.factor == 'mean.subtract'){
     norm_adt = apply(adt_log, 2, function(x) (x  - mu_u))
   }
+  # STEP II
   # dsb step II calculate dsb technical component and regress out of ambient corrected values
   if(isTRUE(denoise.counts)){
-    print(paste0('calculating dsb technical component for each cell to remove cell to cell technical noise'))
+    print(paste0('fitting models to each cell for dsb technical component and',
+                 ' removing cell to cell technical noise'))
     cellwise_background_mean = apply(norm_adt, 2, function(x) {
       g = mclust::Mclust(x, G=2, warn = FALSE, verbose = FALSE)
       return(g$parameters$mean[1])
