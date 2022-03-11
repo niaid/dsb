@@ -1,5 +1,5 @@
 ---
-title: "Understanding how the dsb method works"
+title: "Understanding how the dsb method works" 
 output: 
   rmarkdown::html_vignette:
   toc: true
@@ -286,7 +286,6 @@ denoised_adt = limma::removeBatchEffect(norm_adt, covariates = dsb.technical.com
 We can confirm these steps above are equivalent to what is output from the dsb function. 
 
 ```{r}
-library(dsb)
 # default dsb call 
 denoised_adt_3 = DSBNormalizeProtein(cell_protein_matrix = cell, 
                                      empty_drop_matrix = neg, 
@@ -295,13 +294,7 @@ denoised_adt_3 = DSBNormalizeProtein(cell_protein_matrix = cell,
 
 ```
 
-```{r}
-# check these are the same: 
-all.equal(denoised_adt, denoised_adt_2, denoised_adt_3)
-# [1] TRUE
-
-```
-
+You can confirm that these are all the same `all.equal(denoised_adt, denoised_adt_2, denoised_adt_3)`
 
 ### How can I interpret the dsb values?  
 
@@ -318,6 +311,5 @@ qplot(as.data.frame(t(denoised_adt))$CD3_PROT,
   geom_vline(xintercept = 3.5, color = 'red') +
   geom_hline(yintercept = 3.5, color = 'red')
   
-
 ```
 
