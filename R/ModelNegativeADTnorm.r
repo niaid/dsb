@@ -86,9 +86,8 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
   # isotype.control.name.vec specified but some isotypes are not in input matrices
   if (!is.null(a) & !isTRUE(all(a %in% cm))){
     stop(paste0("some elements of isotype.control.name.vec are not in input data rownames: \n",
-                'cell_protein_matrix - ', setdiff(a,cm),
-                ' \nempty_drop_matrix - ', setdiff(a,b))
-    )
+                setdiff(a,cm))
+         )
   }
   # step II = FALSE - remind user isotypes unused. set isotype-related args to FALSE, NULL
   if (isFALSE(denoise.counts)) {
