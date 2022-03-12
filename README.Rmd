@@ -7,7 +7,7 @@ output: github_document
 [![CRAN status](https://www.r-pkg.org/badges/version/dsb)](https://CRAN.R-project.org/package=dsb)
 <!-- badges: end -->
 
-#  <a href='https://mattpm.github.io/dsb/'><img src='man/figures/sticker2.png' align="right" width="175" /></a>  dsb: a method for normalizing and denoising antibody derived tag data from CITE-seq, ASAP-seq, TEA-seq and related assays.
+#  <a href='https://CRAN.R-project.org/package=dsb/'><img src='man/figures/sticker2.png' align="right" width="150" /></a>  dsb: a method for normalizing and denoising antibody derived tag data from CITE-seq, ASAP-seq, TEA-seq and related assays.
 
 ```{r, include = FALSE}
 library(here)
