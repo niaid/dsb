@@ -1,20 +1,15 @@
-### Submission March 12 2022 
+### Submission March 14 2022 
 
-This is a resubmission fixing these two issues below:
+This is a patch that fixes a markdown html rendering issue.  
 
-*issue 1*  
-*Found the following (possibly) invalid URLs: URL: https://mattpm.github.io/dsb/ From: README.md Status: 404 Message: Not Found*  
+The html file for the main vignette in the last CRAN release did not render; the old version of the vignette is currently shown which will be confusing for users. This issue was not apparent in my local builds. As suggested in R dev forums this was caused by an updated knitr header in the vignette--I deleted / renamed the file and changed the DESCRIPTION `VignetteBuilder: knitr, rmarkdown` and this fixed the issue.  
 
-**I removed the link from the R package so it does not cause any issues in the future. I also fixed the link, https://mattpm.github.io/dsb/ now redirects properly. I noticed some users still use this old link to find the github, but it did not need to be listed in the package.**
+I downloaded the binaries from winbuilder and confirmed that the vignette files now render properly.
 
-*issue 2*  
-*Found the following (possibly) invalid DOIs: DOI: doi.org/10.1101/2020.02.24.963603 From: inst/CITATION Message: Invalid DOI indeed, the doi is only 10.1101/2020.02.24.963603*  
-
-**I fixed the citation file as above to only list the DOI number**
+I also changed the names of the vignettes in `VignetteIndexEntry` in the R markdown headers so that they match the title of the vignettes, which was my intention but I did not properly specify them before.  
 
 
-#### devtools::check(cran = TRUE)  
-Duration: 1m 9.3s  
+Duration: 1m 12.5s
 0 errors ✓ | 0 warnings ✓ | 0 notes ✓  
 
 #### devtools::check_win_release()  
@@ -23,4 +18,3 @@ License components with restrictions and base license permitting such:
   BSD_3_clause + file LICENSE  
 **The license is unchanged from the previous accepted version of the package.**  
 **The license is been properly specified after guidance from CRAN submission team as in dsb v0.2.0**
-
