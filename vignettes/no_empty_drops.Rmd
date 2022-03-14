@@ -113,7 +113,7 @@ Now we can cluster with WNN using the dsb normalized values as in the other end 
 ```{r, eval = FALSE}
 bm = SetAssayData(bmcite, slot = 'data', 
                   assay = 'ADT', 
-                  new.data = dsb.norm.adt)
+                  new.data = dsb.norm)
 
 # process RNA for WNN 
 DefaultAssay(bm) <- 'RNA'
