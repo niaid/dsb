@@ -18,11 +18,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(dsb)
-r = '#009ACD80'
-```
-
 This method has performed well on 4 datasets but it has not been as extensively tested as the default `DSBNormalizeProtein` method. 
 
 Sometimes empty droplets are not available. In Supplementary Figure 1, we show that the fitted background population mean of each protein across all cells was concordant with the mean of ambient ADTs in both empty droplets and unstained control cells.  
@@ -30,6 +25,7 @@ Sometimes empty droplets are not available. In Supplementary Figure 1, we show t
 This experiment suggests that this fitted background mean captures an estimate of ambient noise. By log + 1 transforming ADTs across cells, fitting the background population mean with a Gaussian Mixture and subtracting this value from cells, we should partly remove the ambient component and 0-center the background population for each ADT. We can then implement step II exactly as in the dsb function `DSBNormalizeProtein`. We provide this method with the function `ModelNegativeADTnorm`. 
 
 ```{r}
+library(dsb)
 # pecify isotype controls to use in step II 
 isotypes = c("MouseIgG1kappaisotype_PROT", "MouseIgG2akappaisotype_PROT", 
              "Mouse IgG2bkIsotype_PROT", "RatIgG2bkIsotype_PROT")
@@ -46,8 +42,9 @@ norm.adt = ModelNegativeADTnorm(cell_protein_matrix = raw.adt.matrix,
 
 We retain trimodal distributions of CD4 with the background population centered at 0. All populations are nicely recovered with concordant distribution of values as the default dsb method.  
 
+
 ```{r, fig.width=7.5, fig.height=6}
-par(mfrow = c(2,2))
+par(mfrow = c(2,2)); r = '#009ACD80'
 lab = 'ModelNegativeADTnorm'
 hist(norm.adt["CD4_PROT", ], breaks = 45, col = r, main = 'CD4', xlab = lab)
 hist(norm.adt["CD8_PROT", ], breaks = 45, col = r, main = 'CD8', xlab = lab)
