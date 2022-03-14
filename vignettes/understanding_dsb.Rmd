@@ -127,7 +127,7 @@ cmd = apply(norm_adt, 2, function(x) {
 })
 
 ```
-cmd is a list of model fitting results foreach cell. For a random cell (the second cell here), plot the distribution of proteins in mixture 1 vs mixture 2 of the Gaussian mixture model with k = 2 mixing components:  
+`cmd` is a list of model fitting results for each cell. For a random cell (the second cell here), plot the distribution of proteins in mixture 1 vs mixture 2 of the Gaussian mixture model with k = 2 mixing components:  
 
 **Gaussian mixture applied to a single cell**
 
@@ -149,7 +149,7 @@ table(cell2$classification)
 ```
 
 
-What this means is that the more highly parameterized models (those with a larger number of k values) tend to overfit the background distribution. For example, for this cell. We can compare this k = 2 component mixture to a Gaussian with k = 1 to k= 6 component mixtures. Below the distribution of protein populations inferred to belong to each subpopulation is visualized as above for the k = 3 and 6 component mixtures as the Gaussian density distribution that we approximated with the model.  
+What this means is that the more highly parameterized models (those with a larger number of k values) tend to overfit the background distribution. For example, for this cell. We can compare this k = 2 component mixture to a Gaussian with k = 1 to k= 6 component mixtures. Below the distribution of protein populations inferred to belong to each sub-population is visualized as above for the k = 3 and 6 component mixtures as the Gaussian density distribution that we approximated with the model.  
 
 **models shown below fit to the same cell as above**
 
@@ -179,7 +179,7 @@ The clear positive distribution in all cases is similar and is far from the lowe
 
 We can use information criteria to determine the optimal model for the cell. Note that Mclust uses a convention where there is not a - sign in the information criteria calculation for BIC, (which is typically used in a regression context), meaning the model that has the *highest* relative BIC is the optimal model. We can see that the 2 component mixture has the optimal BIC, and it is very similar to the 3 component model. 
 
-In the paper we show the distribution of the fitted values for k = 1-6 across cells. We further find that regardless of the optimal model, the µ1 parameter estimated is highly concordant between k = 2 or k = 3 component models. Note all of this is to help justify a single fitted parameter value in the dsb model--this parameter *µ1* is further combined with other measures of noise, the isotype control antibodies to fom the technical component as outlined below. This makes dsb insensitive to cells which may have true 3 or 4 modal distributions in protein levels because the background mean tends to be very robustly extracted by a 2 component mixture. 
+In the paper we show the distribution of the fitted values for k = 1-6 across cells. We further find that regardless of the optimal model, the µ1 parameter estimated is highly concordant between k = 2 or k = 3 component models. Note all of this is to help justify a single fitted parameter value in the dsb model--this parameter *µ1* is further combined with other measures of noise, the isotype control antibodies to form the technical component as outlined below. This makes dsb insensitive to cells which may have true 3 or 4 modal distributions in protein levels because the background mean tends to be very robustly extracted by a 2 component mixture. 
 
 ```{r,  fig.width=4.5, fig.height=3.5}
 
