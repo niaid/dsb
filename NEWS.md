@@ -12,7 +12,7 @@ This is the feature complete version of dsb being released with the publication 
 - updated internal code for `DSBNormalizeProtein` to implement additional error checking and messages / warnings during function run.  
 
 ### New vignettes
-"Additional Topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"  
+"Additional Topics - quantile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"  
 "Normalizing ADTs for datasets without empty droplets"  
 "Understanding how the dsb method works"  
 
@@ -22,7 +22,7 @@ This is the feature complete version of dsb being released with the publication 
 
 ### Enhancements  
 
-- A new funtion added to implement a method tonormalize ADTs for datasets where empty droplets are not available: `ModelNegativeADTnorm`.  
+- A new function added to implement a method to normalize ADTs for datasets where empty droplets are not available: `ModelNegativeADTnorm`.  
 - updated internal code for `DSBNormalizeProtein` to implement additional error checking and messages / warnings during function run.  
 
 ### New vignettes
