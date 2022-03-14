@@ -44,7 +44,7 @@ norm.adt = ModelNegativeADTnorm(cell_protein_matrix = raw.adt.matrix,
 
 ```
 
-With this method of estimating background noise, we retain trimodal distributions of CD4 with the background population centered at 0. All populations are nicely recovered with a similar distribution of values as the default dsb method. Note that 2 proteins in this 87 protein panel are expected to be expressed by every cell--HLA-ABC and CD18. **Proteins that are ubiquitously expressed will also be centered around 0 with this method**. Note that the distribution of values for CD18 are the same as the default dsb, however, the lowest population cells are near and below 0.
+We retain trimodal distributions of CD4 with the background population centered at 0. All populations are nicely recovered with concordant distribution of values as the default dsb method.  
 
 ```{r, fig.width=7.5, fig.height=6}
 par(mfrow = c(2,2))
@@ -54,6 +54,8 @@ hist(norm.adt["CD8_PROT", ], breaks = 45, col = r, main = 'CD8', xlab = lab)
 hist(norm.adt["CD19_PROT", ], breaks = 45, col = r, main = 'CD19', xlab = lab)
 hist(norm.adt["CD18_PROT", ], breaks = 45, col = r, main = 'CD18', xlab = lab)
 ```
+
+Note that two proteins in this 87 protein panel are expected to be expressed by every cell--HLA-ABC and CD18. *cells with the lowest expression of ubiquitously expressed proteins can fall around 0 with this method*. Relative CD18 values above are the same as the default dsb, however, the lowest population cells with this method are around 0.  
 
 Clustering performance and modeling e.g. with protein or joint WNN clustering is highly concordant using the default dsb and this modeled background method. Below we demonstrate WNN using this method on [bone marrow CITE-seq data](https://www.sciencedirect.com/science/article/pii/S0092867419305598?via%3Dihub) from the Satija lab. 
 
@@ -90,7 +92,7 @@ dsb.norm.2 = ModelNegativeADTnorm(cell_protein_matrix = adt,
                                   )
 ```
 
-This "modeled background" dsb method nicely recovers the trimodal CD4 population and bimodal expression in lineage defining proteins. Subtracting the modeled background population has centered the values around 0. 
+Examine protein expression distributions:   
 
 ```{r, fig.width=7, fig.height=3.5, eval = FALSE}
 library(ggplot2); theme_set(theme_bw())
