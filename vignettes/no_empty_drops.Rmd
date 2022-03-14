@@ -1,12 +1,12 @@
 ---
-title: "Normalizing ADTs for datasets without empty droplets"
+title: "Normalizing ADTs for datasets without empty droplets with the dsb function ModelNegativeADTnorm"
 output: 
   rmarkdown::html_vignette:
   toc: true
 theme: united
 author: Matt Mulè
 vignette: >
-  %\VignetteIndexEntry{Normalizing ADTs in data without empty droplets}
+  %\VignetteIndexEntry{Normalizing ADTs for datasets without empty droplets with the dsb function ModelNegativeADTnorm}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -59,6 +59,7 @@ Clustering performance and modeling e.g. with protein or joint WNN clustering is
 
 ```{r, eval = FALSE}
 # these data were installed with the SeuratData package
+# devtools::install_github('satijalab/seurat-data')
 # library(SeuratData)
 # InstallData(ds = 'bmcite')
 
@@ -71,19 +72,21 @@ adt = GetAssayData(bm, slot = 'counts', assay = 'ADT')
 
 # unfortunately this data does not have isotype controls
 dsb.norm = ModelNegativeADTnorm(cell_protein_matrix = adt, 
-                                empty_drop_matrix = NULL,
-                                use.isotype.control = FALSE,
-                                denoise.counts = TRUE)
+                                denoise.counts = TRUE,
+                                use.isotype.control = FALSE)
 ```
 
 Above we removed technical cell to cell variations with each cells fitted background only--adding isotype controls will further improve the precision in the technical component estimation. Note, if this dataset included isotype controls we would have used the following options: 
 
 ```{r, eval = FALSE}
-dsb.norm.2 = DSBNormalizeProtein_(cell_protein_matrix = adt,
-                                  empty_drop_matrix = NULL
+
+# specify isotype controls 
+isotype.controls = c('isotype1', 'isotype 2')
+# normalize ADTs
+dsb.norm.2 = ModelNegativeADTnorm(cell_protein_matrix = adt,
                                   denoise.counts = TRUE, 
                                   use.isotype.control = TRUE, 
-                                  isotype.control.name.vec = c('isotype1', 'isotype 2')
+                                  isotype.control.name.vec = isotype.controls
                                   )
 ```
 

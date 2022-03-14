@@ -1,22 +1,22 @@
 ---
-title: "End-to-end CITE-seq analysis workflow using dsb"
+title: "End-to-end CITE-seq analysis workflow using dsb for ADT normalization and Seurat for multimodal clustering"
 output: 
   rmarkdown::html_vignette:
   toc: true
 theme: united
 author: Matt Mulè
 vignette: >
-  %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{End-to-end CITE-seq analysis workflow using dsb}
+  %\VignetteIndexEntry{End-to-end CITE-seq analysis workflow using dsb for ADT normalization and Seurat for multimodal clustering}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  eval = FALSE,
   comment = "#>",
-  fig.path = "man/figures/README-",
+  eval = FALSE,
+  # fig.path = "man/figures/README-",
   out.width = "100%"
 )
 ```
@@ -42,7 +42,7 @@ Recent publications using the dsb method
 10. [dsb derived cluster interpretation](#interpretation)
 11. [Weighted Nearest Neighbor multimodal clustering using dsb normalized values with Seurat](#wnn)
 
-Topics covered in other vignettes on CRAN: **Integrating dsb with Bioconductor, integrating dsb with python/Scanpy, Using dsb with data lacking isotype controls, integrating dsb with sample multiplexing experiments, using dsb on data with multiple batches, advanced usage - using a different scale / standardization based on empty droplet levels, returning internal stats used by dsb, outlier clipping with the quantile.clipping argument, other FAQ.**  
+Topics covered in other vignettes on CRAN: *Integrating dsb with Bioconductor, integrating dsb with python/Scanpy, Using dsb with data lacking isotype controls, integrating dsb with sample multiplexing experiments, using dsb on data with multiple batches, advanced usage - using a different scale / standardization based on empty droplet levels, returning internal stats used by dsb, outlier clipping with the quantile.clipping argument, other FAQ.*  
 
 ## Background and motivation <a name="background_motivation"></a>  
 

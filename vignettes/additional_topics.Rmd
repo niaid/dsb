@@ -6,7 +6,7 @@ output:
 theme: united
 author: Matt Mulè
 vignette: >
-  %\VignetteIndexEntry{topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ}
+  %\VignetteIndexEntry{Additional Topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -14,8 +14,7 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>", 
-  eval = FALSE
+  comment = "#>"
 )
 ```
 This vignette provides additional information on dsb for the topics below:  
@@ -189,9 +188,9 @@ Different protein level stats available:
 names(result.list$protein_stats)
 ```
 
-We can extract the dsb technical component from this list for example:   
+We can also extract the dsb technical component and variables used to derive the technical component for example:   
 ```{r}
-result.list$technical_stats %>% head 
+head(result.list$technical_stats)
 ```
 
 

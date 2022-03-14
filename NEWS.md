@@ -1,3 +1,21 @@
+# dsb 1.0.1 
+
+*this is a patch to fix a vignette rendering issue in the 1.0.0 release*  
+
+Release notes from dsb 1.0.0:  
+
+This is the feature complete version of dsb being released with the publication of our preprint in Nature Communications.
+
+### Enhancements  
+
+- A new funtion added to implement a method tonormalize ADTs for datasets where empty droplets are not available: `ModelNegativeADTnorm`.  
+- updated internal code for `DSBNormalizeProtein` to implement additional error checking and messages / warnings during function run.  
+
+### New vignettes
+"Additional Topics - qualtile.clipping - scale.factor - Python and Bioc - multiplexing - multi batch - FAQ"  
+"Normalizing ADTs for datasets without empty droplets"  
+"Understanding how the dsb method works"  
+
 # dsb 1.0.0 
 
 This is the feature complete version of dsb being released with the publication of our preprint in Nature Communications. 
