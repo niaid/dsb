@@ -1,3 +1,7 @@
+# dsb 1.0.2
+
+This is a patch with no function updates. Readme is slimmed down with links to the full vignettes on CRAN. Updated citation information.
+
 # dsb 1.0.1 
 
 *this is a patch to fix a vignette rendering issue in the 1.0.0 release*  

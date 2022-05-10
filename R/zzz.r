@@ -1,7 +1,7 @@
 dsbmessage <- function()
 {
   mesg <-
-    cat("loaded dsb package version", as.character(utils::packageVersion("dsb")),"please cite DOI: 10.1101/2020.02.24.963603")
+    cat("loaded dsb package version", as.character(utils::packageVersion("dsb")),"please cite https://www.nature.com/articles/s41467-022-29356-8")
   return(mesg)
 }
 

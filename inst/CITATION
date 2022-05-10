@@ -6,10 +6,10 @@ citEntry(
                         as.person("Andrew J. Martins"),
                         as.person("John S. Tsang")),
   title    = "Normalizing and denoising protein expression data from droplet-based single cell profiling",
-  journal  = "Nature Communications (in press)",
+  journal  = "Nature Communications",
   year     = 2022,
-  doi = "10.1101/2020.02.24.963603",
-  url      = "https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3",
+  doi = "10.1038/s41467-022-29356-8",
+  url      = "https://www.nature.com/articles/s41467-022-29356-8",
   textVersion = paste(
   "Mulè and Martins et al. Normalizing and denoising protein expression data from droplet-based single cell profiling. Nature Communications (2022)"
   )

@@ -130,7 +130,17 @@ md = md[md$rna.size > 0 & md$prot.size > 0, ]
 
 ## Step 3 Quality control cells and background droplets <a name="step3"></a>
 
-To narrow in on the major background droplet population, we visualize the log library size (total reads) of the mRNA and protein. The first two plots from the left help us identify low quality cells (high MT gene content) in both background droplets and the cell droplets. The right two plots show the density of points; yellow areas have more droplets. The major background distribution is clear in the first plot from the left (the yellow area of high density). In the third plot from the left, background drops are colored MT gene proportion so we can see some may be low-quality apoptotic cells. We next set upper and lower cutoffs on the background matrix library size. Note that as shown in Supplementary Fig 7 of our paper, Normalized values are robust to background thresholds used, so long as one does not omit the major background population present in all datasets.
+
+The right two plots show the density of droplets; yellow areas have more
+droplets = this clearly shows the major background droplet distribution
+in the first plot from the left (the yellow area of high density). In
+the third plot from the left, background drops are colored MT gene
+proportion so we can see some may be low-quality apoptotic cells. We
+next set upper and lower cutoffs on the background matrix library size.
+Note that as shown in [Supplementary
+Fig 7](https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-022-29356-8/MediaObjects/41467_2022_29356_MOESM1_ESM.pdf),
+normalized values are robust to background thresholds used, so long as
+one does not omit the major background population.
 <img src="../man/figures/drop_thresholds2.png" />
 
 ```{r, eval = FALSE}
@@ -335,41 +345,13 @@ pheatmap::pheatmap(t(adt_plot),
 ```
 <img src="../man/figures/prot_heatmap.png" width="400" height="400" />
 
-Now we can cell type based on median dsb normalized protein level per cluster. 
-```{r, eval = FALSE}
-clusters = c(0:13)
-celltype = c("CD4_Tcell_Memory", # 0 
-             "CD14_Monocytes", #1
-             "CD14_Monocytes_Activated", #2
-             "CD4_Naive_Tcell", #3
-             "B_Cells", #4
-             "NK_Cells", #5
-             "CD4_Naive_Tcell_CD62L+", #6
-             "CD8_Memory_Tcell", #7
-             "DC", #8
-             "CD8_Naive_Tcell", #9
-             "CD4_Effector", #10
-             "CD16_Monocyte", #11
-             "DOUBLETS", #12
-             "DoubleNegative_Tcell" #13
-)
-
-s@meta.data$celltype = plyr::mapvalues(
-  x = s@meta.data$CITE_snn_res.1, 
-  from = clusters,  to = celltype
-  )
-
-# # optional -- dimensionality reduction plot 
-# Seurat::DimPlot(s, reduction = 'umap', group.by = 'celltype',
-#               label = TRUE, repel = TRUE, label.size = 2.5, pt.size = 0.1) + 
-#   theme_bw() + NoLegend() + ggtitle('dsb normalized protein')
-```
-
 
 ## Weighted Nearest Neighbor multimodal clustering using dsb normalized values with Seurat <a name="wnn"></a>
-Below we demonstrate using Seurat's Weighted Nearest Neighbor multimodal clustering method with dsb normalized values as input for the protein assay. WNN is an excellent way to find fine-grained cell states, especially in larger datasets than this small example data selected for purposes of demonstration. 
-
-Below we demonstrate WNN using dsb normalized and denoised ADT data using the default Seurat implementation by first reducing dimensionality of the protein data with PCA.
+The dsb normalized values can be
+used with the Weighted Nearest Neighbor multimodal clustering method.
+WNN is an excellent way to find fine-grained cell states, especially on
+datasets larger than this small example data selected for purposes of
+demonstration.
 
 ### Method 1 -- Seurat WNN default with PCA on dsb normalized protein 
 
@@ -405,7 +387,7 @@ s <- FindClusters(s, graph.name = "wsnn",
 ```
 
 
-### Method 2 (experimental) -- Seurat WNN with dsb normalized protein directly without PCA  
+### Method 2-- Seurat WNN with dsb normalized protein directly without PCA  
 
 Below we show a version of WNN where we directly use normalized protein values without PCA compression. We have found this procedure works well for smaller (e.g. less than 30) protein panels, whereas datasets with many cells generated with recently available pre-titrated panels consisting of more than 100 or 200 proteins may benefit more from dimensionality reduction with PCA. 
 
@@ -454,7 +436,7 @@ s = FindClusters(s, graph.name = "dsb_knn",
                  verbose = FALSE)
 ```
 
-Now we define marker genes for each cluster and create an aggregated dataframe for visualization
+Defining marker genes for each cluster and visualizing aggregated per cluster expression
 
 ```{r}
 # create multimodal heatmap 
@@ -488,7 +470,7 @@ dat_plot = d %>%
 
 ```
 
-With the aggregated data above we can make a joint heatmap of protein expression and mRNA expression. Below we visualize protein levels on the dsb scale that we used to cluster the cells.
+Next we can make a joint heatmap of protein and mRNA expression. It is helpful to visualize protein levels on the normalized dsb scale which was also used to cluster cells with relative mRNA expression as a z score. 
 
 ```{r, fig.height=4, fig.width=3}
 # make a combined plot 
