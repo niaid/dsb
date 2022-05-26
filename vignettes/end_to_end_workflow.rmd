@@ -154,7 +154,7 @@ background.adt.mtx = as.matrix(prot[ , background_drops])
 
 More than 70,000 empty droplets are included after QC. 
 
-We next quality control cells in a similar manner with additional quality control metrics calculated as in any standard scRNAseq analysis, e.g. see Luecken *et. al.* 2019 *Mol Syst Biol* DOI:/10.15252/msb.20188746 
+We next quality control cells in a similar manner with additional quality control metrics calculated as in any standard scRNAseq analysis, e.g. see Luecken *et. al.* 2019 *Mol Syst Biol* 
 
 ```{r, eval = FALSE}
 
