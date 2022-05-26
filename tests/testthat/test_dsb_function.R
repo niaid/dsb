@@ -91,6 +91,21 @@ testthat::test_that(desc = "run dsb on example data", code = {
   # test returned value is a list with return.stats = TRUE
   testthat::expect_type(object = result, type = 'list')
 
+
+  # test return of dsb tech componant with denoise counts TRUE but use isotype FALSE and return stats TRUE
+  result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                               empty_drop_matrix = empty_drop_citeseq_mtx,
+                               define.pseudocount = TRUE,
+                               pseudocount.use = 5,
+                               use.isotype.control = FALSE,
+                               quantile.clipping = TRUE,
+                               return.stats = TRUE
+  )
+
+  # test that a list is returned
+  testthat::expect_type(object = result, type = 'list')
+
+
   # test returned matrix value and dimensions
   normprot = result$dsb_normalized_matrix
   testthat::expect_equal(ncol(normprot), expected = 100)
