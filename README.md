@@ -15,13 +15,13 @@ to install in R: `install.packages('dsb')`
 #### Vignettes:
 
 1.  [**Using dsb in an end to end CITE-seq workflow including WNN
-    clustering**](https://cran.r-project.org/web/packages/dsb/vignettes/end_to_end_workflow.html)  
+    clustering**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
 2.  [**How the dsb method
-    works**](https://cran.r-project.org/web/packages/dsb/vignettes/understanding_dsb.html)  
+    works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
 3.  [**Normalizing ADTs if empty drops are not
-    available**](https://cran.r-project.org/web/packages/dsb/vignettes/no_empty_drops.html)  
+    available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
 4.  [**FAQ
-    etc.**](https://cran.r-project.org/web/packages/dsb/vignettes/additional_topics.html)
+    etc.**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
 
 [**Mulè, Martins, and Tsang, Nature Communications
 (2022)**](https://www.nature.com/articles/s41467-022-29356-8) describes
@@ -89,7 +89,7 @@ For a full tutorial vignette using 10X genomics data demonstrating how
 to quality control cells and empty droplets, normalize ADTs with dsb and
 ue these values with joint mRNA and protein clustering to generate the
 joint map below, please see [**the main vignette on
-CRAN**](https://cran.rstudio.com/web/packages/dsb/vignettes/end_to_end_workflow.html)
+CRAN**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)
 
 <img src="man/figures/multimodal_heatmap.png" />
 

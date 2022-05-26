@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 Below we demonstrate an end-to-end basic CITE-seq analysis starting from UMI count alignment output files from Cell Ranger. Standard output files from Cell Ranger are perfectly set up to use dsb. Our method is also compatible with any alignment tool; see: [using other alignment tools](#otheraligners). We load unfiltered UMI data containing cells and empty droplets, perform QC on cells and background droplets, normalize with dsb, and demonstrate protein-based clustering and multimodal RNA+Protein joint clustering using dsb normalized values with Seurat's Weighted Nearest Neighbor method. 
 
 Please cite the dsb manuscript if you used our software or found the experimental and modeling derivation of ADT noise sources in our paper helpful:  
-[**dsb manuscript**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3)  
+[**dsb manuscript**](https://www.nature.com/articles/s41467-022-29356-8)  
 
 Recent publications using the dsb method  
 [**Recent Publications**](#pubications)  
@@ -46,7 +46,7 @@ Topics covered in other vignettes on CRAN: *Integrating dsb with Bioconductor, i
 
 ## Background and motivation <a name="background_motivation"></a>  
 
-Protein data derived from sequencing antibody derived tags (ADTs) in CITE-seq and other related assays has substantial background noise. [**Our paper**](https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3) outlines experiments and analysis designed to dissect sources of noise in ADT data we used to developed our method. We found all experiments measuring ADTs capture protein-specific background noise because ADT reads in empty / background drops (outnumbering cell-containing droplets > 10-fold in all experiments) were highly concordant with ADT levels in unstained spike-in cells. We therefore utilize background droplets which capture the *ambient component* of protein background noise to correct values in cells. We also remove technical cell-to-cell variations by defining each cell's dsb "technical component", a conservative adjustment factor derived by combining isotype control levels with each cell's specific background level fitted with a single cell model.  
+Protein data derived from sequencing antibody derived tags (ADTs) in CITE-seq and other related assays has substantial background noise. [**Our paper**](https://www.nature.com/articles/s41467-022-29356-8) outlines experiments and analysis designed to dissect sources of noise in ADT data we used to developed our method. We found all experiments measuring ADTs capture protein-specific background noise because ADT reads in empty / background drops (outnumbering cell-containing droplets > 10-fold in all experiments) were highly concordant with ADT levels in unstained spike-in cells. We therefore utilize background droplets which capture the *ambient component* of protein background noise to correct values in cells. We also remove technical cell-to-cell variations by defining each cell's dsb "technical component", a conservative adjustment factor derived by combining isotype control levels with each cell's specific background level fitted with a single cell model.  
 
 ## Installation and quick overview <a name="installation"></a>
 
