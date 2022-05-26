@@ -252,7 +252,11 @@ DSBNormalizeProtein = function(cell_protein_matrix,
           dsb_sd = apply(adt_log, 1 , sd))
     )
     if(isTRUE(denoise.counts)) {
-      technical_stats = cbind(t(noise_matrix), dsb_technical_component = noise_vector)
+      if(isTRUE(use.isotype.control)){
+        technical_stats = cbind(t(noise_matrix), dsb_technical_component = noise_vector)
+      } else { #when use.isotype.control is FALSE, the noise_matrix does not exist
+        technical_stats = data.frame(dsb_technical_component = noise_vector)
+      }
     } else{
       technical_stats = NULL
     }
