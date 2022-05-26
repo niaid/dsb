@@ -15,11 +15,11 @@ to install in R: `install.packages('dsb')`
 #### Vignettes:
 
 1.  [**Using dsb in an end to end CITE-seq workflow including WNN
-    clustering**](https://cran.rstudio.com/web/packages/dsb/vignettes/end_to_end_workflow.html)  
+    clustering**](https://cran.r-project.org/web/packages/dsb/vignettes/end_to_end_workflow.html)  
 2.  [**How the dsb method
-    works**](https://cran.rstudio.com/web/packages/dsb/vignettes/understanding_dsb.html)  
+    works**](https://cran.r-project.org/web/packages/dsb/vignettes/understanding_dsb.html)  
 3.  [**Normalizing ADTs if empty drops are not
-    available**](https://cran.rstudio.com/web/packages/dsb/vignettes/no_empty_drops.html)  
+    available**](https://cran.r-project.org/web/packages/dsb/vignettes/no_empty_drops.html)  
 4.  [**FAQ
     etc.**](https://cran.r-project.org/web/packages/dsb/vignettes/additional_topics.html)
 
