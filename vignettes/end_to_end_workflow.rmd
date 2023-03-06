@@ -83,6 +83,8 @@ To use dsb, we will load ADT and RNA data from cells and empty droplet aligned b
 
 The Cell Ranger `raw_feature_bc_matrix` includes every possible cell barcode (columns) x genes / ADT (rows); about 7 Million barcodes for the V3 assay. A very small subset of those columns in the `raw_feature_bc_matrix` contain cells--those are separately provided in the `filtered_feature_bc_matrix` file. Another subset of the `raw_feature_bc_matrix` contain empty droplets capturing ambient antibodies. Instead of discarding that valuable sequencing data, we extract empty droplets capturing ADT using the code below and use them with dsb. Also please see note on [Cell Ranger filtered output](#cellranger). 
 
+**update** Cell Ranger `multi` can also be used instead of Cell Ranger `count` (whether or not you are sample multiplexing). The `nulti` alignment may improve cell vs background calling because it utilizes both ADT and RNA to define cells. If you use `multi`, the full output (background and estimated cells) is located in the following cell ranger output directory: `outs/multi/count/raw_feature_bc_matrix/`. The filtered output containing only the called cells is in: `outs/per_sample_outs/YOUR_ID_NAME/count/sample_feature_bc_matrix/`. 
+
 Here is a visual showing for the workflow we will follow starting from alignment and proceeding through QC and normalization  
 <img src="../man/figures/readme_cheatsheet.png" />  
 
@@ -129,6 +131,14 @@ md = md[md$rna.size > 0 & md$prot.size > 0, ]
 **we now have 103,075 barcodes in `md` with RNA and protein data** only about 7,000 contain cells. With dsb we use a majority of this data instead of discarding everything except the cells.
 
 ## Step 3 Quality control cells and background droplets <a name="step3"></a>
+
+```{r, eval = FALSE}
+ggplot(md, aes(x = log10(n.gene), y = prot.size )) +
+   theme_bw() + 
+   geom_bin2d(bins = 300) + 
+   scale_fill_viridis_c(option = "C") + 
+   facet_wrap(~drop.class)
+```
 
 
 The right two plots show the density of droplets; yellow areas have more
