@@ -1,3 +1,7 @@
+# dsb 1.0.3
+
+This is a patch with no function updates. Startup message changed for linux build "Note". 
+
 # dsb 1.0.2
 
 This is a patch with no function updates. Readme is slimmed down with links to the full vignettes on CRAN. Updated citation information. Updated license to CC0 per CRAN request. 
