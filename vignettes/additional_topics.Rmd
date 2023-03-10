@@ -66,8 +66,9 @@ isotypes = mdata_raw['prot'].var_names[29:32].values isotypes
 pt.pp.dsb(mdata, mdata_raw, empty_counts_range=(1.5, 2.8), isotype_controls=isotypes, random_state=1)
 ```
 
+You can also use dsb normalized values with the AnnData class in Python by using reticulate to create the AnnData object from dsb denoised and normalized protein values as well as raw RNA data. Anndata are not structured as separate assays; we therefore need to merge the RNA and protein data into the same matrix.  
 
-You can also use dsb normalized values with the AnnData class in Python by using reticulate to create the AnnData object from dsb denoised and normalized protein values as well as raw RNA data. Anndata are not structured as separate assays; we therefore need to merge the RNA and protein data -- this is a shortcoming that muon solves so users are again encouraged to use muon. See the current [Scanpy CITE-seq workflow](https://scanpy-tutorials.readthedocs.io/en/latest/cite-seq/pbmc5k.html) and more on [interoperability between Scanpy Bioconductor and Seurat](https://theislab.github.io/scanpy-in-R/)  
+See [interoperability between Scanpy Bioconductor and Seurat](https://theislab.github.io/scanpy-in-R/)  
 
 ```{r, eval = FALSE}
 library(reticulate); sc = import("scanpy")
