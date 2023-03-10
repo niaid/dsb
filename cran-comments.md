@@ -1,12 +1,16 @@
-### Submission May 26 2022 
+### Submission March 10 2023  
 
-This is a resubmission
+R CMD check results ───── dsb 1.0.3 ────  
+Duration: 1m 15.3s  
+0 errors ✓ | 0 warnings ✓ | 0 notes ✓  
 
-── R CMD check results ─ dsb 1.0.2 ─  
-Duration: 1m 12.6s  
 
-0 errors ✔ | 0 warnings ✔ | 0 notes ✔  
+devtools::check_win_release()  
+* DONE  
+Status: OK  
 
-Fix bug to enable return of technical stats if `denoise = TRUE` and `use.isotype.control = FALSE`  
-Updated license to CC0 and specified with alternative license based on instructions from CRAN team
+- Fix issue related to a package startup message only on linux distributions; this was not previously a problem. I was contacted by the CRAN team. The startup message is not at all required for functionality; it is now deleted. 
 
+original message  
+*It looks like this package (or a package it requires) has a startup
+message which cannot be suppressed: see ?packageStartupMessage.*
