@@ -1,14 +1,12 @@
 citHeader("To cite dsb in publications use:")
 
-citEntry(
-  entry    = "Article",
-  author   = personList(as.person("Matthew P. Mulè"),
-                        as.person("Andrew J. Martins"),
-                        as.person("John S. Tsang")),
+bibentry(
+  bibtype  = "Article",
   title    = "Normalizing and denoising protein expression data from droplet-based single cell profiling",
+  author   = c(person("Matthew P. Mulè"), person("Andrew J. Martins"), person("John S. Tsang")),
   journal  = "Nature Communications",
   year     = 2022,
-  doi = "10.1038/s41467-022-29356-8",
+  doi      = "10.1038/s41467-022-29356-8",
   url      = "https://www.nature.com/articles/s41467-022-29356-8",
   textVersion = paste(
   "Mulè and Martins et al. Normalizing and denoising protein expression data from droplet-based single cell profiling. Nature Communications (2022)"
