@@ -137,7 +137,7 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
     mclust::Mclust(data = x, G = 2, verbose = FALSE, warn = FALSE)
   })
   mu1 = unlist(lapply(p.model, function(x) x$parameters$mean[[1]]))
-  if (isFALSE(all.equal(length(mu1), length(rownames(adt_log))))) {
+  if (isFALSE(length(mu1) == length(rownames(adt_log)))) {
     ad_name = setdiff(rownames(adt_log), names(mu1))
     warning(
       paste0('empirical background cound not be fit for: ',
