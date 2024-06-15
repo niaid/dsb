@@ -21,21 +21,21 @@ knitr::opts_chunk$set(
 ```
 
 The dsb R package is available on [**CRAN: latest dsb release**](https://CRAN.R-project.org/package=dsb)  
-to install in R: `install.packages('dsb')`  
+To install in R use `install.packages('dsb')` <br>
+
+[**Mulè, Martins, and Tsang, Nature Communications (2022)**](https://www.nature.com/articles/s41467-022-29356-8) describes our deconvolution of ADT noise sources and development of dsb. <br>  
 
 #### Vignettes:  
-1. [**Using dsb in an end to end CITE-seq workflow including WNN clustering**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
+1. [**Using dsb in an end to end CITE-seq workflow including multimodal clustering in Seurat**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
 2. [**How the dsb method works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
 3. [**Normalizing ADTs if empty drops are not available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
-4. [**FAQ etc.**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)  
+4. [**Python users: use dsb in Python with *scverse* software *muon***](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
+5. [**FAQ etc.**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html) <br>
 
-[**Mulè, Martins, and Tsang, Nature Communications (2022)**](https://www.nature.com/articles/s41467-022-29356-8) describes this method and deconvolution of ADT noise sources. 
 
-dsb is also available in [**Python** through *muon*](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
+[**Recent Publications**](#pubications) Check out recent publications that used dsb for ADT normalization. 
 
-Check out [**Recent Publications**](#pubications) that used this method for ADT normalization. 
-
-In the first Vignette, we demonstrate an end-to-end basic CITE-seq analysis starting from UMI count alignment output files from Cell Ranger. Standard output files from Cell Ranger are perfectly set up to use dsb. Our method is also compatible with any alignment tool; see: [**using other alignment tools**](#otheraligners). We load unfiltered UMI data containing cells and empty droplets, perform QC on cells and background droplets, normalize with dsb, and demonstrate protein-based clustering and multimodal RNA+Protein joint clustering using dsb normalized values with Seurat's Weighted Nearest Neighbor method. 
+In the first "end to end" vignette, we demonstrate basic CITE-seq analysis starting from UMI count alignment output files from Cell Ranger though note that dsb is compatible with any alignment tool (see [**using other alignment tools**](#otheraligners)). We load unfiltered UMI data containing cells and empty droplets, perform QC on cells and background droplets, normalize with dsb, and demonstrate protein-based clustering and multimodal RNA+Protein joint clustering using dsb normalized values with Seurat's Weighted Nearest Neighbor method. 
 
 ## Background and motivation <a name="background_motivation"></a>  
 
@@ -63,12 +63,13 @@ adt_norm = DSBNormalizeProtein(
 ```
 
 
-For a full tutorial vignette using 10X genomics data demonstrating how to quality control cells and empty droplets, normalize ADTs with dsb and ue these values with joint mRNA and protein clustering to generate the joint map below, please see [**the main vignette on CRAN**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
-
 <img src="man/figures/multimodal_heatmap.png" />
 
+
+Please see [**the main vignette on CRAN**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html) for more details. <br>
+
 ### Selected publications using dsb <a name="pubications"></a>  
-Publications from outside institutes <br>
+Publications from other investigators <br>
 [Izzo et al. *Nature* 2024](https://doi.org/10.1038/s41586-024-07388-y) <br>
 [Arieta et al. *Cell* 2023](https://doi.org/10.1016/j.cell.2023.04.007) <br>
 [Magen et al. *Nature Medicine* 2023](https://doi.org/10.1038/s41591-023-02345-0) <br>
@@ -79,8 +80,8 @@ Publications from outside institutes <br>
 Publications from the Tsang lab <br>
 [Mulè et al. *Immunity* 2024](https://mattpm.net/man/pdf/natural_adjuvant_immunity_2024.pdf) <br>
 [Sparks et al. *Nature* 2023](https://doi.org/10.1038/s41586-022-05670-5) <br> 
-[Liu et al. *Cell* 2021](https://www.cell.com/cell/pdf/S0092-8674(21)00168-9.pdf) <br>
-[Kotliarov et al. *Nature Medicine* 2020](https://www.nature.com/articles/s41591-020-0769-8) <br>
+[Liu et al. *Cell* 2021](https://doi.org/10.1016/j.cell.2021.02.018) <br>
+[Kotliarov et al. *Nature Medicine* 2020](https://doi.org/10.1038/s41591-020-0769-8) <br>
 
 
 
