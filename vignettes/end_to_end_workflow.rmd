@@ -522,14 +522,19 @@ draw(ht_list)
 This tutorial is a guide. It cam be modified to fit your needs. Additional vignettes are available on CRAN.
 
 ### Some recent publications using dsb <a name="pubications"></a>  
-Publications from outside institutes      
-[Jardine et al. *Nature* (2021)](https://www.nature.com/articles/s41586-021-03929-x)  
-[Mimitou et. al *Nature Biotechnology* (2021)](https://www.nature.com/articles/s41587-021-00927-2)  
-[COMBAT consortium et al. *Cell* (2022)](https://www.cell.com/cell/pdf/S0092-8674(22)00070-8.pdf)    
+Publications from other investigators <br>
+[Izzo et al. *Nature* 2024](https://doi.org/10.1038/s41586-024-07388-y) <br>
+[Arieta et al. *Cell* 2023](https://doi.org/10.1016/j.cell.2023.04.007) <br>
+[Magen et al. *Nature Medicine* 2023](https://doi.org/10.1038/s41591-023-02345-0) <br>
+[COMBAT consortium *Cell* 2021](https://doi.org/10.1016/j.cell.2022.01.012) <br>
+[Jardine et al. *Nature* 2021](https://doi.org/10.1038/s41586-021-03929-x) <br>
+[Mimitou et al. *Nature Biotechnology* 2021](https://doi.org/10.1038/s41587-021-00927-2) <br>
 
-Publications from the Tsang lab  
-[Kotliarov et al. *Nature Medicine* (2020)](https://www.nature.com/articles/s41591-020-0769-8)    
-[Liu et al. *Cell* (2021)](https://www.cell.com/cell/pdf/S0092-8674(21)00168-9.pdf)  
+Publications from the Tsang lab <br>
+[Mulè et al. *Immunity* 2024](https://mattpm.net/man/pdf/natural_adjuvant_immunity_2024.pdf) <br>
+[Sparks et al. *Nature* 2023](https://doi.org/10.1038/s41586-022-05670-5) <br> 
+[Liu et al. *Cell* 2021](https://doi.org/10.1016/j.cell.2021.02.018) <br>
+[Kotliarov et al. *Nature Medicine* 2020](https://doi.org/10.1038/s41591-020-0769-8) <br>
 
 
 ### using other alignment algorithms <a name="otheraligners"></a>  
