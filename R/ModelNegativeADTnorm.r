@@ -137,17 +137,18 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
     mclust::Mclust(data = x, G = 2, verbose = FALSE, warn = FALSE)
   })
   mu1 = unlist(lapply(p.model, function(x) x$parameters$mean[[1]]))
-  if (isFALSE(all.equal(length(mu1), length(rownames(adt_log))))) {
+  if (isFALSE(length(mu1) == length(rownames(adt_log)))) {
     ad_name = setdiff(rownames(adt_log), names(mu1))
     warning(
-      paste0('empirical background cound not be fit for: ',
-             ad_name,
-             ' value returned will be log transformed without background correction'),
+      paste0('empirical background cound not be fit for ',
+             length(ad_name), ' proteins: ',
+             paste(ad_name, collapse = ', '),
+             '. Value returned will be log transformed without background correction.')
     )
     ad = as.numeric(rep(x = 0, length(ad_name)))
     names(ad) = ad_name
     mu1 = c(mu1 , ad)
-    mu1 = mu1[match(rownames(norm_adt) , names(mu1) )]
+    mu1 = mu1[match(rownames(adt_log) , names(mu1) )]
   }
   norm_adt = apply( adt_log, 2, function(x) (x - mu1) )
 
