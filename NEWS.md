@@ -1,6 +1,9 @@
 # dsb 1.0.4
 
-This is a patch with a fix in one of the internal conditional checks https://github.com/niaid/dsb/pull/47. No other function updates. Fixed a line in documentation. 
+This is a patch.  
+Includes this conditional check: https://github.com/niaid/dsb/pull/47.
+No other function updates.  
+Updated documentation.
 
 # dsb 1.0.3
 
