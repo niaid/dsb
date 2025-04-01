@@ -18,20 +18,16 @@ our deconvolution of ADT noise sources and development of dsb. <br>
 
 #### Vignettes:
 
-[**New update dsb 2.0 faster runtimes for large datasets with or without
-empty
-drops**](https://CRAN.R-project.org/package=dsb/vignettes/fastkm.html)
-
-1.  [**Using dsb in an end to end CITE-seq workflow including multimodal
-    clustering**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
-2.  [**How the dsb method
-    works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
-3.  [**Normalizing ADTs if empty drops are not
+1.  [**Using dsb in an end-to-end CITE-seq
+    workflow**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
+2.  [**Using dsb if empty drops are not
     available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
-4.  [**Python users: use dsb in Python with *scverse* software
-    *muon***](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
-5.  [**FAQ
-    etc.**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
+3.  [**How the dsb method
+    works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
+4.  [**Using the dsb method in
+    Python**](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
+5.  [**Frequently Asked
+    Questions**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
     <br>
 
 See notes on [**upstream processing before dsb**](#otheraligners)
@@ -110,10 +106,8 @@ adt_norm = ModelNegativeADTnorm(
 
 To speed up the function 10-fold with minimal impact on the results from
 those in the default function set `fast.km = TRUE` with either the
-`DSBNormalizeProtein` or `ModelNegativeADTnorm` functions. See the
-[vignette on
-fast.km](https://CRAN.R-project.org/package=dsb/vignettes/fastkm.html)
-for more info.
+`DSBNormalizeProtein` or `ModelNegativeADTnorm` functions. See the new
+vignette on this topic.
 
 <img src="man/figures/timingsfig2.png" width="150" />
 
@@ -125,33 +119,12 @@ addressed.
 
 <img src="man/figures/dsb_arguments.png" width="650" />
 
-### Selected publications using dsb <a name="pubications"></a>
-
-Publications from other investigators <br> [Izzo et al. *Nature*
-2024](https://doi.org/10.1038/s41586-024-07388-y) <br> [Arieta et
-al. *Cell* 2023](https://doi.org/10.1016/j.cell.2023.04.007) <br> [Magen
-et al. *Nature Medicine*
-2023](https://doi.org/10.1038/s41591-023-02345-0) <br> [COMBAT
-consortium *Cell* 2021](https://doi.org/10.1016/j.cell.2022.01.012) <br>
-[Jardine et al. *Nature*
-2021](https://doi.org/10.1038/s41586-021-03929-x) <br> [Mimitou et
-al. *Nature Biotechnology*
-2021](https://doi.org/10.1038/s41587-021-00927-2) <br>
-
-Publications from the Tsang lab <br> [Mulè et al. *Immunity*
-2024](https://mattpm.net/man/pdf/natural_adjuvant_immunity_2024.pdf)
-<br> [Sparks et al. *Nature*
-2023](https://doi.org/10.1038/s41586-022-05670-5) <br> [Liu et
-al. *Cell* 2021](https://doi.org/10.1016/j.cell.2021.02.018) <br>
-[Kotliarov et al. *Nature Medicine*
-2020](https://doi.org/10.1038/s41591-020-0769-8) <br>
-
 ### Upstream read alignment to generate raw ADT files prior to dsb <a name="otheraligners"></a>
 
 Any alignment software can be used prior to normalization with dsb. To
 use the `DSBNormalizeProtein` function described in the manuscript, you
 need to define cells and empty droplets from the alignment files. Any
-aligment pipeline can be used. Some examples guides below:
+alignment pipeline can be used. Some examples guides below:
 
 #### Cell Ranger
 
@@ -227,6 +200,29 @@ input.R1.fastq.gz input.R2.fastq.gz
 
 After alignment define cells and background droplets empirically with
 protein and mRNA based thresholding as outlined in the main tutorial.
+
+### Selected publications using dsb <a name="pubications"></a>
+
+From other groups <br> [Singhaviranon *Nature Immunology*
+2025](https://doi.org/10.1038/s41590-024-02044-z) <br> [Yayo *Nature*
+2024](https://doi.org/10.1038/s41586-024-07944-6) <br> [Izzo et
+al. *Nature* 2024](https://doi.org/10.1038/s41586-024-07388-y) <br>
+[Arieta et al. *Cell* 2023](https://doi.org/10.1016/j.cell.2023.04.007)
+<br> [Magen et al. *Nature Medicine*
+2023](https://doi.org/10.1038/s41591-023-02345-0) <br> [COMBAT
+consortium *Cell* 2021](https://doi.org/10.1016/j.cell.2022.01.012) <br>
+[Jardine et al. *Nature*
+2021](https://doi.org/10.1038/s41586-021-03929-x) <br> [Mimitou et
+al. *Nature Biotechnology*
+2021](https://doi.org/10.1038/s41587-021-00927-2) <br>
+
+From the Tsang lab <br> [Mulè et al. *Immunity*
+2024](https://mattpm.net/man/pdf/natural_adjuvant_immunity_2024.pdf)
+<br> [Sparks et al. *Nature*
+2023](https://doi.org/10.1038/s41586-022-05670-5) <br> [Liu et
+al. *Cell* 2021](https://doi.org/10.1016/j.cell.2021.02.018) <br>
+[Kotliarov et al. *Nature Medicine*
+2020](https://doi.org/10.1038/s41591-020-0769-8) <br>
 
 **Topics covered in other vignettes on CRAN**  
 Integrating dsb with Bioconductor, integrating dsb with python/Scanpy  
