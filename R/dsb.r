@@ -1,27 +1,29 @@
 #' DSBNormalizeProtein R function: Normalize single cell antibody derived tag (ADT) protein data.
-#' This function implements both step I (ambient protein background correction) and step II.
-#' (defining and removing cell to cell technical variation) of the dsb normalization method.
-#' See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
+#' This function corrects for both protein specific and cell to cell technical noise in antibody derived tag (ADT) data.
+#' For datasets without access to empty drops use dsb::ModelNegativeADTnorm.
+#' See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.
 #' @author Matthew P. Mulè, \email{mattmule@@gmail.com}
-#' @references https://doi.org/10.1101/2020.02.24.963603
-#' @param cell_protein_matrix Raw protein ADT UMI count data to be normalized. Cells - columns
-#' Proteins (ADTs) - rows.
-#' @param empty_drop_matrix Raw empty droplet / background ADT UMI count data used for background correction
-#' with Cells - columns and Proteins (ADTs) - rows. This can easily be defined from the raw_feature_bc_matrix
-#' output from Cell Ranger or other alignment tools such as kallisto and Cite-Seq-Count. See vignette.
+#' @references https://www.nature.com/articles/s41467-022-29356-8
+#' @param cell_protein_matrix Raw protein ADT UMI count data to be normalized. Cells = columns, protein antibody = rows.
+#' @param empty_drop_matrix Raw empty droplet / background ADT UMI count data used for background correction.
+#' Cells - columns and Proteins (ADTs) - rows. See vignettes for how to define background matrix from the
+#' raw_feature_bc_matrix output from Cell Ranger or from other alignment tools such as kallisto and Cite-Seq-Count.
+#' For datasets without access to empty drops use dsb::ModelNegativeADTnorm.
 #' @param scale.factor one of `standardize` or `mean.subtract`.
-#' The recommended default `standardize` subtracts from the cells the the background droplet matrix mean and
-#' divides by the background matrix standard deviation. Values for each protein with this method are
-#' interpretable as the number of standard deviations from the mean of the protein background distribution.
-#' If `mean.subtract`, subtract the mean without dividing by the standard deviation; can be useful if low
-#' background levels detected.
+#' Scale factor specifies how to implement protein level denoising. The recommended default is `standardize` which is the method
+#' described in Mulè et al 2022 as "Step I". For each protein, this subtracts the mean and divides by the standard deviation
+#' of that protein observed in the empty droplets, making the resulting value interpretable as the number of standard deviations
+#' above the average of the background for that protein observed in empty droplets.
+#' `mean.subtract`, subtracts the mean without dividing by the standard deviation; can be used in scenarios where low
+#' background levels are detected systematically for most proteins in the dataset background standard deviation may be unstable.
 #' @param denoise.counts Recommended function default `denoise.counts = TRUE` and `use.isotype.control = TRUE`.
-#' This runs step II of the dsb algorithm to define and remove cell to cell technical noise.
+#' This removes remove cell to cell technical noise as described as "step II" in Mulè et al 2022.
 #' @param use.isotype.control Recommended function default `denoise.counts = TRUE` and `use.isotype.control = TRUE`.
 #' This includes isotype controls in defining the dsb technical component.
 #' @param isotype.control.name.vec A vector of the names of the isotype control proteins in the rows of the cells
-#' and background matrix e.g. isotype.control.name.vec = c('isotype1', 'isotype2').
-#' @param define.pseudocount FALSE (default) uses the value 10 optimized for protein ADT data.
+#' and background matrix e.g. `isotype.control.name.vec = c('isotype1', 'isotype2')`.
+#' @param define.pseudocount `FALSE` (default) uses the value 10 optimized for protein ADT data.
+#' Any pseudocount can be used by setting this argument to `FALSE` and specifying `pseudocount.use`.
 #' @param pseudocount.use Must be defined if `define.pseudocount = TRUE`. This is the pseudocount to be added to
 #' raw ADT UMI counts. Otherwise the default pseudocount used.
 #' @param quantile.clipping FALSE (default), if outliers or a large range of values for some proteins are observed
@@ -30,6 +32,9 @@
 #'  range of normalized values are still very broad and high (e.g. above 40) try setting `scale.factor = mean.subtract`.
 #' @param quantile.clip if `quantile.clipping = TRUE`, a vector of the lowest and highest quantiles to clip. These can
 #'  be tuned to the dataset size. The default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.
+#' @param fast.km Recommended to set this parameter to `TRUE` for large datasets. If `fast.km = TRUE`, the function defines
+#' cell level background for step II with a a k=2 k-means cluster instead of a 2 component gaussian mixture. Increases speed
+#' ~10x on 1 million cell benchmark with minimal impact on results.
 #' @param return.stats if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2
 #'  $dsb_stats is the internal stats used by dsb during denoising (the background mean, isotype control values, and the
 #'  final dsb technical component that is regressed out of the counts)
@@ -43,7 +48,7 @@
 #'
 #' @importFrom limma removeBatchEffect
 #' @importFrom mclust Mclust mclustBIC
-#' @importFrom stats prcomp sd quantile
+#' @importFrom stats prcomp sd quantile kmeans
 #' @examples
 #' library(dsb) # load example data cells_citeseq_mtx and empty_drop_matrix included in package
 #'
@@ -92,47 +97,45 @@ DSBNormalizeProtein = function(cell_protein_matrix,
                                pseudocount.use,
                                quantile.clipping = FALSE,
                                quantile.clip = c(0.001, 0.9995),
+                               fast.km = FALSE,
                                scale.factor = c('standardize', 'mean.subtract')[1],
                                return.stats = FALSE){
-  # background matrix detect
+  # check background matrix provided
   if (is.null(empty_drop_matrix)) {
-    stop(paste0('to use DSBNormalizeProtein specify `empty_drop_matrix`',
-                'to normalize ADT data without using empty droplets use',
-                'the function `ModelNegativeADTnorm`'))
+    stop("'empty_drop_matrix' was not specified. To normalize without empty drops, use ModelNegativeADTnorm function.")
   }
 
+  # formatting checks on input matrices
   a = isotype.control.name.vec
   b = rownames(empty_drop_matrix)
   cm = rownames(cell_protein_matrix)
 
-  # formatting checks conditional on input matrices  {{
   if (!isTRUE(all.equal(cm, b))){
     diff = c(setdiff(cm, b), setdiff(b, cm))
 
-    # the *number* of rows in cell and background matrix are not the same:
+    # stop if nrow of cells and background is not equal
     if(!isTRUE(all.equal( nrow(cell_protein_matrix), nrow(empty_drop_matrix)))){
       stop(paste0(
-        'the number of proteins in `cell_protein_matrix` and `empty_drop_matrix` do not match check: ',
+        'the number of rows (features) in `cell_protein_matrix` and `empty_drop_matrix` do not match check: ',
         diff))
     }
-    # some rows have different names in cell and/or background matrix:
-    if (length(diff) > 0) {
-      stop(paste0('rows of cell and background matrices have mis-matching names: \n', diff))
-    }
-    # no difference in elements c,b rows are not in the same order:
-    if (length(diff < 0)) {
-      rmatch = match(x = rownames(cell_protein_matrix), table = rownames(empty_drop_matrix) )
-      empty_drop_matrix = empty_drop_matrix[rmatch, ]
-      warning(paste0('rows (proteins) of cell_protein_matrix and `empty_drop_matrix`',
-                     'were not in the same order. dsb reordered `empty_drop_matrix` rows',
-                     'to match `cell_protein_matrix` rows'))
-    }
-  } # }} end - formatting checks conditional on input matrices
 
-  ### dsb Step II argument checks
-  # try to detect isotypes and suggest usage in error messages
-  iso_detect = cm[grepl(
-    pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
+    # stop if the rownames are not the same
+    if (length(diff) > 0) {
+      stop(paste0('rows of cell and background matrices have mis-matching names: ', diff))
+    }
+
+    # reorder rows of empty drop matrix to match the cells if in a different order
+    if (!identical(rownames(cell_protein_matrix), rownames(empty_drop_matrix)) &&
+        setequal(rownames(cell_protein_matrix), rownames(empty_drop_matrix))) {
+      rmatch = match(rownames(cell_protein_matrix), rownames(empty_drop_matrix))
+      empty_drop_matrix = empty_drop_matrix[rmatch, , drop = FALSE]
+      warning("Reordered 'empty_drop_matrix' rows to match 'cell_protein_matrix'")
+    }
+  }
+
+  # formatting checks on step 2 functions
+  iso_detect = cm[grepl(pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
 
   # isotype.control.name.vec specified but some isotypes are not in input matrices
   if (!is.null(a) & !isTRUE(all(a %in% b)) & !isTRUE(all(a %in% cm))){
@@ -172,11 +175,12 @@ DSBNormalizeProtein = function(cell_protein_matrix,
       print('potential isotype controls detected: ')
       print(iso_detect)
     }
-  }
-  # STEP I
-  # if matrices are dgTMatrix coerce into regular matrix
-  adt = cell_protein_matrix %>% as.matrix()
-  adtu = empty_drop_matrix %>% as.matrix()
+  } # end step 2 argument checks
+
+  # STEP I - protein level background correction
+  # coerce to regular matrix if stored as a sparse matrix
+  adt = as.matrix(cell_protein_matrix)
+  adtu = as.matrix(empty_drop_matrix)
   if(isTRUE(define.pseudocount)) {
     adtu_log = log(adtu + pseudocount.use)
     adt_log = log(adt + pseudocount.use)
@@ -184,14 +188,13 @@ DSBNormalizeProtein = function(cell_protein_matrix,
     adtu_log = log(adtu + 10)
     adt_log = log(adt + 10)
   }
-  # dsb step I rescale cells based on expected noise in background drops
   print("correcting ambient protein background noise")
-  mu_u = apply(adtu_log, 1 , mean)
-  sd_u = apply(adtu_log, 1 , sd)
+  mu_u = rowMeans(adtu_log)
+  sd_u = apply(adtu_log, 1, stats::sd)
   if (scale.factor == 'standardize') {
     # print low sd proteins
     if (any(sd_u < 0.05)) {
-      print(paste0('some proteins with low background variance detected',
+      print(paste0('proteins below have low background log norm sd < 0.05',
                    ' check raw and normalized distributions. ',
                    ' protein stats can be returned with return.stats = TRUE'
       ))
@@ -208,10 +211,31 @@ DSBNormalizeProtein = function(cell_protein_matrix,
   if(isTRUE(denoise.counts)){
     print(paste0('fitting models to each cell for dsb technical component and',
                  ' removing cell to cell technical noise'))
-    cellwise_background_mean = apply(norm_adt, 2, function(x) {
-      g = mclust::Mclust(x, G=2, warn = FALSE, verbose = FALSE)
-      return(g$parameters$mean[1])
-    })
+    if(isTRUE(fast.km)){
+      error_cols <- character(0)
+      cellwise_background_mean <- sapply(seq_len(ncol(norm_adt)), function(i) {
+        tryCatch({
+          km <- stats::kmeans(norm_adt[, i], centers = 2, iter.max = 100, nstart = 5)
+          min(km$centers)
+        }, error = function(e) {
+          error_cols <<- c(error_cols, colnames(norm_adt)[i])
+          cat(sprintf("km.fast issue detecting background for cell %s: %s\n",
+                      colnames(norm_adt)[i], e$message))
+          NULL
+        })
+      }) # end of apply statement to define cell_background_mean
+      # Error handling for km.fast
+      if (length(error_cols) > 0) {
+        cat("issues detecting background mean occurred in cells:",
+            paste(error_cols, collapse = ", "), "\n")
+      }
+    } else {
+      # original per cell background mean definition
+      cellwise_background_mean = apply(norm_adt, 2, function(x) {
+        g = mclust::Mclust(x, G=2, warn = FALSE, verbose = FALSE)
+        return(g$parameters$mean[1])
+      })
+    }
     gc()
     if (isTRUE(use.isotype.control)) {
       noise_matrix = rbind(norm_adt[isotype.control.name.vec, ], cellwise_background_mean)
@@ -228,6 +252,8 @@ DSBNormalizeProtein = function(cell_protein_matrix,
       norm_adt = limma::removeBatchEffect(norm_adt, covariates = noise_vector)
     }
   }
+  #### End of step 2
+
   # apply quantile clipping of outliers
   if (isTRUE(quantile.clipping)) {
     ql = apply(norm_adt, 1, FUN = stats::quantile, quantile.clip[1])
@@ -237,19 +263,20 @@ DSBNormalizeProtein = function(cell_protein_matrix,
       norm_adt[i, ] = ifelse(norm_adt[i, ] > qh[i], qh[i], norm_adt[i, ])
     }
   }
-  # write internal stats to R list to return if return.stats = TRUE
   if(isTRUE(return.stats)) {
     print('returning results in a list; normalized matrix accessed x$dsb_normalized_matrix')
     protein_stats = list(
 
       'raw cell matrix stats' = data.frame(
         cell_mean = apply(adt_log, 1 , mean),
-        cell_sd = apply(adt_log, 1 , sd)),
+        cell_sd = apply(adt_log, 1 , sd)
+      ),
 
       'dsb normalized matrix stats' =
         data.frame(
           dsb_mean = apply(norm_adt, 1 , mean),
-          dsb_sd = apply(adt_log, 1 , sd))
+          dsb_sd = apply(adt_log, 1 , sd)
+        )
     )
     if(isTRUE(denoise.counts)) {
       if(isTRUE(use.isotype.control)){
@@ -279,5 +306,3 @@ DSBNormalizeProtein = function(cell_protein_matrix,
     return(norm_adt)
   }
 }
-
-

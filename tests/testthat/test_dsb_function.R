@@ -1,4 +1,3 @@
-# unit testing for dsb function
 library(testthat)
 context("testing dsb norm")
 
@@ -45,30 +44,47 @@ testthat::test_that(desc = "run dsb on example data", code = {
                                use.isotype.control = FALSE)
   )
 
+  # test fast.km
+  result = DSBNormalizeProtein(
+    # test this
+    fast.km = TRUE,
+
+    # defaults
+    cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+    empty_drop_matrix = empty_drop_citeseq_mtx,
+    denoise.counts = TRUE,
+    use.isotype.control = TRUE,
+    isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70],
+  )
+  testthat::expect_equal(ncol(result), expected = 100)
+  testthat::expect_equal(nrow(result), expected = 87)
+  testthat::expect_gt(object = mean(rowMeans(result)), 1)
+
   # test DSBNormalizeProtein without step II
   result = DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
                                empty_drop_matrix = empty_drop_citeseq_mtx,
                                denoise.counts = FALSE, use.isotype.control = FALSE)
+  testthat::expect_gt(object = mean(rowMeans(result)), 1)
 
   # test non default scaling
   r2 =
     DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
-                         empty_drop_matrix = empty_drop_citeseq_mtx,
-                         define.pseudocount = TRUE,
-                         pseudocount.use = 5,
-                         use.isotype.control = TRUE,
-                         isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
-                           rownames(cells_citeseq_mtx), pattern = 'otyp')],
-                         quantile.clipping = TRUE, scale.factor = 'mean.subtract',
-                         return.stats = FALSE)
+                        empty_drop_matrix = empty_drop_citeseq_mtx,
+                        define.pseudocount = TRUE,
+                        pseudocount.use = 5,
+                        use.isotype.control = TRUE,
+                        isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
+                          rownames(cells_citeseq_mtx), pattern = 'otyp')],
+                        quantile.clipping = TRUE, scale.factor = 'mean.subtract',
+                        return.stats = FALSE)
   r2mean = mean(rowMeans(r2))
   testthat::expect_lt(object = r2mean, 1)
 
   # test mis-specified non-default scaling
   testthat::expect_error(
-      DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
-                          empty_drop_matrix = empty_drop_citeseq_mtx,
-                          scale.factor = 'not.an.option')
+    DSBNormalizeProtein(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
+                        empty_drop_matrix = empty_drop_citeseq_mtx,
+                        scale.factor = 'not.an.option')
   )
 
   # test output return value of function run on example data.
@@ -116,15 +132,15 @@ testthat::test_that(desc = "run dsb on example data", code = {
   # test ModelNegativeADTnorm
   result =
     ModelNegativeADTnorm(cell_protein_matrix = cells_citeseq_mtx[ ,1:100],
-                       define.pseudocount = TRUE,
-                       pseudocount.use = 5,
-                       use.isotype.control = TRUE,
-                       isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
-                         rownames(cells_citeseq_mtx), pattern = 'otyp')],
-                       quantile.clipping = TRUE,
-                       quantile.clip = c(0.0001, 0.9999),
-                       return.stats = TRUE
-                       )
+                         define.pseudocount = TRUE,
+                         pseudocount.use = 5,
+                         use.isotype.control = TRUE,
+                         isotype.control.name.vec = rownames(cells_citeseq_mtx)[grepl(
+                           rownames(cells_citeseq_mtx), pattern = 'otyp')],
+                         quantile.clipping = TRUE,
+                         quantile.clip = c(0.0001, 0.9999),
+                         return.stats = TRUE
+    )
   testthat::expect_type(object = result, type = 'list')
   normprot = result$dsb_normalized_matrix
   testthat::expect_equal(ncol(normprot), expected = 100)
@@ -144,8 +160,5 @@ testthat::test_that(desc = "run dsb on example data", code = {
                          denoise.counts = TRUE,
                          use.isotype.control = FALSE)
   )
-
-
-
 })
 

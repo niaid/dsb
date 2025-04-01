@@ -18,7 +18,8 @@ knitr::opts_chunk$set(
 )
 ```
 
-This method has performed well on 4 datasets but it has not been as extensively tested as the default `DSBNormalizeProtein` method. 
+
+**In the functions below, recommend setting fast.km = TRUE for 10-fold faster compute times, see new vignette**  
 
 Sometimes empty droplets are not available. In Supplementary Figure 1, we show that the fitted background population mean of each protein across all cells was concordant with the mean of ambient ADTs in both empty droplets and unstained control cells.  
 
@@ -26,7 +27,7 @@ This experiment suggests that this fitted background mean captures an estimate o
 
 ```{r}
 library(dsb)
-# pecify isotype controls to use in step II 
+# Specify isotype controls to use in step II 
 isotypes = c("MouseIgG1kappaisotype_PROT", "MouseIgG2akappaisotype_PROT", 
              "Mouse IgG2bkIsotype_PROT", "RatIgG2bkIsotype_PROT")
 
@@ -105,7 +106,7 @@ cowplot::plot_grid(p1,p2)
 
 ```
 <img src="../man/figures/vignette/dists.png" />
-Now we can cluster with WNN using the dsb normalized values as in the other end to end analysis vignette. We first add the dsb normalized values to the object directly and we do not normalize with CLR, instead proceeding directly with the Seurat WNN clustering pipeline. 
+Example downstream multimodal clustering using Seurat. The normalized valuse are added to the object directly without normalization within Seurat.   
 
 ```{r, eval = FALSE}
 bm = SetAssayData(bmcite, slot = 'data', 

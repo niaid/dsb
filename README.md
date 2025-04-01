@@ -6,7 +6,7 @@
 status](https://www.r-pkg.org/badges/version/dsb)](https://CRAN.R-project.org/package=dsb)
 <!-- badges: end -->
 
-# <a href='https://CRAN.R-project.org/package=dsb/'><img src='man/figures/sticker2.png' align="right" width="150" /></a> dsb: a method for normalizing and denoising antibody derived tag data from CITE-seq, ASAP-seq, TEA-seq and related assays.
+# <a href='https://CRAN.R-project.org/package=dsb/'><img src='man/figures/sticker2.png' align="right" width="150" /></a> dsb: Normalize and denoise antibody-derived-tag data from CITE-seq, ASAP-seq, TEA-seq and related assays.
 
 The dsb R package is available on [**CRAN: latest dsb
 release**](https://CRAN.R-project.org/package=dsb)  
@@ -18,9 +18,12 @@ our deconvolution of ADT noise sources and development of dsb. <br>
 
 #### Vignettes:
 
+[**New update dsb 2.0 faster runtimes for large datasets with or without
+empty
+drops**](https://CRAN.R-project.org/package=dsb/vignettes/fastkm.html)
+
 1.  [**Using dsb in an end to end CITE-seq workflow including multimodal
-    clustering in
-    Seurat**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
+    clustering**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
 2.  [**How the dsb method
     works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
 3.  [**Normalizing ADTs if empty drops are not
@@ -31,44 +34,38 @@ our deconvolution of ADT noise sources and development of dsb. <br>
     etc.**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
     <br>
 
+See notes on [**upstream processing before dsb**](#otheraligners)
+
 [**Recent Publications**](#pubications) Check out recent publications
 that used dsb for ADT normalization.
 
-In the first “end to end” vignette, we demonstrate basic CITE-seq
-analysis starting from UMI count alignment output files from Cell Ranger
-though note that dsb is compatible with any alignment tool (see [**using
-other alignment tools**](#otheraligners)). We load unfiltered UMI data
-containing cells and empty droplets, perform QC on cells and background
-droplets, normalize with dsb, and demonstrate protein-based clustering
-and multimodal RNA+Protein joint clustering using dsb normalized values
-with Seurat’s Weighted Nearest Neighbor method.
+The functions in this package return standard R matrix objects that can
+be added to any data container like a `SingleCellExperiment`, `Seurat`,
+or `AnnData` related python objects.
 
 ## Background and motivation <a name="background_motivation"></a>
 
-Protein data derived from sequencing antibody derived tags (ADTs) in
-CITE-seq and other related assays has substantial background noise.
 [**Our paper**](https://www.nature.com/articles/s41467-022-29356-8)
-outlines experiments and analysis designed to dissect sources of noise
-in ADT data we used to developed our method. We found all experiments
-measuring ADTs capture protein-specific background noise because ADT
-reads in empty / background drops (outnumbering cell-containing droplets
-\> 10-fold in all experiments) were highly concordant with ADT levels in
-unstained spike-in cells. We therefore utilize background droplets which
-capture the *ambient component* of protein background noise to correct
-values in cells. We also remove technical cell-to-cell variations by
-defining each cell’s dsb “technical component”, a conservative
-adjustment factor derived by combining isotype control levels with each
-cell’s specific background level fitted with a single cell model.
+combined experiments and computational approaches to find ADT protein
+data from CITE-seq and related assays are affected by substantial
+background noise. We observed that ADT reads from empty droplets—often
+more than tenfold the number of cell-containing droplets—closely match
+levels in unstained spike-in cells, and can also serve as a readout of
+protein-specific ambient noise. We also remove cell-to-cell technical
+variation by estimating a conservative adjustment factor derived from
+isotype control levels and per cell background derived from a per cell
+mixture model. The 2.0 release of dsb includes faster compute times and
+functions for normalization on datasets without empty drops.
 
 ## Installation and quick overview <a name="installation"></a>
 
-The method is carried out in a single step with a call to the
+The default method is carried out in a single step with a call to the
 `DSBNormalizeProtein()` function.  
 `cells_citeseq_mtx` - a raw ADT count matrix `empty_drop_citeseq_mtx` -
 a raw ADT count matrix from non-cell containing empty / background
 droplets.  
-`denoise.counts = TRUE` - implement step II to define and remove the
-‘technical component’ of each cell’s protein library.  
+`denoise.counts = TRUE` - define and remove the ‘technical component’ of
+each cell’s protein library.  
 `use.isotype.control = TRUE` - include isotype controls in the modeled
 dsb technical component.
 
@@ -76,20 +73,57 @@ dsb technical component.
 # install.packages('dsb')
 library(dsb)
 
+isotype.names = c("MouseIgG1kappaisotype_PROT", "MouseIgG2akappaisotype_PROT", 
+                  "Mouse IgG2bkIsotype_PROT", "RatIgG2bkIsotype_PROT")
+
 adt_norm = DSBNormalizeProtein(
   cell_protein_matrix = cells_citeseq_mtx, 
   empty_drop_matrix = empty_drop_citeseq_mtx, 
   denoise.counts = TRUE, 
   use.isotype.control = TRUE, 
-  isotype.control.name.vec = rownames(cells_citeseq_mtx)[67:70]
+  isotype.control.name.vec = isotype.names, 
+  fast.km = TRUE # optional
   )
 ```
 
-<img src="man/figures/multimodal_heatmap.png" />
+## Datasets without empty drops
 
-Please see [**the main vignette on
-CRAN**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)
-for more details. <br>
+Not all datasets have empty droplets available, for example those
+downloaded from online repositories where only processed data are
+included. We provide a method to approximate the background distribution
+of proteins based on data from cells alone. Please see the vignette
+[Normalizing ADTs if empty drops are not
+available](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)
+for more details.
+
+``` r
+adt_norm = ModelNegativeADTnorm(
+  cell_protein_matrix = cells_citeseq_mtx, 
+  denoise.counts = TRUE, 
+  use.isotype.control = TRUE, 
+  isotype.control.name.vec = isotype.names, 
+  fast.km = TRUE # optional
+  )
+```
+
+## 10-fold faster compute time with dsb 2.0
+
+To speed up the function 10-fold with minimal impact on the results from
+those in the default function set `fast.km = TRUE` with either the
+`DSBNormalizeProtein` or `ModelNegativeADTnorm` functions. See the
+[vignette on
+fast.km](https://CRAN.R-project.org/package=dsb/vignettes/fastkm.html)
+for more info.
+
+<img src="man/figures/timingsfig2.png" width="150" />
+
+## What settings should I use?
+
+See the simple visual guide below. Please search the resolved issues on
+github for questions or open a new issue if your use case has not been
+addressed.
+
+<img src="man/figures/dsb_arguments.png" width="650" />
 
 ### Selected publications using dsb <a name="pubications"></a>
 
@@ -112,95 +146,95 @@ al. *Cell* 2021](https://doi.org/10.1016/j.cell.2021.02.018) <br>
 [Kotliarov et al. *Nature Medicine*
 2020](https://doi.org/10.1038/s41591-020-0769-8) <br>
 
-### using other alignment algorithms <a name="otheraligners"></a>
+### Upstream read alignment to generate raw ADT files prior to dsb <a name="otheraligners"></a>
 
-dsb was developed prior to 10X Genomics supporting CITE-seq or hashing
-data and we routinely use other alignment pipelines.
+Any alignment software can be used prior to normalization with dsb. To
+use the `DSBNormalizeProtein` function described in the manuscript, you
+need to define cells and empty droplets from the alignment files. Any
+aligment pipeline can be used. Some examples guides below:
 
-A note on alignment and how to use dsb with Cell Ranger is detailed in
-the main vignette. Cells and empty droplets are used by default by dsb.
+#### Cell Ranger
 
-<img src="man/figures/readme_cheatsheet.png" />
-
-To use dsb properly with CITE-seq-Count you need to align background.
-One way to do this is to set the `-cells` argument to \~ 200000. That
-will align the top 200000 barcodes in terms of ADT library size, making
-sure you capture the background. Please refer to [**CITE-seq-count
-documentation**](https://hoohm.github.io/CITE-seq-Count/Running-the-script/)
+See the [“end to end”
+vignette](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)
+for information on defining cells and background droplets from the
+output files created from Cell Ranger as in the schematic below.  
+Please note *whether or not you use dsb*, to define cells using the
+`filtered_feature_bc_matrix` file from Cell Ranger, you need to properly
+set the `--expect-cells` argument to roughly your estimated cell
+recovery per lane based on how many cells you loaded. see [the note from
+10X about
+this](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/algorithms/overview#cell_calling).
+The default value of 3000 is likely not suited to most modern
+experiments.
 
 ``` bash
+# Cell Ranger alignment
+cellranger count --id=sampleid\
+--transcriptome=transcriptome_path\
+--fastqs=fastq_path\
+--sample=mysample\
+--expect-cells=10000\  
+```
+
+See end to end vignette for detailed information on using Cell Ranger
+output.  
+<img src="man/figures/readme_cheatsheet.png" width ="650" />
+
+#### CITE-seq-Count
+
+Important: set the `-cells` argument in `CITE-seq-Count` to ~ 200000.
+This aligns the top 200000 barcodes per lane by ADT library size.  
+[CITE-seq-count
+documentation](https://hoohm.github.io/CITE-seq-Count/Running-the-script/)
+
+``` bash
+# CITE-seq-Count alignment
 CITE-seq-Count -R1 TAGS_R1.fastq.gz  -R2 TAGS_R2.fastq.gz \
  -t TAG_LIST.csv -cbf X1 -cbl X2 -umif Y1 -umil Y2 \
   -cells 200000 -o OUTFOLDER
 ```
 
-If you already aligned your mRNA with Cell Ranger or something else but
-wish to use a different tool like kallisto or Cite-seq-count for ADT
-alignment, you can provide the latter with whitelist of cell barcodes to
-align. A simple way to do this is to extract all barcodes with at least
-k mRNA where we set k to a tiny number to retain cells *and* cells
-capturing ambient ADT reads:
+#### Alevin
 
-``` r
-library(Seurat)
-umi = Read10X(data.dir = 'data/raw_feature_bc_matrix/')
-k = 3 
-barcode.whitelist = 
-  rownames(
-    CreateSeuratObject(counts = umi,
-                       min.features = k,  # retain all barcodes with at least k raw mRNA
-                       min.cells = 800, # this just speeds up the function by removing genes. 
-                       )@meta.data 
-    )
+I recommend following the comprehensive tutorials by Tommy Tang for
+using Alevin, DropletUtils and dsb for CITE-seq normalization.  
+[ADT alignment with
+Alevin](https://divingintogeneticsandgenomics.com/post/how-to-use-salmon-alevin-to-preprocess-cite-seq-data/)  
+[DropletUtils and dsb from Alevin
+output](https://divingintogeneticsandgenomics.com/post/part-4-cite-seq-normalization-using-empty-droplets-with-the-dsb-package/)  
+[Alevin
+documentation](https://salmon.readthedocs.io/en/latest/alevin.html)
 
-write.table(barcode.whitelist,
-file =paste0(your_save_path,"barcode.whitelist.tsv"), 
-sep = '\t', quote = FALSE, col.names = FALSE, row.names = FALSE)
-```
+#### Kallisto bustools pseudoalignment
 
-With the example dataset in the vignette this retains about 150,000
-barcodes.
-
-Now you can provide that as an argument to `-wl` in CITE-seq-count to
-align the ADTs and then proceed with the dsb analysis example.
-
-``` bash
-CITE-seq-Count -R1 TAGS_R1.fastq.gz  -R2 TAGS_R2.fastq.gz \
- -t TAG_LIST.csv -cbf X1 -cbl X2 -umif Y1 -umil Y2 \
-  -wl path_to_barcode.whitelist.tsv -o OUTFOLDER
-```
-
-This whitelist can also be provided to Kallisto.  
+I recommend checking out the tutorials and example code below to
+understand how to use kallisto bustools outputs with dsb.  
+[kallisto bustools tutorial by Sarah
+Ennis](https://github.com/Sarah145/scRNA_pre_process)  
+[dsb normalization using kallisto outputs by Terkild Brink
+Buus](https://github.com/Terkild/CITE-seq_optimization/blob/master/Demux_Preprocess_Downsample.md)  
 [kallisto bustools
 documentation](https://www.kallistobus.tools/tutorials/kb_kite/python/kb_kite/)
 
+Example script
+
 ``` bash
 kb count -i index_file -g gtf_file.t2g -x 10xv3 \
--t n_cores -w path_to_barcode.whitelist.tsv -o output_dir \
+-t n_cores  -o output_dir \
 input.R1.fastq.gz input.R2.fastq.gz
 ```
 
-Next one can similarly define cells and background droplets empirically
-with protein and mRNA based thresholding as outlined in the main
-tutorial.
+After alignment define cells and background droplets empirically with
+protein and mRNA based thresholding as outlined in the main tutorial.
 
-### A note on Cell Ranger –expect-cells <a name="cellranger"></a>
-
-Note *whether or not you use dsb*, if you want to define cells using the
-`filtered_feature_bc_matrix` file, you should make sure to properly set
-the Cell Ranger `--expect-cells` argument roughly equal to the estimated
-cell recovery per lane based on number of cells you loaded in the
-experiment. see [the note from 10X about
-this](https://support.10xgenomics.com/single-cell-gene-expression/software/pipelines/latest/algorithms/overview#cell_calling).
-The default value of 3000 is relatively low for modern experiments. Note
-cells and empty droplets can also be defined directly from the
-`raw_feature_bc_matrix` using any method, including simple protein and
-mRNA library size based thresholding because this contains all droplets.
-
-Topics covered in other vignettes on CRAN: **Integrating dsb with
-Bioconductor, integrating dsb with python/Scanpy, Using dsb with data
-lacking isotype controls, integrating dsb with sample multiplexing
-experiments, using dsb on data with multiple batches, advanced usage -
-using a different scale / standardization based on empty droplet levels,
-returning internal stats used by dsb, outlier clipping with the
-quantile.clipping argument, other FAQ.**
+**Topics covered in other vignettes on CRAN**  
+Integrating dsb with Bioconductor, integrating dsb with python/Scanpy  
+Using dsb with data lacking isotype controls  
+integrating dsb with sample multiplexing experiments  
+using dsb on data with multiple batches  
+using a different scale / standardization based on empty droplet
+levels  
+Returning internal stats used by dsb  
+outlier clipping with the quantile.clipping argument  
+other FAQ

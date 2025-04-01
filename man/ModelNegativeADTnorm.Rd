@@ -14,7 +14,7 @@ This is a experimental function that performs well in testing and is motivated b
 in Supplementary Fig 1 in the dsb paper showing that the fitted background mean was concordant with
 the mean of ambient ADTs in both empty droplets and unstained control cells. We recommend using
 `ModelNegativeADTnorm` if empty droplets are not available.
-See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.}
+See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.}
 \usage{
 ModelNegativeADTnorm(
   cell_protein_matrix,
@@ -23,6 +23,7 @@ ModelNegativeADTnorm(
   isotype.control.name.vec = NULL,
   define.pseudocount = FALSE,
   pseudocount.use,
+  fast.km = FALSE,
   quantile.clipping = FALSE,
   quantile.clip = c(0.001, 0.9995),
   return.stats = FALSE
@@ -45,6 +46,10 @@ and background matrix e.g. isotype.control.name.vec = c('isotype1', 'isotype2').
 
 \item{pseudocount.use}{Must be defined if `define.pseudocount = TRUE`. This is the pseudocount to be added to
 raw ADT UMI counts. Otherwise the default pseudocount used.}
+
+\item{fast.km}{Recommended to set this parameter to `TRUE` for large datasets. If `fast.km = TRUE`, the function defines
+cell level background for step II with a a k=2 k-means cluster instead of a 2 component gaussian mixture. Increases speed
+~10x on 1 million cell benchmark with minimal impact on results.}
 
 \item{quantile.clipping}{FALSE (default), if outliers or a large range of values for some proteins are observed
 (e.g. -50 to 50) these are often from rare outlier cells. re-running the function with `quantile.clipping = TRUE`
@@ -77,7 +82,7 @@ This is a experimental function that performs well in testing and is motivated b
 in Supplementary Fig 1 in the dsb paper showing that the fitted background mean was concordant with
 the mean of ambient ADTs in both empty droplets and unstained control cells. We recommend using
 `ModelNegativeADTnorm` if empty droplets are not available.
-See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
+See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.
 }
 \examples{
 library(dsb) # load example data cells_citeseq_mtx and empty_drop_matrix included in package
@@ -99,7 +104,7 @@ adt_norm = dsb::ModelNegativeADTnorm(
 
 }
 \references{
-https://doi.org/10.1101/2020.02.24.963603
+https://www.nature.com/articles/s41467-022-29356-8
 }
 \author{
 Matthew P. Mulè, \email{mattmule@gmail.com}

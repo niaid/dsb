@@ -1,3 +1,4 @@
+### Model negative adt norm
 #' ModelNegativeADTnorm R function: Normalize single cell antibody derived tag (ADT) protein data.
 #' This function defines the background level for each protein by fitting a 2 component Gaussian
 #' mixture after log transformation. Empty Droplet ADT counts are not supplied. The fitted background
@@ -10,9 +11,9 @@
 #' in Supplementary Fig 1 in the dsb paper showing that the fitted background mean was concordant with
 #' the mean of ambient ADTs in both empty droplets and unstained control cells. We recommend using
 #' `ModelNegativeADTnorm` if empty droplets are not available.
-#' See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
+#' See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.
 #' @author Matthew P. Mulè, \email{mattmule@@gmail.com}
-#' @references https://doi.org/10.1101/2020.02.24.963603
+#' @references https://www.nature.com/articles/s41467-022-29356-8
 #' @param cell_protein_matrix Raw protein ADT UMI count data to be normalized. Cells - columns
 #' Proteins (ADTs) - rows.
 #' @param denoise.counts Recommended function default `denoise.counts = TRUE` and `use.isotype.control = TRUE`.
@@ -29,6 +30,9 @@
 #'  will adjust by applying 0.001 and 0.998th quantile value clipping to trim values to those max and min values.
 #' @param quantile.clip if `quantile.clipping = TRUE`, a vector of the lowest and highest quantiles to clip. These can
 #'  be tuned to the dataset size. The default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.
+#' @param fast.km Recommended to set this parameter to `TRUE` for large datasets. If `fast.km = TRUE`, the function defines
+#' cell level background for step II with a a k=2 k-means cluster instead of a 2 component gaussian mixture. Increases speed
+#' ~10x on 1 million cell benchmark with minimal impact on results.
 #' @param return.stats if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2
 #'  $dsb_stats is the internal stats used by dsb during denoising (the background mean, isotype control values, and the
 #'  final dsb technical component that is regressed out of the counts)
@@ -42,7 +46,7 @@
 #'
 #' @importFrom limma removeBatchEffect
 #' @importFrom mclust Mclust mclustBIC
-#' @importFrom stats prcomp sd quantile
+#' @importFrom stats prcomp sd quantile kmeans
 #' @examples
 #' library(dsb) # load example data cells_citeseq_mtx and empty_drop_matrix included in package
 #'
@@ -67,6 +71,7 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
                                 isotype.control.name.vec = NULL,
                                 define.pseudocount = FALSE,
                                 pseudocount.use,
+                                fast.km = FALSE,
                                 quantile.clipping = FALSE,
                                 quantile.clip = c(0.001, 0.9995),
                                 return.stats = FALSE){
@@ -75,19 +80,16 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
          ' may be 0-centered;\n recommended usage of dsb: provide background ADT',
          ' matrix from\n  empty droplets as argument to empty_drop_matrix ')
 
+  # formatting checks on step 2 functions
   a = isotype.control.name.vec
   cm = rownames(cell_protein_matrix)
-
-  ### dsb Step II argument checks
-  # try to detect isotypes and suggest usage in error messages
-  iso_detect = cm[grepl(
-    pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
+  iso_detect = cm[grepl(pattern = 'sotype|Iso|iso|control|CTRL|ctrl|Ctrl|ontrol', x = cm)]
 
   # isotype.control.name.vec specified but some isotypes are not in input matrices
   if (!is.null(a) & !isTRUE(all(a %in% cm))){
     stop(paste0("some elements of isotype.control.name.vec are not in input data rownames: \n",
                 setdiff(a,cm))
-         )
+    )
   }
   # step II = FALSE - remind user isotypes unused. set isotype-related args to FALSE, NULL
   if (isFALSE(denoise.counts)) {
@@ -121,12 +123,10 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
       print(iso_detect)
     }
   }
-  # end step II argument checks
 
-
-  # Normalization - create norm_adt
+  # STEP I - protein level background correction - create norm_adt
   # if matrices are dgTMatrix coerce into regular matrix
-  adt = cell_protein_matrix %>% as.matrix()
+  adt = as.matrix(cell_protein_matrix)
   if(isTRUE(define.pseudocount)) {
     adt_log = log(adt + pseudocount.use)
   } else {
@@ -152,15 +152,37 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
   }
   norm_adt = apply( adt_log, 2, function(x) (x - mu1) )
 
-  #### STEP II
-  # dsb step II - calculate dsb technical component and regress out of ambient corrected values
+
+  # STEP II
+  # dsb step II calculate dsb technical component and regress out of ambient corrected values
   if(isTRUE(denoise.counts)){
     print(paste0('fitting models to each cell for dsb technical component and',
                  ' removing cell to cell technical noise'))
-    cellwise_background_mean = apply(norm_adt, 2, function(x) {
-      g = mclust::Mclust(x, G=2, warn = FALSE, verbose = FALSE)
-      return(g$parameters$mean[1])
-    })
+    if(isTRUE(fast.km)){
+      error_cols <- character(0)
+      cellwise_background_mean <- sapply(seq_len(ncol(norm_adt)), function(i) {
+        tryCatch({
+          km <- stats::kmeans(norm_adt[, i], centers = 2, iter.max = 100, nstart = 5)
+          min(km$centers)
+        }, error = function(e) {
+          error_cols <<- c(error_cols, colnames(norm_adt)[i])
+          cat(sprintf("km.fast issue detecting background for cell %s: %s\n",
+                      colnames(norm_adt)[i], e$message))
+          NULL
+        })
+      }) # end of apply statement to define cell_background_mean
+      # Error handling for km.fast
+      if (length(error_cols) > 0) {
+        cat("issues detecting background mean occurred in cells:",
+            paste(error_cols, collapse = ", "), "\n")
+      }
+    } else {
+      # original per cell background mean definition
+      cellwise_background_mean = apply(norm_adt, 2, function(x) {
+        g = mclust::Mclust(x, G=2, warn = FALSE, verbose = FALSE)
+        return(g$parameters$mean[1])
+      })
+    }
     gc()
     if (isTRUE(use.isotype.control)) {
       noise_matrix = rbind(norm_adt[isotype.control.name.vec, ], cellwise_background_mean)
@@ -177,6 +199,7 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
       norm_adt = limma::removeBatchEffect(norm_adt, covariates = noise_vector)
     }
   }
+
   # apply quantile clipping of outliers
   if (isTRUE(quantile.clipping)) {
     ql = apply(norm_adt, 1, FUN = stats::quantile, quantile.clip[1])
@@ -215,5 +238,3 @@ ModelNegativeADTnorm = function(cell_protein_matrix,
     return(norm_adt)
   }
 }
-
-

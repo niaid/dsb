@@ -9,3 +9,5 @@ gitignore/
 .Rapp.history/
 .DS_Store
 data/data.Rproj
+/doc/
+/Meta/

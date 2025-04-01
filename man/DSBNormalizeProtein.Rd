@@ -3,9 +3,9 @@
 \name{DSBNormalizeProtein}
 \alias{DSBNormalizeProtein}
 \title{DSBNormalizeProtein R function: Normalize single cell antibody derived tag (ADT) protein data.
-This function implements both step I (ambient protein background correction) and step II.
-(defining and removing cell to cell technical variation) of the dsb normalization method.
-See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.}
+This function corrects for both protein specific and cell to cell technical noise in antibody derived tag (ADT) data.
+For datasets without access to empty drops use dsb::ModelNegativeADTnorm.
+See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.}
 \usage{
 DSBNormalizeProtein(
   cell_protein_matrix,
@@ -17,28 +17,30 @@ DSBNormalizeProtein(
   pseudocount.use,
   quantile.clipping = FALSE,
   quantile.clip = c(0.001, 0.9995),
+  fast.km = FALSE,
   scale.factor = c("standardize", "mean.subtract")[1],
   return.stats = FALSE
 )
 }
 \arguments{
-\item{cell_protein_matrix}{Raw protein ADT UMI count data to be normalized. Cells - columns
-Proteins (ADTs) - rows.}
+\item{cell_protein_matrix}{Raw protein ADT UMI count data to be normalized. Cells = columns, protein antibody = rows.}
 
-\item{empty_drop_matrix}{Raw empty droplet / background ADT UMI count data used for background correction
-with Cells - columns and Proteins (ADTs) - rows. This can easily be defined from the raw_feature_bc_matrix
-output from Cell Ranger or other alignment tools such as kallisto and Cite-Seq-Count. See vignette.}
+\item{empty_drop_matrix}{Raw empty droplet / background ADT UMI count data used for background correction.
+Cells - columns and Proteins (ADTs) - rows. See vignettes for how to define background matrix from the
+raw_feature_bc_matrix output from Cell Ranger or from other alignment tools such as kallisto and Cite-Seq-Count.
+For datasets without access to empty drops use dsb::ModelNegativeADTnorm.}
 
 \item{denoise.counts}{Recommended function default `denoise.counts = TRUE` and `use.isotype.control = TRUE`.
-This runs step II of the dsb algorithm to define and remove cell to cell technical noise.}
+This removes remove cell to cell technical noise as described as "step II" in Mulè et al 2022.}
 
 \item{use.isotype.control}{Recommended function default `denoise.counts = TRUE` and `use.isotype.control = TRUE`.
 This includes isotype controls in defining the dsb technical component.}
 
 \item{isotype.control.name.vec}{A vector of the names of the isotype control proteins in the rows of the cells
-and background matrix e.g. isotype.control.name.vec = c('isotype1', 'isotype2').}
+and background matrix e.g. `isotype.control.name.vec = c('isotype1', 'isotype2')`.}
 
-\item{define.pseudocount}{FALSE (default) uses the value 10 optimized for protein ADT data.}
+\item{define.pseudocount}{`FALSE` (default) uses the value 10 optimized for protein ADT data.
+Any pseudocount can be used by setting this argument to `FALSE` and specifying `pseudocount.use`.}
 
 \item{pseudocount.use}{Must be defined if `define.pseudocount = TRUE`. This is the pseudocount to be added to
 raw ADT UMI counts. Otherwise the default pseudocount used.}
@@ -51,12 +53,17 @@ range of normalized values are still very broad and high (e.g. above 40) try set
 \item{quantile.clip}{if `quantile.clipping = TRUE`, a vector of the lowest and highest quantiles to clip. These can
 be tuned to the dataset size. The default c(0.001, 0.9995) optimized to clip only a few of the most extreme outliers.}
 
+\item{fast.km}{Recommended to set this parameter to `TRUE` for large datasets. If `fast.km = TRUE`, the function defines
+cell level background for step II with a a k=2 k-means cluster instead of a 2 component gaussian mixture. Increases speed
+~10x on 1 million cell benchmark with minimal impact on results.}
+
 \item{scale.factor}{one of `standardize` or `mean.subtract`.
-The recommended default `standardize` subtracts from the cells the the background droplet matrix mean and
-divides by the background matrix standard deviation. Values for each protein with this method are
-interpretable as the number of standard deviations from the mean of the protein background distribution.
-If `mean.subtract`, subtract the mean without dividing by the standard deviation; can be useful if low
-background levels detected.}
+Scale factor specifies how to implement protein level denoising. The recommended default is `standardize` which is the method
+described in Mulè et al 2022 as "Step I". For each protein, this subtracts the mean and divides by the standard deviation
+of that protein observed in the empty droplets, making the resulting value interpretable as the number of standard deviations
+above the average of the background for that protein observed in empty droplets.
+`mean.subtract`, subtracts the mean without dividing by the standard deviation; can be used in scenarios where low
+background levels are detected systematically for most proteins in the dataset background standard deviation may be unstable.}
 
 \item{return.stats}{if TRUE, returns a list, element 1 $dsb_normalized_matrix is the normalized adt matrix element 2
 $dsb_stats is the internal stats used by dsb during denoising (the background mean, isotype control values, and the
@@ -71,9 +78,9 @@ each cell and each variable used to calculate the technical component.
 }
 \description{
 DSBNormalizeProtein R function: Normalize single cell antibody derived tag (ADT) protein data.
-This function implements both step I (ambient protein background correction) and step II.
-(defining and removing cell to cell technical variation) of the dsb normalization method.
-See <https://www.biorxiv.org/content/10.1101/2020.02.24.963603v3> for details of the algorithm.
+This function corrects for both protein specific and cell to cell technical noise in antibody derived tag (ADT) data.
+For datasets without access to empty drops use dsb::ModelNegativeADTnorm.
+See <https://www.nature.com/articles/s41467-022-29356-8> for details of the algorithm.
 }
 \examples{
 library(dsb) # load example data cells_citeseq_mtx and empty_drop_matrix included in package
@@ -116,7 +123,7 @@ dsb_output = dsb::DSBNormalizeProtein(
 
 }
 \references{
-https://doi.org/10.1101/2020.02.24.963603
+https://www.nature.com/articles/s41467-022-29356-8
 }
 \author{
 Matthew P. Mulè, \email{mattmule@gmail.com}
