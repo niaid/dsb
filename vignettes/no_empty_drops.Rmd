@@ -55,14 +55,13 @@ hist(norm.adt["CD18_PROT", ], breaks = 45, col = r, main = 'CD18', xlab = lab)
 
 Note that two proteins in this 87 protein panel are expected to be expressed by every cell--HLA-ABC and CD18. *cells with the lowest expression of ubiquitously expressed proteins can fall around 0 with this method*. Relative CD18 values above are the same as the default dsb, however, the lowest population cells with this method are around 0.  
 
-Clustering performance and modeling e.g. with protein or joint WNN clustering is highly concordant using the default dsb and this modeled background method. Below we demonstrate WNN using this method on [bone marrow CITE-seq data](https://www.sciencedirect.com/science/article/pii/S0092867419305598?via%3Dihub) from the Satija lab. 
+Clustering performance and modeling e.g. with protein or joint WNN clustering is highly concordant using the default dsb and this modeled background method. 
 
 ```{r, eval = FALSE}
 # these data were installed with the SeuratData package
 # devtools::install_github('satijalab/seurat-data')
 # library(SeuratData)
-# InstallData(ds = 'bmcite')
-
+# InstallData(ds = 'bmcite') from https://doi.org/10.1016/j.cell.2019.05.031
 # load bone marrow CITE-seq data
 data('bmcite')
 bm = bmcite; rm(bmcite)
