@@ -18,16 +18,20 @@ our deconvolution of ADT noise sources and development of dsb. <br>
 
 #### Vignettes:
 
-1.  [**Using dsb in an end-to-end CITE-seq
+1.  [**Using dsb with an end-to-end CITE-seq
     workflow**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
-2.  [**Using dsb if empty drops are not
+2.  [**Using dsb when empty droplets are not
     available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
-3.  [**How the dsb method
+3.  [**Speed up dsb 10-fold: set fast.km = TRUE (great for large
+    datasets with / without empty
+    droplets)**](https://cran.r-project.org/web/packages/dsb/vignettes/fastkm.html)
+    <br>
+4.  [**How the dsb method
     works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
-4.  [**Using the dsb method in
+5.  [**Using the dsb method in
     Python**](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
-5.  [**Frequently Asked
-    Questions**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
+6.  [**Frequently asked
+    questions**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html)
     <br>
 
 See notes on [**upstream processing before dsb**](#otheraligners)
@@ -107,7 +111,8 @@ adt_norm = ModelNegativeADTnorm(
 To speed up the function 10-fold with minimal impact on the results from
 those in the default function set `fast.km = TRUE` with either the
 `DSBNormalizeProtein` or `ModelNegativeADTnorm` functions. See the new
-vignette on this topic.
+[vignette](https://cran.r-project.org/web/packages/dsb/vignettes/fastkm.html)
+on this topic.
 
 <img src="man/figures/timingsfig2.png" width="150" />
 

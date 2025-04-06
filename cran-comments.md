@@ -9,7 +9,7 @@ devtools::check_win_release()
 Status: OK
 
 
-Removed link from vignette description, replaced with DOI. 
+Removed link from vignette description, replaced with DOI.  
 
 Thanks, we see:
 
