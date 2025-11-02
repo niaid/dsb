@@ -28,7 +28,7 @@ To install in R use `install.packages('dsb')` <br>
 #### Vignettes:  
 1. [**Using dsb with an end-to-end CITE-seq workflow**](https://CRAN.R-project.org/package=dsb/vignettes/end_to_end_workflow.html)  
 2. [**Using dsb when empty droplets are not available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
-3. [**Speed up dsb 10-fold: set fast.km = TRUE (great for large datasets with / without empty droplets)**](https://cran.r-project.org/web/packages/dsb/vignettes/fastkm.html) <br>
+3. [**Speed up dsb 10-fold: set fast.km = TRUE (great for large datasets with / without empty droplets)**](https://cran.R-project.org/package=dsb/vignettes/fastkm.html) <br>
 4. [**How the dsb method works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
 5. [**Using the dsb method in Python**](https://muon.readthedocs.io/en/latest/omics/citeseq.html)  
 6. [**Frequently asked questions**](https://CRAN.R-project.org/package=dsb/vignettes/additional_topics.html) <br>

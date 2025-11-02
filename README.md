@@ -24,7 +24,7 @@ our deconvolution of ADT noise sources and development of dsb. <br>
     available**](https://CRAN.R-project.org/package=dsb/vignettes/no_empty_drops.html)  
 3.  [**Speed up dsb 10-fold: set fast.km = TRUE (great for large
     datasets with / without empty
-    droplets)**](https://cran.r-project.org/web/packages/dsb/vignettes/fastkm.html)
+    droplets)**](https://cran.R-project.org/package=dsb/vignettes/fastkm.html)
     <br>
 4.  [**How the dsb method
     works**](https://CRAN.R-project.org/package=dsb/vignettes/understanding_dsb.html)  
