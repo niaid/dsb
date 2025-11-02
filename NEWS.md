@@ -1,3 +1,7 @@
+# dsb 2.0.1 
+
+Patch to remove unneeded pandoc and ggplot deprecated dependencies 
+
 # dsb 2.0.0 
 
 This update increases speed 10-fold with the `fast.km` argument. See vignettes. This can be used with `ModelNegativeADTnorm` to normalize large datasets without empty droplets, or with the original version of the function requiring empty drops, `DSBNormalizeProtein`. This version also has various improvements to documentation and some streamlining of internal code.  

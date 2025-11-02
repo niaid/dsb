@@ -1,0 +1,3 @@
+rmarkdown::html_vignette:
+  highlight: pygments
+  pandoc_args: ["--quiet"]
