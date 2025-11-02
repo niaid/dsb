@@ -111,7 +111,7 @@ adt_norm = ModelNegativeADTnorm(
 To speed up the function 10-fold with minimal impact on the results from
 those in the default function set `fast.km = TRUE` with either the
 `DSBNormalizeProtein` or `ModelNegativeADTnorm` functions. See the new
-[vignette](https://cran.r-project.org/web/packages/dsb/vignettes/fastkm.html)
+[vignette](https://cran.R-project.org/package=dsb/vignettes/fastkm.html)
 on this topic.
 
 <img src="man/figures/timingsfig2.png" width="150" />
